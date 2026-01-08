@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+ # Env & backups
+ .env
+ *.backup
+ *.dump
+ supabase/.temp
+ 
+ # Keep migrations and config
+ !supabase/migrations/
+ !supabase/config.toml
