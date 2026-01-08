@@ -1,0 +1,327 @@
+
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import CheckoutHeader from '@/components/CheckoutHeader';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useOrders } from '@/hooks/useOrders';
+import { useGuestCheckout } from '@/hooks/useGuestCheckout';
+import { CreditCard, Smartphone, Building2, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const CheckoutPage = () => {
+  const navigate = useNavigate();
+  const { items, clearCart, getTotalPrice } = useCart();
+  const { user } = useAuth();
+  const { createOrder } = useOrders();
+  const { createGuestOrder } = useGuestCheckout();
+  
+  const [deliveryInfo, setDeliveryInfo] = useState({
+    address: '',
+    phone: '',
+    notes: ''
+  });
+
+  const [guestInfo, setGuestInfo] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    postalCode: '',
+    notes: ''
+  });
+
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-violet-50 flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col justify-center items-center">
+          <div className="max-w-md w-full text-center bg-white/80 rounded-xl shadow-lg p-10">
+            <div className="text-6xl mb-4">🛒</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Votre panier est vide</h1>
+            <p className="text-gray-600 mb-8">Ajoutez des produits à votre panier pour continuer</p>
+            <Button asChild className="bg-gradient-to-r from-blue-600 to-violet-600 w-full">
+              <Link to="/marketplace">Continuer les achats</Link>
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsProcessing(true);
+
+    try {
+      if (user) {
+        // Utilisateur connecté
+        const orderItems = items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.products?.price || 0,
+          merchant_id: item.products?.merchant_id || ''
+        }));
+
+        const result = await createOrder(orderItems, deliveryInfo, paymentMethod);
+        
+        if (result.data) {
+          clearCart();
+          navigate('/profile?tab=orders');
+        }
+      } else {
+        // Utilisateur invité
+        const orderItems = items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.products?.price || 0,
+          merchant_id: item.products?.merchant_id || ''
+        }));
+
+        const result = await createGuestOrder(guestInfo, orderItems, paymentMethod);
+        
+        if (result.data) {
+          // Vider le panier local
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('guestCart');
+          }
+          clearCart();
+          navigate('/marketplace');
+        }
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-violet-50">
+      <Navbar />
+      <div className="py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <CheckoutHeader />
+          
+          <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              {!user && (
+                <Card className="p-6 bg-blue-50 border-blue-200">
+                  <div className="flex items-center gap-3 mb-4">
+                    <User className="h-5 w-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-blue-900">Informations personnelles</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="firstName">Prénom *</Label>
+                      <Input
+                        id="firstName"
+                        required
+                        value={guestInfo.firstName}
+                        onChange={(e) => setGuestInfo({...guestInfo, firstName: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="lastName">Nom *</Label>
+                      <Input
+                        id="lastName"
+                        required
+                        value={guestInfo.lastName}
+                        onChange={(e) => setGuestInfo({...guestInfo, lastName: e.target.value})}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        required
+                        value={guestInfo.email}
+                        onChange={(e) => setGuestInfo({...guestInfo, email: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Informations de livraison</h3>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor={user ? "address" : "guestAddress"}>Adresse de livraison *</Label>
+                    <Input
+                      id={user ? "address" : "guestAddress"}
+                      required
+                      value={user ? deliveryInfo.address : guestInfo.address}
+                      onChange={(e) => {
+                        if (user) {
+                          setDeliveryInfo({...deliveryInfo, address: e.target.value});
+                        } else {
+                          setGuestInfo({...guestInfo, address: e.target.value});
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  {!user && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="city">Ville *</Label>
+                        <Input
+                          id="city"
+                          required
+                          value={guestInfo.city}
+                          onChange={(e) => setGuestInfo({...guestInfo, city: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="postalCode">Code postal *</Label>
+                        <Input
+                          id="postalCode"
+                          required
+                          value={guestInfo.postalCode}
+                          onChange={(e) => setGuestInfo({...guestInfo, postalCode: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <Label htmlFor={user ? "phone" : "guestPhone"}>Téléphone *</Label>
+                    <Input
+                      id={user ? "phone" : "guestPhone"}
+                      required
+                      value={user ? deliveryInfo.phone : guestInfo.phone}
+                      onChange={(e) => {
+                        if (user) {
+                          setDeliveryInfo({...deliveryInfo, phone: e.target.value});
+                        } else {
+                          setGuestInfo({...guestInfo, phone: e.target.value});
+                        }
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={user ? "notes" : "guestNotes"}>Notes de livraison</Label>
+                    <Textarea
+                      id={user ? "notes" : "guestNotes"}
+                      placeholder="Instructions spéciales pour la livraison..."
+                      value={user ? deliveryInfo.notes : guestInfo.notes}
+                      onChange={(e) => {
+                        if (user) {
+                          setDeliveryInfo({...deliveryInfo, notes: e.target.value});
+                        } else {
+                          setGuestInfo({...guestInfo, notes: e.target.value});
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Mode de paiement</h3>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="card" id="card" />
+                    <Label htmlFor="card" className="flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Carte bancaire
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="mobile" id="mobile" />
+                    <Label htmlFor="mobile" className="flex items-center gap-2">
+                      <Smartphone className="h-4 w-4" />
+                      Mobile Money
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="cash" id="cash" />
+                    <Label htmlFor="cash" className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      Paiement à la livraison
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-1">
+              <Card className="p-6 sticky top-4">
+                <h2 className="text-xl font-semibold mb-4">Résumé de commande</h2>
+                <div className="space-y-4 mb-6">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <h3 className="font-medium">{item.products?.name}</h3>
+                        <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+                      </div>
+                      <p className="font-semibold">
+                        {((item.products?.price || 0) * item.quantity).toLocaleString()} CFA
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="border-t pt-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span>Sous-total</span>
+                    <span>{getTotalPrice().toLocaleString()} CFA</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Livraison</span>
+                    <span className="text-green-600">Gratuite</span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total</span>
+                      <span>{getTotalPrice().toLocaleString()} CFA</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full mt-6 bg-gradient-to-r from-blue-600 to-violet-600"
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Traitement...' : 'Finaliser la commande'}
+                </Button>
+
+                {!user && (
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-600">
+                      Vous avez un compte ?{' '}
+                      <Link to="/login" className="text-blue-600 hover:underline">
+                        Connectez-vous
+                      </Link>
+                    </p>
+                  </div>
+                )}
+              </Card>
+            </div>
+          </form>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+};
+
+export default CheckoutPage;
