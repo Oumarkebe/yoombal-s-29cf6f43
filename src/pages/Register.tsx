@@ -163,7 +163,7 @@ const Register = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 required
-                placeholder="+221 77 123 45 67"
+                placeholder="+221 773817783"
               />
             </div>
 
