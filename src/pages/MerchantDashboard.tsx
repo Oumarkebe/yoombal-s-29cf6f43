@@ -23,12 +23,17 @@ const MerchantDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  React.useEffect(() => {
+    if (!user || user.role !== 'merchant') {
+      toast({
+        title: "Accès refusé",
+        description: "Vous devez être connecté en tant que marchand pour accéder à cette page.",
+        variant: "destructive",
+      });
+    }
+  }, [user, toast]);
+
   if (!user || user.role !== 'merchant') {
-    toast({
-      title: "Accès refusé",
-      description: "Vous devez être connecté en tant que marchand pour accéder à cette page.",
-      variant: "destructive",
-    });
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />

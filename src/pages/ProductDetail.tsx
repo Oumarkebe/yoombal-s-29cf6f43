@@ -24,6 +24,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBNPLForm, setShowBNPLForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("specs");
 
   // Récupération des produits du marketplace
   const { products, isLoading } = useMarketplaceProducts();
@@ -51,8 +52,10 @@ const ProductDetail = () => {
     inStock: product.stock > 0,
     stockCount: product.stock,
     category: product.categories?.name || 'Catégorie',
-    specs: {}, // À remplacer par la vraie donnée si dispo
-    features: ['Livraison gratuite', 'Garantie 2 ans', 'Échange 30 jours', 'Paiement BNPL disponible'],
+    specs: product.specs || {},
+    features: product.features && product.features.length > 0
+      ? product.features
+      : ['Livraison gratuite', 'Garantie 2 ans', 'Échange 30 jours', 'Paiement BNPL disponible'],
     bnpl_enabled: product.bnpl_enabled || false,
   };
 
@@ -60,7 +63,7 @@ const ProductDetail = () => {
     for (let i = 0; i < quantity; i++) {
       addItem(productData.id);
     }
-    
+
     toast({
       title: "Produit ajouté au panier",
       description: `${quantity} x ${productData.name}`,
@@ -79,13 +82,12 @@ const ProductDetail = () => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${
-          i < Math.floor(rating)
-            ? 'text-yellow-400 fill-current'
-            : i < rating
+        className={`h-4 w-4 ${i < Math.floor(rating)
+          ? 'text-yellow-400 fill-current'
+          : i < rating
             ? 'text-yellow-400 fill-current opacity-50'
             : 'text-gray-300'
-        }`}
+          }`}
       />
     ));
   };
@@ -128,9 +130,8 @@ const ProductDetail = () => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`border-2 rounded-lg overflow-hidden ${
-                      selectedImage === index ? 'border-blue-500' : 'border-gray-200'
-                    }`}
+                    className={`border-2 rounded-lg overflow-hidden ${selectedImage === index ? 'border-blue-500' : 'border-gray-200'
+                      }`}
                   >
                     <img src={image} alt={`Vue ${index + 1}`} className="w-full h-20 object-cover" />
                   </button>
@@ -199,8 +200,10 @@ const ProductDetail = () => {
                       </span>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm">
-                    Voir boutique
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/merchant-store/${product.merchant_id}`}>
+                      Voir boutique
+                    </Link>
                   </Button>
                 </div>
               </Card>
@@ -267,7 +270,7 @@ const ProductDetail = () => {
 
           {/* Onglets détails */}
           <div className="mt-12">
-            <Tabs defaultValue="specs" className="space-y-6">
+            <Tabs defaultValue="specs" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="specs">Caractéristiques</TabsTrigger>
                 <TabsTrigger value="bnpl">Paiement BNPL</TabsTrigger>
@@ -292,7 +295,10 @@ const ProductDetail = () => {
               </TabsContent>
 
               <TabsContent value="bnpl">
-                <BNPLCalculator />
+                <BNPLCalculator
+                  initialAmount={productData.price}
+                  onApply={() => setActiveTab('bnpl-request')}
+                />
               </TabsContent>
 
               <TabsContent value="reviews">

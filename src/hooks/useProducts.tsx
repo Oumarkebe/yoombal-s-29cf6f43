@@ -16,6 +16,8 @@ export interface Product {
   created_at: string;
   updated_at: string;
   merchant_id: string;
+  features?: string[];
+  specs?: Record<string, any>;
   categories?: {
     name: string;
   };
@@ -50,13 +52,13 @@ export const useProducts = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       // Type assertion pour assurer la compatibilité avec notre interface Product
       const typedProducts = (data || []).map(product => ({
         ...product,
         status: product.status as 'active' | 'draft' | 'out_of_stock'
       }));
-      
+
       setProducts(typedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);

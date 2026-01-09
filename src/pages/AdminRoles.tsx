@@ -8,6 +8,7 @@ import { Loader2, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RolesBadges } from "@/components/admin/RolesBadges";
 import { RolesModal } from "@/components/admin/RolesModal";
+import { UserFeaturesModal } from "@/components/admin/UserFeaturesModal";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -40,19 +41,20 @@ async function fetchUsers(): Promise<AuthUser[]> {
 }
 
 async function activateUser(userId: string) {
-    const { error } = await supabase.functions.invoke('activate-user', {
-        body: { userId },
-    });
-    if (error) {
-        toast.error(`Erreur lors de l'activation: ${error.message}`);
-        throw new Error(error.message);
-    }
-    toast.success("Utilisateur activé avec succès !");
+  const { error } = await supabase.functions.invoke('activate-user', {
+    body: { userId },
+  });
+  if (error) {
+    toast.error(`Erreur lors de l'activation: ${error.message}`);
+    throw new Error(error.message);
+  }
+  toast.success("Utilisateur activé avec succès !");
 }
 
 
 export default function AdminRoles() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [featureUser, setFeatureUser] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [activatingId, setActivatingId] = useState<string | null>(null);
 
@@ -64,10 +66,10 @@ export default function AdminRoles() {
   const handleActivate = async (userId: string) => {
     setActivatingId(userId);
     try {
-        await activateUser(userId);
-        await refetch();
+      await activateUser(userId);
+      await refetch();
     } finally {
-        setActivatingId(null);
+      setActivatingId(null);
     }
   };
 
@@ -94,7 +96,7 @@ export default function AdminRoles() {
             className="max-w-xs"
           />
           <Button onClick={() => refetch()} size="sm" variant="outline">
-            {isLoading ? <Loader2 className="w-4 h-4 animate-spin"/> : 'Actualiser'}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Actualiser'}
           </Button>
         </div>
         {isLoading ? (
@@ -120,31 +122,35 @@ export default function AdminRoles() {
                           <User className="w-4 h-4 text-slate-600" />
                         </div>
                         <div>
-                           <div className="font-medium">{u.user_metadata.first_name || ""} {u.user_metadata.last_name || ""}</div>
-                           <div className="text-xs text-gray-500">{u.email}</div>
-                           {!u.confirmed_at && <Badge variant="destructive" className="mt-1">Non activé</Badge>}
+                          <div className="font-medium">{u.user_metadata.first_name || ""} {u.user_metadata.last_name || ""}</div>
+                          <div className="text-xs text-gray-500">{u.email}</div>
+                          {!u.confirmed_at && <Badge variant="destructive" className="mt-1">Non activé</Badge>}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell><RolesBadges userId={u.id} /></TableCell>
                     <TableCell className="text-center">
                       {!u.confirmed_at && (
-                          <Button 
-                              size="sm" 
-                              className="mr-2 bg-green-600 hover:bg-green-700"
-                              onClick={() => handleActivate(u.id)}
-                              disabled={activatingId === u.id}
-                          >
-                              {activatingId === u.id ? <Loader2 className="w-4 h-4 animate-spin"/> : 'Activer'}
-                          </Button>
+                        <Button
+                          size="sm"
+                          className="mr-2 bg-green-600 hover:bg-green-700"
+                          onClick={() => handleActivate(u.id)}
+                          disabled={activatingId === u.id}
+                        >
+                          {activatingId === u.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Activer'}
+                        </Button>
                       )}
                       <Button size="sm" variant="outline" onClick={() => setSelectedUser({
-                          id: u.id,
-                          email: u.email,
-                          first_name: u.user_metadata.first_name,
-                          last_name: u.user_metadata.last_name,
+                        id: u.id,
+                        email: u.email,
+                        first_name: u.user_metadata.first_name,
+                        last_name: u.user_metadata.last_name,
                       })}>
                         Modifier rôles
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={() => setFeatureUser(u)} className="ml-2">
+                        <User className="mr-2 h-3 w-3" />
+                        Fonctionnalités
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -162,6 +168,13 @@ export default function AdminRoles() {
           <RolesModal
             user={selectedUser}
             onClose={handleModalClose}
+          />
+        )}
+        {featureUser && (
+          <UserFeaturesModal
+            user={featureUser}
+            onClose={() => setFeatureUser(null)}
+            onUpdate={refetch}
           />
         )}
       </div>

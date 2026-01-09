@@ -4,11 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { Product, Category } from '@/hooks/useProducts';
 import ContentGenerationModal from './ContentGenerationModal';
@@ -40,12 +40,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
     stock: 0,
     category_id: '',
     image_url: '',
-    status: 'active'
+    status: 'active',
+    features: [] as string[],
+    specs: {} as Record<string, any>
   });
+  const [featuresInput, setFeaturesInput] = useState('');
+  const [specsInput, setSpecsInput] = useState<Array<{ key: string, value: string }>>([]);
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false);
 
   useEffect(() => {
     if (product) {
+      const features = product.features || [];
+      const specs = product.specs || {};
       setFormData({
         name: product.name || '',
         description: product.description || '',
@@ -53,28 +59,49 @@ const ProductForm: React.FC<ProductFormProps> = ({
         stock: product.stock || 0,
         category_id: product.category_id || '',
         image_url: product.image_url || '',
-        status: product.status || 'active'
+        status: product.status || 'active',
+        features,
+        specs
       });
+      setFeaturesInput(features.join(', '));
+      setSpecsInput(Object.entries(specs).map(([key, value]) => ({ key, value: String(value) })));
     } else {
-        setFormData({
-            name: '',
-            description: '',
-            price: 0,
-            stock: 0,
-            category_id: '',
-            image_url: '',
-            status: 'active'
-        });
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        stock: 0,
+        category_id: '',
+        image_url: '',
+        status: 'active',
+        features: [],
+        specs: {}
+      });
+      setFeaturesInput('');
+      setSpecsInput([]);
     }
   }, [product, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Convert features input to array
+    const features = featuresInput.split(',').map(f => f.trim()).filter(f => f.length > 0);
+
+    // Convert specs input to object
+    const specs = specsInput.reduce((acc, { key, value }) => {
+      if (key.trim()) {
+        acc[key.trim()] = value;
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
     const result = await onSubmit({
       ...formData,
       price: parseFloat(formData.price.toString()),
-      stock: parseInt(formData.stock.toString())
+      stock: parseInt(formData.stock.toString()),
+      features,
+      specs
     });
 
     if (result && !result.error) {
@@ -86,8 +113,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
         stock: 0,
         category_id: '',
         image_url: '',
-        status: 'active'
+        status: 'active',
+        features: [],
+        specs: {}
       });
+      setFeaturesInput('');
+      setSpecsInput([]);
     }
   };
 
@@ -122,16 +153,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <div>
               <div className="flex justify-between items-center mb-1">
                 <Label htmlFor="description">Description</Label>
-                { !isLoadingFeatureSettings && isContentGenerationEnabled && (
+                {!isLoadingFeatureSettings && isContentGenerationEnabled && (
                   <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsGeneratorOpen(true)}
-                      className="flex items-center gap-1 text-primary hover:text-primary"
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsGeneratorOpen(true)}
+                    className="flex items-center gap-1 text-primary hover:text-primary"
                   >
-                      <Sparkles className="h-4 w-4" />
-                      Générer avec l'IA
+                    <Sparkles className="h-4 w-4" />
+                    Générer avec l'IA
                   </Button>
                 )}
               </div>
@@ -199,6 +230,63 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
 
             <div>
+              <Label htmlFor="features">Avantages du produit</Label>
+              <Input
+                id="features"
+                value={featuresInput}
+                onChange={(e) => setFeaturesInput(e.target.value)}
+                placeholder="Livraison gratuite, Garantie 2 ans, Échange 30 jours (séparés par des virgules)"
+              />
+              <p className="text-xs text-gray-500 mt-1">Séparez chaque avantage par une virgule</p>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label>Caractéristiques techniques</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSpecsInput([...specsInput, { key: '', value: '' }])}
+                >
+                  + Ajouter
+                </Button>
+              </div>
+              {specsInput.map((spec, index) => (
+                <div key={index} className="grid grid-cols-2 gap-2 mb-2">
+                  <Input
+                    placeholder="Nom (ex: Marque)"
+                    value={spec.key}
+                    onChange={(e) => {
+                      const newSpecs = [...specsInput];
+                      newSpecs[index].key = e.target.value;
+                      setSpecsInput(newSpecs);
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Valeur (ex: Samsung)"
+                      value={spec.value}
+                      onChange={(e) => {
+                        const newSpecs = [...specsInput];
+                        newSpecs[index].value = e.target.value;
+                        setSpecsInput(newSpecs);
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSpecsInput(specsInput.filter((_, i) => i !== index))}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div>
               <Label htmlFor="status">Statut</Label>
               <select
                 id="status"
@@ -233,9 +321,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
         </DialogContent>
       </Dialog>
       <ContentGenerationModal
-          isOpen={isGeneratorOpen}
-          onClose={() => setIsGeneratorOpen(false)}
-          onInsert={(text) => handleChange('description', text)}
+        isOpen={isGeneratorOpen}
+        onClose={() => setIsGeneratorOpen(false)}
+        onInsert={(text) => handleChange('description', text)}
       />
     </>
   );

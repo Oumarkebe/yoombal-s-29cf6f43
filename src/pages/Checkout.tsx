@@ -23,7 +23,7 @@ const CheckoutPage = () => {
   const { user } = useAuth();
   const { createOrder } = useOrders();
   const { createGuestOrder } = useGuestCheckout();
-  
+
   const [deliveryInfo, setDeliveryInfo] = useState({
     address: '',
     phone: '',
@@ -78,10 +78,10 @@ const CheckoutPage = () => {
         }));
 
         const result = await createOrder(orderItems, deliveryInfo, paymentMethod);
-        
+
         if (result.data) {
           clearCart();
-          navigate('/profile?tab=orders');
+          navigate(`/order-confirmation?orderId=${result.data.id}`);
         }
       } else {
         // Utilisateur invité
@@ -93,14 +93,14 @@ const CheckoutPage = () => {
         }));
 
         const result = await createGuestOrder(guestInfo, orderItems, paymentMethod);
-        
+
         if (result.data) {
           // Vider le panier local
           if (typeof window !== 'undefined') {
             localStorage.removeItem('guestCart');
           }
           clearCart();
-          navigate('/marketplace');
+          navigate(`/order-confirmation?orderId=${result.data.order_id || 'GUEST'}`);
         }
       }
     } catch (error) {
@@ -116,7 +116,7 @@ const CheckoutPage = () => {
       <div className="py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <CheckoutHeader />
-          
+
           <form onSubmit={handleSubmit} className="grid lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               {!user && (
@@ -132,7 +132,7 @@ const CheckoutPage = () => {
                         id="firstName"
                         required
                         value={guestInfo.firstName}
-                        onChange={(e) => setGuestInfo({...guestInfo, firstName: e.target.value})}
+                        onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
                       />
                     </div>
                     <div>
@@ -141,7 +141,7 @@ const CheckoutPage = () => {
                         id="lastName"
                         required
                         value={guestInfo.lastName}
-                        onChange={(e) => setGuestInfo({...guestInfo, lastName: e.target.value})}
+                        onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
                       />
                     </div>
                     <div className="col-span-2">
@@ -151,7 +151,7 @@ const CheckoutPage = () => {
                         type="email"
                         required
                         value={guestInfo.email}
-                        onChange={(e) => setGuestInfo({...guestInfo, email: e.target.value})}
+                        onChange={(e) => setGuestInfo({ ...guestInfo, email: e.target.value })}
                       />
                     </div>
                   </div>
@@ -169,14 +169,14 @@ const CheckoutPage = () => {
                       value={user ? deliveryInfo.address : guestInfo.address}
                       onChange={(e) => {
                         if (user) {
-                          setDeliveryInfo({...deliveryInfo, address: e.target.value});
+                          setDeliveryInfo({ ...deliveryInfo, address: e.target.value });
                         } else {
-                          setGuestInfo({...guestInfo, address: e.target.value});
+                          setGuestInfo({ ...guestInfo, address: e.target.value });
                         }
                       }}
                     />
                   </div>
-                  
+
                   {!user && (
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -185,7 +185,7 @@ const CheckoutPage = () => {
                           id="city"
                           required
                           value={guestInfo.city}
-                          onChange={(e) => setGuestInfo({...guestInfo, city: e.target.value})}
+                          onChange={(e) => setGuestInfo({ ...guestInfo, city: e.target.value })}
                         />
                       </div>
                       <div>
@@ -194,12 +194,12 @@ const CheckoutPage = () => {
                           id="postalCode"
                           required
                           value={guestInfo.postalCode}
-                          onChange={(e) => setGuestInfo({...guestInfo, postalCode: e.target.value})}
+                          onChange={(e) => setGuestInfo({ ...guestInfo, postalCode: e.target.value })}
                         />
                       </div>
                     </div>
                   )}
-                  
+
                   <div>
                     <Label htmlFor={user ? "phone" : "guestPhone"}>Téléphone *</Label>
                     <Input
@@ -208,14 +208,14 @@ const CheckoutPage = () => {
                       value={user ? deliveryInfo.phone : guestInfo.phone}
                       onChange={(e) => {
                         if (user) {
-                          setDeliveryInfo({...deliveryInfo, phone: e.target.value});
+                          setDeliveryInfo({ ...deliveryInfo, phone: e.target.value });
                         } else {
-                          setGuestInfo({...guestInfo, phone: e.target.value});
+                          setGuestInfo({ ...guestInfo, phone: e.target.value });
                         }
                       }}
                     />
                   </div>
-                  
+
                   <div>
                     <Label htmlFor={user ? "notes" : "guestNotes"}>Notes de livraison</Label>
                     <Textarea
@@ -224,9 +224,9 @@ const CheckoutPage = () => {
                       value={user ? deliveryInfo.notes : guestInfo.notes}
                       onChange={(e) => {
                         if (user) {
-                          setDeliveryInfo({...deliveryInfo, notes: e.target.value});
+                          setDeliveryInfo({ ...deliveryInfo, notes: e.target.value });
                         } else {
-                          setGuestInfo({...guestInfo, notes: e.target.value});
+                          setGuestInfo({ ...guestInfo, notes: e.target.value });
                         }
                       }}
                     />
@@ -278,7 +278,7 @@ const CheckoutPage = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
                     <span>Sous-total</span>
@@ -296,8 +296,8 @@ const CheckoutPage = () => {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full mt-6 bg-gradient-to-r from-blue-600 to-violet-600"
                   disabled={isProcessing}
                 >

@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
+import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 
 type OrderWithDetails = Tables<'orders'> & {
   client: { first_name: string | null; last_name: string | null; } | null;
@@ -53,24 +54,25 @@ const fetchAllOrders = async (page: number, pageSize: number, searchTerm: string
 };
 
 const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
 };
 
 const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending': return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
-      case 'processing': return <Badge className="bg-blue-100 text-blue-800">En traitement</Badge>;
-      case 'shipped': return <Badge className="bg-purple-100 text-purple-800">Expédiée</Badge>;
-      case 'delivered': return <Badge className="bg-green-100 text-green-800">Livrée</Badge>;
-      case 'cancelled': return <Badge className="bg-red-100 text-red-800">Annulée</Badge>;
-      default: return <Badge>{status}</Badge>;
-    }
+  switch (status) {
+    case 'pending': return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+    case 'processing': return <Badge className="bg-blue-100 text-blue-800">En traitement</Badge>;
+    case 'shipped': return <Badge className="bg-purple-100 text-purple-800">Expédiée</Badge>;
+    case 'delivered': return <Badge className="bg-green-100 text-green-800">Livrée</Badge>;
+    case 'cancelled': return <Badge className="bg-red-100 text-red-800">Annulée</Badge>;
+    default: return <Badge>{status}</Badge>;
+  }
 };
 
 export function AdminOrderList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   // Debounce search term
   React.useEffect(() => {
@@ -94,7 +96,7 @@ export function AdminOrderList() {
   const orders = data?.orders as unknown as OrderWithDetails[] | undefined;
   const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  
+
   if (isLoading && !data) {
     return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-amber-600" /></div>;
   }
@@ -155,7 +157,9 @@ export function AdminOrderList() {
                   <TableCell className="font-semibold">{formatCurrency(order.total_amount)}</TableCell>
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
                   <TableCell>
-                    <Button variant="ghost" size="sm">Détails</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedOrderId(order.id)}>
+                      Superviser
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -196,10 +200,16 @@ export function AdminOrderList() {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Aucune commande trouvée
           </h3>
-           <p className="text-gray-600">
+          <p className="text-gray-600">
             Aucune commande ne correspond à vos critères de recherche.
           </p>
         </Card>
+      )}
+      {selectedOrderId && (
+        <OrderDetailsDialog
+          orderId={selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+        />
       )}
     </div>
   );

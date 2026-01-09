@@ -3,16 +3,24 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import { 
-  Menu, 
-  X, 
-  User, 
-  ShoppingCart, 
-  LogOut, 
+import {
+  Menu,
+  ShoppingCart,
+  LogOut,
   Settings,
   BarChart3,
-  TrendingUp
+  TrendingUp,
+  User,
+  X,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +87,7 @@ const Navbar = () => {
               )}
               {isMerchant && (
                 <Link to="/merchant" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Dashboard
+                  Tableau de bord
                 </Link>
               )}
             </div>
@@ -110,30 +118,32 @@ const Navbar = () => {
                   </Link>
                 )}
                 <div className="relative inline-block text-left">
-                  <Dropdown>
-                    <Dropdown.Trigger>
-                      <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100 cursor-pointer">
                         <User className="w-5 h-5" />
-                      </Button>
-                    </Dropdown.Trigger>
-                    <Dropdown.Menu>
-                      <Dropdown.Item onClick={() => navigate('/profile')}>
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-white">
+                      <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
                         Profil
-                      </Dropdown.Item>
+                      </DropdownMenuItem>
                       {isAdmin && (
-                        <Dropdown.Item onClick={() => navigate('/admin')}>
+                        <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
                           <Settings className="mr-2 h-4 w-4" />
                           Admin
-                        </Dropdown.Item>
+                        </DropdownMenuItem>
                       )}
-                      <Dropdown.Separator />
-                      <Dropdown.Item onClick={handleLogout}>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                         <LogOut className="mr-2 h-4 w-4" />
                         Déconnexion
-                      </Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </>
             ) : (
@@ -189,7 +199,7 @@ const Navbar = () => {
           >
             Tarifs
           </Link>
-           <Link
+          <Link
             to="/merchants"
             className="text-gray-700 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium"
             onClick={closeMenu}
@@ -209,7 +219,7 @@ const Navbar = () => {
               className="text-gray-700 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium"
               onClick={closeMenu}
             >
-              Dashboard
+              Tableau de bord
             </Link>
           )}
         </div>
@@ -282,84 +292,4 @@ const Navbar = () => {
 
 export default Navbar;
 
-// Define Dropdown component
-interface DropdownProps {
-  children: React.ReactNode;
-}
 
-const Dropdown = ({ children }: DropdownProps) => {
-  return (
-    <div className="relative inline-block text-left">
-      {children}
-    </div>
-  );
-};
-
-interface DropdownTriggerProps {
-  children: React.ReactNode;
-}
-
-const DropdownTrigger = ({ children }: DropdownTriggerProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        type="button"
-        className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
-        id="menu-button"
-        aria-expanded={isOpen}
-        aria-haspopup="true"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {children}
-        <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-        </svg>
-      </button>
-    </>
-  );
-};
-
-interface DropdownMenuProps {
-  children: React.ReactNode;
-}
-
-const DropdownMenu = ({ children }: DropdownMenuProps) => {
-  return (
-    <div className="absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabIndex={-1}>
-      <div className="py-1" role="none">
-        {children}
-      </div>
-    </div>
-  );
-};
-
-interface DropdownItemProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-}
-
-const DropdownItem = ({ children, onClick }: DropdownItemProps) => {
-  return (
-    <button
-      onClick={onClick}
-      className="text-gray-700 block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900"
-      role="menuitem"
-      tabIndex={-1}
-    >
-      {children}
-    </button>
-  );
-};
-
-const DropdownSeparator = () => {
-  return (
-    <div className="border-b border-gray-200 my-1"></div>
-  );
-};
-
-Dropdown.Trigger = DropdownTrigger;
-Dropdown.Menu = DropdownMenu;
-Dropdown.Item = DropdownItem;
-Dropdown.Separator = DropdownSeparator;

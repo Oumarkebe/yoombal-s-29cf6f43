@@ -14,8 +14,13 @@ interface PaymentPlan {
   fees: number;
 }
 
-const BNPLCalculator = () => {
-  const [amount, setAmount] = useState<string>('');
+interface BNPLCalculatorProps {
+  initialAmount?: number;
+  onApply?: () => void;
+}
+
+const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply }) => {
+  const [amount, setAmount] = useState<string>(initialAmount ? initialAmount.toString() : '');
   const [duration, setDuration] = useState<string>('3');
   const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
@@ -96,13 +101,12 @@ const BNPLCalculator = () => {
               <h4 className="font-medium">Plans de paiement disponibles :</h4>
               <div className="grid gap-4">
                 {paymentPlans.map((plan, index) => (
-                  <Card 
+                  <Card
                     key={plan.duration}
-                    className={`p-4 cursor-pointer transition-all ${
-                      selectedPlan === index 
-                        ? 'border-amber-500 bg-amber-50' 
-                        : 'hover:border-amber-300'
-                    }`}
+                    className={`p-4 cursor-pointer transition-all ${selectedPlan === index
+                      ? 'border-amber-500 bg-amber-50'
+                      : 'hover:border-amber-300'
+                      }`}
                     onClick={() => setSelectedPlan(index)}
                   >
                     <div className="flex justify-between items-start">
@@ -153,7 +157,16 @@ const BNPLCalculator = () => {
                     </div>
                   </div>
 
-                  <Button className="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-600">
+                  <Button
+                    className="w-full mt-4 bg-gradient-to-r from-amber-500 to-orange-600"
+                    onClick={() => {
+                      if (onApply) {
+                        onApply();
+                      } else {
+                        window.location.href = '/marketplace';
+                      }
+                    }}
+                  >
                     <CreditCard className="mr-2 h-4 w-4" />
                     Demander ce plan BNPL
                   </Button>

@@ -9,9 +9,38 @@ const SearchBar = () => {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   const handleVoiceSearch = () => {
-    setIsVoiceActive(!isVoiceActive);
-    // TODO: Implement voice search functionality
-    console.log('Voice search activated');
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'fr-FR';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsVoiceActive(true);
+        console.log('Voice search activated');
+      };
+
+      recognition.onend = () => {
+        setIsVoiceActive(false);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        console.log('Voice result:', transcript);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsVoiceActive(false);
+      };
+
+      recognition.start();
+    } else {
+      alert("La reconnaissance vocale n'est pas supportée par votre navigateur.");
+    }
   };
 
   return (
@@ -26,8 +55,8 @@ const SearchBar = () => {
           className="pl-10 pr-20 h-12 text-lg border-blue-200 focus:border-blue-500 focus:ring-blue-500"
         />
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex gap-1">
-          <Button 
-            size="icon" 
+          <Button
+            size="icon"
             variant="ghost"
             onClick={handleVoiceSearch}
             className={isVoiceActive ? 'text-red-500' : 'text-gray-400'}

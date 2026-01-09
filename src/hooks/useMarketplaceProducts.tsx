@@ -14,6 +14,8 @@ export interface MarketplaceProduct {
   merchant_id: string;
   category_id: string | null;
   bnpl_enabled: boolean | null;
+  features?: string[];
+  specs?: Record<string, any>;
   categories?: {
     name: string;
   } | null;
@@ -50,7 +52,7 @@ export const useMarketplaceProducts = () => {
         setIsLoading(true);
         setPage(1); // Reset page on new filter/search
       }
-      
+
       const from = loadMore ? page * PRODUCTS_PER_PAGE : 0;
       const to = from + PRODUCTS_PER_PAGE - 1;
 
@@ -70,7 +72,7 @@ export const useMarketplaceProducts = () => {
       if (searchTerm) {
         query = query.ilike('name', `%${searchTerm}%`);
       }
-      
+
       if (selectedCategory) {
         query = query.eq('category_id', selectedCategory);
       }
@@ -99,7 +101,7 @@ export const useMarketplaceProducts = () => {
         profilesData?.forEach(profile => {
           profilesMap.set(profile.id, profile);
         });
-        
+
         transformedProducts = (productsData || []).map(product => ({
           id: product.id,
           name: product.name,
@@ -116,13 +118,13 @@ export const useMarketplaceProducts = () => {
           profiles: profilesMap.get(product.merchant_id) || null
         }));
       }
-      
+
       setProducts(prev => loadMore ? [...prev, ...transformedProducts] : transformedProducts);
       setHasMore(count ? count > (loadMore ? products.length : 0) + transformedProducts.length : false);
-      if(loadMore && transformedProducts.length > 0) {
+      if (loadMore && transformedProducts.length > 0) {
         setPage(prev => prev + 1);
       }
-      
+
     } catch (error) {
       console.error('Error fetching marketplace products:', error);
       toast({

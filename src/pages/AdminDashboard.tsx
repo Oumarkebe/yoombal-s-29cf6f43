@@ -3,16 +3,39 @@ import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { StatCard } from "@/components/admin/StatCard";
-import { Users, Package, ShoppingCart, DollarSign, BarChart } from "lucide-react";
+import { Users, Package, ShoppingCart, DollarSign, BarChart, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
 
 export default function AdminDashboard() {
-  // Simulé : dans un vrai cas appeler une API ou useQuery
+  const { data, isLoading, error } = useAdminDashboardStats();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        Erreur lors du chargement des statistiques
+      </div>
+    );
+  }
+
   const stats = [
-    { title: "Utilisateurs", value: 1290, icon: <Users className="h-5 w-5 text-blue-500" />, description: "Total inscrits" },
-    { title: "Produits", value: 540, icon: <Package className="h-5 w-5 text-green-500" />, description: "Produits affichés" },
-    { title: "Commandes", value: 227, icon: <ShoppingCart className="h-5 w-5 text-orange-500" />, description: "Commandes totales" },
-    { title: "Revenu Total", value: "7 015 000 CFA", icon: <DollarSign className="h-5 w-5 text-purple-500" />, description: "Depuis 2024" },
+    { title: "Utilisateurs", value: data?.usersCount || 0, icon: <Users className="h-5 w-5 text-blue-500" />, description: "Total inscrits" },
+    { title: "Produits", value: data?.productsCount || 0, icon: <Package className="h-5 w-5 text-green-500" />, description: "Produits affichés" },
+    { title: "Commandes", value: data?.ordersCount || 0, icon: <ShoppingCart className="h-5 w-5 text-orange-500" />, description: "Commandes totales" },
+    {
+      title: "Revenu Total",
+      value: `${(data?.totalRevenue || 0).toLocaleString('fr-FR')} CFA`,
+      icon: <DollarSign className="h-5 w-5 text-purple-500" />,
+      description: "Commandes terminées"
+    },
   ];
 
   return (
@@ -25,7 +48,7 @@ export default function AdminDashboard() {
               <BarChart className="h-8 w-8 text-blue-500" />
               Dashboard Administrateur
             </h1>
-            <Link 
+            <Link
               to="/admin"
               className="text-amber-600 bg-white hover:bg-amber-50 border rounded px-4 py-2 font-semibold shadow-sm flex items-center gap-1 transition"
             >← Retour à l’espace admin</Link>
@@ -47,7 +70,7 @@ export default function AdminDashboard() {
           {/* Placeholder chart */}
           <div className="bg-white rounded-lg shadow p-6 mb-8 flex flex-col items-center">
             <h2 className="text-xl font-semibold mb-2">Évolution des commandes</h2>
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=500&q=80"
               alt="Graphique placeholder"
               className="w-full max-w-lg h-64 object-cover rounded"

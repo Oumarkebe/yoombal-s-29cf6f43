@@ -8,6 +8,11 @@ export type BNPLApplication = {
   user_id: string;
   product_id: string;
   merchant_id: string;
+  applicant_phone?: string;
+  applicant_id_number?: string;
+  id_card_url?: string;
+  photo_url?: string;
+  contract_signed_at?: string;
   requested_amount: number;
   plan_duration: number;
   monthly_payment: number;
@@ -28,7 +33,7 @@ export function useBNPLApplications() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     fetchApplications();
   }, [user]);
 
@@ -59,6 +64,11 @@ export function useBNPLApplications() {
     monthly_payment: number;
     fees_amount: number;
     first_payment_amount: number;
+    applicant_phone?: string;
+    applicant_id_number?: string;
+    id_card_url?: string;
+    photo_url?: string;
+    contract_signed_at?: string;
   }) => {
     try {
       const { data, error } = await supabase
@@ -71,7 +81,7 @@ export function useBNPLApplications() {
         .single();
 
       if (error) throw error;
-      
+
       await fetchApplications();
       return { success: true, data };
     } catch (err) {

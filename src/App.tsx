@@ -8,8 +8,13 @@ import Login from './pages/Login';
 import Tarifs from './pages/Tarifs';
 import Merchants from './pages/Merchants';
 import Marketplace from './pages/Marketplace';
-import ProductDetails from './pages/ProductDetails';
+import ProductDetail from './pages/ProductDetail';
 import Profile from './pages/Profile';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import OrderConfirmation from './pages/OrderConfirmation';
+import BNPL from './pages/BNPL';
+import MerchantStore from './pages/MerchantStore';
 import AdminPanel from './pages/AdminPanel';
 import AdminStatistics from './pages/AdminStatistics';
 import AdminProducts from './pages/AdminProducts';
@@ -25,6 +30,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import EconomicModel from '@/pages/EconomicModel';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -41,7 +47,12 @@ function App() {
               <Route path="/tarifs" element={<Tarifs />} />
               <Route path="/merchants" element={<Merchants />} />
               <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
+              <Route path="/bnpl" element={<BNPL />} />
+              <Route path="/merchant-store/:merchantId" element={<MerchantStore />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/admin/statistics" element={<AdminStatistics />} />
@@ -55,6 +66,7 @@ function App() {
               <Route path="/merchant" element={<MerchantDashboard />} />
               <Route path="/delivery" element={<DeliveryDashboard />} />
               <Route path="/economic-model" element={<EconomicModel />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </LanguageProvider>
         </CartProvider>
