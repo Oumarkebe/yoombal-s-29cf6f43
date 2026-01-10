@@ -2,7 +2,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export type AiFeatureKey = 'content_generation' | 'pricing' | 'predictions';
+export type AiFeatureKey =
+  | 'content_generation'
+  | 'pricing'
+  | 'predictions'
+  | 'ai_assistant'
+  | 'ai_vision'
+  | 'ai_smart_search'
+  | 'advanced_stats'
+  | 'fraud_detection'
+  | 'stock_prediction'
+  | 'product_recommendations'
+  | 'marketing_automation'
+  | 'referral_system'
+  | 'vip_program'
+  | 'gamification';
+
 
 export interface UserAiFeatureSetting {
   id: string;
@@ -17,7 +32,7 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
     .from('user_ai_feature_settings')
     .select('*')
     .eq('user_id', userId);
-  
+
   if (error) throw new Error(error.message);
   // We cast the result because Supabase types 'feature_key' as string, 
   // but we use a more specific union type (AiFeatureKey) in our code.
@@ -41,8 +56,8 @@ export function useUserAiSettings({ userId }: { userId?: string }) {
   const { data: settings = [], isLoading, error } = useQuery({
     queryKey: ['userAiSettings', userId],
     queryFn: () => {
-        if (!userId) return Promise.resolve([]);
-        return fetchUserAiSettings(userId)
+      if (!userId) return Promise.resolve([]);
+      return fetchUserAiSettings(userId)
     },
     enabled: !!userId,
   });

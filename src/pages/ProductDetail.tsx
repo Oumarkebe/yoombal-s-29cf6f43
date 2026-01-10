@@ -14,6 +14,7 @@ import { Star, Heart, Share2, ShoppingCart, Truck, Shield, ArrowLeft, MapPin, Us
 import { useMarketplaceProducts } from '@/hooks/useMarketplaceProducts';
 import ProductReviews from "@/components/ProductReviews";
 import BNPLApplicationForm from "@/components/BNPLApplicationForm";
+import { AIRecommendations } from "@/components/ai/AIRecommendations";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -334,6 +335,12 @@ const ProductDetail = () => {
               </TabsContent>
             </Tabs>
           </div>
+
+          {/* AI Recommendations Section */}
+          <AIRecommendations
+            currentProductId={productData.id}
+            categoryId={product.category_id}
+          />
         </div>
       </div>
       <Footer />

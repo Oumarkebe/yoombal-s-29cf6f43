@@ -29,23 +29,48 @@ interface OrderDetailsDialogProps {
 }
 
 const fetchOrderDetails = async (orderId: string) => {
-    // Fetch order with items and delivery address
-    const { data, error } = await supabase
-        .from('orders')
-        .select(`
-            *,
-            order_items (
-                *,
-                product:products (name, image_url)
-            ),
-            client:profiles!client_id (first_name, last_name, email, phone_number),
-            merchant:profiles!merchant_id (business_name, email, phone_number)
-        `)
-        .eq('id', orderId)
-        .single();
+    // Parallel fetch for robust data retrieval
+    const [orderRes, itemsRes] = await Promise.all([
+        supabase
+            .from('admin_orders_view')
+            .select('*')
+            .eq('id', orderId)
+            .single(),
+        supabase
+            .from('order_items')
+            .select('*, product:products(name, image_url)')
+            .eq('order_id', orderId)
+    ]);
 
-    if (error) throw error;
-    return data;
+    if (orderRes.error) throw orderRes.error;
+    if (itemsRes.error) throw itemsRes.error;
+
+    // Combine data to match expected structure
+    // Validating delivery_address if string
+    let delivery_address = orderRes.data.delivery_address;
+    if (typeof delivery_address === 'string') {
+        try {
+            delivery_address = JSON.parse(delivery_address);
+        } catch (e) {
+            // keep as string
+        }
+    }
+
+    return {
+        ...orderRes.data,
+        delivery_address,
+        order_items: itemsRes.data,
+        client: {
+            first_name: orderRes.data.client_first_name,
+            last_name: orderRes.data.client_last_name,
+            email: orderRes.data.client_email,
+            phone_number: orderRes.data.client_phone
+        },
+        merchant: {
+            business_name: orderRes.data.merchant_business_name,
+            email: orderRes.data.merchant_email
+        }
+    };
 };
 
 const formatCurrency = (amount: number) => {
@@ -112,9 +137,7 @@ export function OrderDetailsDialog({ orderId, onClose }: OrderDetailsDialogProps
 
     if (!order) return null;
 
-    const deliveryAddress = typeof order.delivery_address === 'string'
-        ? JSON.parse(order.delivery_address)
-        : order.delivery_address;
+    const deliveryAddress = order.delivery_address;
 
     return (
         <Dialog open={true} onOpenChange={onClose}>

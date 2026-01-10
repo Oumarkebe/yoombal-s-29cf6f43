@@ -32,12 +32,29 @@ interface AuthUser {
 }
 
 async function fetchUsers(): Promise<AuthUser[]> {
-  const { data, error } = await supabase.functions.invoke<AuthUser[]>('get-users');
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
   if (error) {
     toast.error(`Erreur lors de la récupération des utilisateurs: ${error.message}`);
     throw new Error(error.message);
   }
-  return data || [];
+
+  // Map profiles to AuthUser shape
+  return (data || []).map((p: any) => ({
+    id: p.id,
+    email: p.email,
+    confirmed_at: p.created_at, // Approximation using created_at
+    user_metadata: {
+      first_name: p.first_name,
+      last_name: p.last_name,
+    },
+    // Add these to direct profile object for easier access if needed
+    role: p.role,
+    permissions: p.permissions
+  }));
 }
 
 async function activateUser(userId: string) {

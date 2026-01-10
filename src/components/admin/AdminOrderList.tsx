@@ -17,9 +17,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 
-type OrderWithDetails = Tables<'orders'> & {
-  client: { first_name: string | null; last_name: string | null; } | null;
-  merchant: { business_name: string | null; } | null;
+type OrderWithDetails = {
+  id: string;
+  created_at: string;
+  status: string;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  client_id: string;
+  merchant_id: string;
+  delivery_address: any;
+  client_first_name: string | null;
+  client_last_name: string | null;
+  merchant_business_name: string | null;
 };
 
 const PAGE_SIZE = 10;
@@ -29,12 +39,8 @@ const fetchAllOrders = async (page: number, pageSize: number, searchTerm: string
   const to = from + pageSize - 1;
 
   let query = supabase
-    .from('orders')
-    .select(`
-      *,
-      client:profiles!client_id(first_name, last_name),
-      merchant:profiles!merchant_id(business_name)
-    `, { count: 'exact' })
+    .from('admin_orders_view')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -136,6 +142,7 @@ export function AdminOrderList() {
               </TableRow>
             </TableHeader>
             <TableBody>
+
               {orders && orders.map(order => (
                 <TableRow key={order.id} className="hover:bg-gray-50/50">
                   <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
@@ -143,14 +150,14 @@ export function AdminOrderList() {
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <User className="w-4 h-4 text-gray-400" />
                       <div>
-                        <div>{order.client?.first_name} {order.client?.last_name}</div>
+                        <div>{(order.client_first_name || "") + " " + (order.client_last_name || "")}</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Building className="w-4 h-4 text-gray-400" />
-                      {order.merchant?.business_name || 'Inconnu'}
+                      {order.merchant_business_name || 'Inconnu'}
                     </div>
                   </TableCell>
                   <TableCell>{new Date(order.created_at).toLocaleDateString('fr-FR')}</TableCell>

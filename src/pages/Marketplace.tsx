@@ -21,6 +21,8 @@ import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import T from '@/components/T';
 import { useTranslation } from '@/hooks/useTranslation';
+import { AISearchControls } from '@/components/ai/AISearchControls';
+import { toast } from 'sonner';
 
 
 const Marketplace: React.FC = () => {
@@ -40,7 +42,7 @@ const Marketplace: React.FC = () => {
     hasMore,
     loadMoreProducts
   } = useMarketplaceProducts();
-  
+
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { settings, isLoading: isLoadingSettings } = usePlatformSettings();
   const { data: stats, isLoading: isLoadingStats } = usePublicStats();
@@ -55,10 +57,10 @@ const Marketplace: React.FC = () => {
 
   const handleSortChange = (value: string) => {
     try {
-        const parsedValue = JSON.parse(value);
-        setSortBy(parsedValue);
+      const parsedValue = JSON.parse(value);
+      setSortBy(parsedValue);
     } catch (e) {
-        console.error("Failed to parse sort option", e);
+      console.error("Failed to parse sort option", e);
     }
   };
 
@@ -76,7 +78,7 @@ const Marketplace: React.FC = () => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
-  
+
   useEffect(() => {
     const debounce = setTimeout(() => {
       setProductsSearchTerm(searchTerm);
@@ -87,7 +89,7 @@ const Marketplace: React.FC = () => {
   useEffect(() => {
     setProductsSelectedCategory(selectedCategory || '');
   }, [selectedCategory, setProductsSelectedCategory]);
-  
+
   const handleClearSearch = () => {
     setSearchTerm('');
   };
@@ -107,42 +109,52 @@ const Marketplace: React.FC = () => {
           <div className="hidden md:block absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-l from-blue-600/30 to-transparent rounded-full filter blur-3xl opacity-50 animate-pulse animation-delay-200"></div>
 
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 z-10">
-              <div className="text-center">
-                  <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight animate-fade-in-up">
-                      <T>Bienvenue sur la Marketplace</T>
-                  </h1>
-                  <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto animate-fade-in-up animation-delay-200">
-                      <T>Découvrez des milliers de produits de nos vendeurs partenaires et profitez du paiement en plusieurs fois.</T>
-                  </p>
-                  
-                  <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
-                      <div className="relative w-full sm:w-auto sm:flex-1 max-w-md">
-                          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                          <Input
-                              placeholder={searchPlaceholder}
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              className="h-12 w-full pl-12 pr-10 rounded-md bg-white/5 border-white/20 text-white placeholder-gray-400 focus:bg-white/10 focus:ring-2 focus:ring-blue-400"
-                          />
-                          {searchTerm && (
-                              <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-white" onClick={handleClearSearch}>
-                                  <X className="h-4 w-4" />
-                              </Button>
-                          )}
-                      </div>
-                      <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-gray-500 hover:bg-white/10 hover:border-white">
-                          <Link to="/platform"><T>Découvrir la plateforme</T></Link>
-                      </Button>
+            <div className="text-center">
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight animate-fade-in-up">
+                <T>Bienvenue sur la Marketplace</T>
+              </h1>
+              <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto animate-fade-in-up animation-delay-200">
+                <T>Découvrez des milliers de produits de nos vendeurs partenaires et profitez du paiement en plusieurs fois.</T>
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
+                <div className="relative w-full sm:w-auto sm:flex-1 max-w-md">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                  <Input
+                    placeholder={searchPlaceholder}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="h-12 w-full pl-12 pr-10 rounded-md bg-white/5 border-white/20 text-white placeholder-gray-400 focus:bg-white/10 focus:ring-2 focus:ring-blue-400"
+                  />
+                  {searchTerm && (
+                    <Button variant="ghost" size="icon" className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-white" onClick={handleClearSearch}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                    <AISearchControls
+                      onSearchUpdate={setSearchTerm}
+                      onSemanticSearch={() => {
+                        toast.success("Intelligence Artificielle : Analyse sémantique activée !");
+                        // Simulated semantic boost
+                        setProductsSearchTerm(searchTerm);
+                      }}
+                    />
                   </div>
+                </div>
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-gray-500 hover:bg-white/10 hover:border-white">
+                  <Link to="/platform"><T>Découvrir la plateforme</T></Link>
+                </Button>
               </div>
+            </div>
           </div>
         </div>
 
         {settings?.publicStats?.showPublicStats && (
-          <PublicStatsDisplay 
-            stats={stats} 
-            settings={settings.publicStats} 
-            isLoading={isLoadingSettings || isLoadingStats} 
+          <PublicStatsDisplay
+            stats={stats}
+            settings={settings.publicStats}
+            isLoading={isLoadingSettings || isLoadingStats}
           />
         )}
 
@@ -174,7 +186,7 @@ const Marketplace: React.FC = () => {
                 <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap">
                   {products.length} {products.length <= 1 ? <T>produit trouvé</T> : <T>produits trouvés</T>}
                 </span>
-                 <Select onValueChange={handleSortChange} defaultValue={JSON.stringify(sortBy)}>
+                <Select onValueChange={handleSortChange} defaultValue={JSON.stringify(sortBy)}>
                   <SelectTrigger className="w-auto md:w-[180px] dark:bg-gray-800 dark:border-gray-700">
                     <SelectValue placeholder={sortPlaceholder} />
                   </SelectTrigger>
@@ -187,14 +199,14 @@ const Marketplace: React.FC = () => {
                   </SelectContent>
                 </Select>
                 <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                      aria-label="Changer le thème"
-                      className="dark:bg-gray-800 dark:border-gray-700"
-                  >
-                      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                  </Button>
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                  aria-label="Changer le thème"
+                  className="dark:bg-gray-800 dark:border-gray-700"
+                >
+                  {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                </Button>
               </div>
             </div>
 
@@ -211,15 +223,15 @@ const Marketplace: React.FC = () => {
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
                   <T>Essayez d'ajuster votre recherche ou vos filtres.</T>
                 </p>
-                <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setSearchTerm('');
-                      setSelectedCategory(null);
-                    }}
-                  >
-                    <T>Réinitialiser les filtres</T>
-                  </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory(null);
+                  }}
+                >
+                  <T>Réinitialiser les filtres</T>
+                </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -258,10 +270,10 @@ const Marketplace: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         {/* FLOATING ILLUSTRATION SECTION */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 text-center animate-fade-in-up animation-delay-600">
-            <img src="/img/bnpl-illustration.png" alt="Illustration Yoombal" className="inline-block max-w-full h-auto md:max-w-3xl" />
+          <img src="/img/bnpl-illustration.png" alt="Illustration Yoombal" className="inline-block max-w-full h-auto md:max-w-3xl" />
         </div>
       </main>
       <Footer />

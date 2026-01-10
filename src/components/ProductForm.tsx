@@ -12,8 +12,11 @@ import {
 } from '@/components/ui/dialog';
 import { Product, Category } from '@/hooks/useProducts';
 import ContentGenerationModal from './ContentGenerationModal';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { useUserAiFeature } from '@/hooks/useUserAiFeature';
+import { ImageQC } from './ai/ImageQC';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -33,6 +36,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
   isLoading = false
 }) => {
   const { isEnabled: isContentGenerationEnabled, isLoading: isLoadingFeatureSettings } = useUserAiFeature('content_generation');
+  const { isEnabled: isPricingEnabled } = useUserAiFeature('pricing');
+  const [isPricingLoading, setIsPricingLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -129,6 +134,38 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }));
   };
 
+  const handleAiPricing = async () => {
+    if (!isPricingEnabled) {
+      toast.info("Le pricing dynamique est une fonctionnalité Premium !");
+      return;
+    }
+
+    if (!formData.name) {
+      toast.error("Veuillez d'abord saisir le nom du produit.");
+      return;
+    }
+
+    setIsPricingLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-pricing', {
+        body: { productData: formData }
+      });
+
+      if (error) throw error;
+
+      if (data?.suggested_price) {
+        handleChange('price', data.suggested_price);
+        toast.success(`Prix optimisé par l'IA : ${data.suggested_price} CFA`);
+        if (data.logic) toast.info(data.logic, { icon: '💡' });
+      }
+    } catch (error) {
+      console.error('AI Pricing error:', error);
+      toast.error("Erreur lors du calcul du prix IA.");
+    } finally {
+      setIsPricingLoading(false);
+    }
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -176,7 +213,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="price">Prix (XOF)</Label>
+                <div className="flex justify-between items-center mb-1">
+                  <Label htmlFor="price">Prix (XOF)</Label>
+                  {isPricingEnabled && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAiPricing}
+                      disabled={isPricingLoading}
+                      className="h-6 text-[10px] text-amber-600 hover:text-amber-700 p-0 px-1"
+                    >
+                      {isPricingLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                      Optimiser IA
+                    </Button>
+                  )}
+                </div>
                 <Input
                   id="price"
                   type="number"
@@ -219,14 +271,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
 
             <div>
-              <Label htmlFor="image_url">URL de l'image</Label>
-              <Input
-                id="image_url"
-                type="url"
-                value={formData.image_url}
-                onChange={(e) => handleChange('image_url', e.target.value)}
-                placeholder="https://..."
-              />
+              <Label htmlFor="image_url">URL de l'image (ou lien de test)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image_url"
+                  type="url"
+                  value={formData.image_url}
+                  onChange={(e) => handleChange('image_url', e.target.value)}
+                  placeholder="https://..."
+                  className="flex-1"
+                />
+              </div>
+              {formData.image_url && (
+                <ImageQC
+                  imageUrl={formData.image_url}
+                />
+              )}
             </div>
 
             <div>

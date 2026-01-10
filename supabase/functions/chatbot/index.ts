@@ -19,11 +19,11 @@ serve(async (req) => {
 
   try {
     if (!supabaseUrl || !serviceRoleKey) {
-        console.error('Missing Supabase URL or Service Role Key');
-        return new Response(JSON.stringify({ error: 'Internal server configuration error.' }), {
-            status: 200, // Keep 200 to not trigger browser's red error console for the user
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      console.error('Missing Supabase URL or Service Role Key');
+      return new Response(JSON.stringify({ error: 'Internal server configuration error.' }), {
+        status: 200, // Keep 200 to not trigger browser's red error console for the user
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Initialize client with service_role key to bypass RLS
@@ -37,7 +37,7 @@ serve(async (req) => {
     const { data: settings, error: settingsError } = await supabaseAdmin
       .from('ai_module_settings')
       .select('is_enabled, configuration')
-      .eq('key', 'chatbot')
+      .eq('key', 'ai_assistant')
       .maybeSingle();
 
     if (settingsError) {
@@ -56,10 +56,42 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const config = settings.configuration || {};
+    const tone = config.response_tone === 'friendly' ? 'chaleureux et amical' : 'professionnel et direct';
+    const language = config.language === 'wolof' ? 'Wolof et Français' : 'Français';
+    const wolofSupport = config.support_wolof ? "Tu comprends et peux répondre en Wolof si on te le demande." : "";
+
+    const systemPrompt = `Tu es Yoombal Assistant, l'assistant virtuel intelligent et ${tone} de Yoombal, la marketplace de référence au Sénégal. 
     
+    🌍 CONTEXTE : 
+    - Pays : Sénégal 🇸🇳.
+    - Valeurs : Teranga (accueil), Honnêteté, Efficacité.
+    - Langues : Tu communiques en ${language}. ${wolofSupport}
+    
+    - Ton nom est "Yoombal Assistant", mais tu portes en toi l'esprit d'un Griot moderne.
+    - Ta voix est celle de Pape Faye, symbole de sagesse et d'éloquence sénégalaise.
+    - Tu es un expert du marché local (Sénégal) : Wave, Orange Money, livraison Tiak-Tiak.
+    🛠️ TES CAPACITÉS (Ce que tu peux faire) :
+    1. Guider les utilisateurs sur le fonctionnement de Yoombal (achat, vente).
+    2. Informer sur les méthodes de paiement locales (Orange Money, Wave, Cash).
+    3. Conseiller les marchands pour améliorer leurs fiches produits.
+    4. Expliquer les politiques de livraison et de retour.
+    
+    🚫 TES LIMITES (Ce que tu ne peux PAS encore faire) :
+    - Tu ne peux PAS voir le statut en temps réel d'une commande spécifique (demande au support client).
+    - Tu ne peux PAS effectuer de transactions ou modifier des comptes.
+    - Tu n'as PAS accès aux données personnelles privées des utilisateurs.
+    
+    💡 CONSIGNES :
+    - Sois toujours poli et respectueux.
+    - S'il l'utilisateur choisit un numéro (1-5) de la liste d'accueil, réponds précisément sur ce sujet en guidant l'utilisateur.
+    - Si tu ne sais pas, oriente l'utilisateur vers le support humain à support@yoombal.com.
+    - Utilise des emojis adaptés pour rendre l'échange vivant.`;
+
     const provider = settings.configuration?.provider || 'openai';
     let apiKey, apiUrl, model;
-    const systemPrompt = "Tu es Yoombal Assistant, un assistant virtuel amical et serviable pour une marketplace sénégalaise. Tu réponds en Français. Sois concis et direct.";
+
 
     const { data: apiKeysSettings } = await supabaseAdmin
       .from('platform_settings')
@@ -127,9 +159,9 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-        const errorBody = await response.text();
-        console.error(`API error for ${provider}: ${response.status} ${response.statusText}`, errorBody);
-        throw new Error(`Erreur du fournisseur IA (${provider}): ${response.statusText}. Veuillez vérifier votre clé API ou réessayer plus tard.`);
+      const errorBody = await response.text();
+      console.error(`API error for ${provider}: ${response.status} ${response.statusText}`, errorBody);
+      throw new Error(`Erreur du fournisseur IA (${provider}): ${response.statusText}. Veuillez vérifier votre clé API ou réessayer plus tard.`);
     }
 
     const completion = await response.json();

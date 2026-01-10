@@ -66,10 +66,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!mounted) return;
-        
+
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
-        
+
         if (session?.user) {
           // Use setTimeout to avoid potential recursive issues and correctly handle loading state
           setTimeout(async () => {
@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
           return;
         }
-        
+
         if (mounted) {
           setSession(session);
           if (session?.user) {
@@ -123,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Fetching profile and roles for user:', authUser.id);
 
       const [profileRes, rolesRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', authUser.id).single(),
+        supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(),
         supabase.from('user_roles').select('role').eq('user_id', authUser.id)
       ]);
 
@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const primaryRole = profile.role && isValidRole(profile.role) ? profile.role : 'client';
         const allRolesFromHook = userRolesData?.map(r => r.role) || [];
         const allRoles = [...new Set([primaryRole, ...allRolesFromHook])];
-        
+
         setUser({
           id: profile.id,
           email: authUser.email || '',
@@ -176,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -199,11 +199,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (userData: RegisterData) => {
     setIsLoading(true);
-    
+
     try {
       const redirectUrl = `${window.location.origin}/`;
       console.log('Registering user:', userData.email, 'with redirect:', redirectUrl);
-      
+
       const { data, error } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password,

@@ -21,12 +21,35 @@ interface UserFeaturesModalProps {
     onUpdate?: () => void;
 }
 
-const FEATURES = [
+const FEATURES: { key: string; label: string; description: string }[] = [
+    // Core App Features
     { key: 'export_data', label: 'Export Excel (Données)', description: 'Autoriser l\'export des données.' },
-    { key: 'advanced_stats', label: 'Statistiques Avancées', description: 'Accès aux graphiques détaillés.' },
     { key: 'premium_support', label: 'Support Premium', description: 'Accès prioritaire au support.' },
     { key: 'bulk_actions', label: 'Actions en masse', description: 'Suppression et modification groupée.' },
+
+    // AI Features (Intelligence Artificielle)
+    { key: 'ai_assistant', label: 'Assistant IA (Yoombal Bot)', description: 'Accès au chatbot intelligent pour les clients.' },
+    { key: 'content_generation', label: 'Génération de Contenu IA', description: 'Générer des descriptions de produits automatiquement.' },
+    { key: 'ai_smart_search', label: 'Recherche Intelligente', description: 'Recherche sémantique et vocale avancée.' },
+    { key: 'ai_vision', label: 'Vision IA', description: 'Analyse d\'images et recherche visuelle.' },
+    { key: 'pricing', label: 'Pricing Dynamique', description: 'Optimisation automatique des prix via IA.' },
+
+    // Analytics & BI
+    { key: 'predictions', label: 'Analyses Prédictives', description: 'Prévision des ventes et tendances IA.' },
+    { key: 'advanced_stats', label: 'Statistiques Avancées', description: 'Accès aux graphiques détaillés.' },
+
+    // Automatisation
+    { key: 'fraud_detection', label: 'Détection de Fraude', description: 'Analyse automatique des risques sur les commandes.' },
+    { key: 'stock_prediction', label: 'Gestion des Stocks IA', description: 'Alertes de réapprovisionnement prédictives.' },
+
+    // Marketing & Fidélisation
+    { key: 'product_recommendations', label: 'Recommandations', description: 'Moteur de recommandation personnalisé.' },
+    { key: 'marketing_automation', label: 'Marketing Auto', description: 'Campagnes SMS/Email automatiques.' },
+    { key: 'referral_system', label: 'Parrainage', description: 'Gestion des bonus de parrainage.' },
+    { key: 'vip_program', label: 'Programme VIP', description: 'Avantages exclusifs et paliers de fidélité.' },
+    { key: 'gamification', label: 'Gamification', description: 'Système de points et badges.' },
 ];
+
 
 export function UserFeaturesModal({ user, onClose, onUpdate }: UserFeaturesModalProps) {
     const [permissions, setPermissions] = useState<Record<string, any>>(user.permissions || {});

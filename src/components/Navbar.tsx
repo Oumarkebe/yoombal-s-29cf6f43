@@ -71,8 +71,8 @@ const Navbar = () => {
               <Link to="/marketplace" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Marketplace
               </Link>
-              <Link to="/tarifs" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                Tarifs
+              <Link to="/pricing" className="text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 px-3 py-2 rounded-md text-sm font-bold transition-all border border-amber-200">
+                Premium
               </Link>
               <Link to="/merchants" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Marchands
@@ -193,11 +193,11 @@ const Navbar = () => {
             Marketplace
           </Link>
           <Link
-            to="/tarifs"
+            to="/pricing"
             className="text-gray-700 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium"
             onClick={closeMenu}
           >
-            Tarifs
+            Premium
           </Link>
           <Link
             to="/merchants"

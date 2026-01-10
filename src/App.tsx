@@ -5,9 +5,9 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Register from './pages/Register';
 import Login from './pages/Login';
-import Tarifs from './pages/Tarifs';
 import Merchants from './pages/Merchants';
 import Marketplace from './pages/Marketplace';
+import Pricing from './pages/Pricing'; // Pricing Page
 import ProductDetail from './pages/ProductDetail';
 import Profile from './pages/Profile';
 import Cart from './pages/Cart';
@@ -31,6 +31,9 @@ import { CartProvider } from './contexts/CartContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import EconomicModel from '@/pages/EconomicModel';
 import NotFound from './pages/NotFound';
+import { AIAssistant } from './components/ai/AIAssistant';
+import { Toaster } from "@/components/ui/sonner";
+import { AdminRoute } from './components/admin/AdminRoute';
 
 function App() {
   return (
@@ -44,30 +47,37 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/tarifs" element={<Tarifs />} />
               <Route path="/merchants" element={<Merchants />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/bnpl" element={<BNPL />} />
               <Route path="/merchant-store/:merchantId" element={<MerchantStore />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/admin/statistics" element={<AdminStatistics />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/roles" element={<AdminRoles />} />
-              <Route path="/admin/deliveries" element={<AdminDeliveries />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-              <Route path="/admin/ai-center" element={<AdminAiCenter />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+              {/* Admin Routes Protected */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/admin/statistics" element={<AdminStatistics />} />
+                <Route path="/admin/products" element={<AdminProducts />} />
+                <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/roles" element={<AdminRoles />} />
+                <Route path="/admin/deliveries" element={<AdminDeliveries />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/ai-center" element={<AdminAiCenter />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              </Route>
+
               <Route path="/merchant" element={<MerchantDashboard />} />
               <Route path="/delivery" element={<DeliveryDashboard />} />
               <Route path="/economic-model" element={<EconomicModel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <AIAssistant />
+            <Toaster position="top-right" richColors />
           </LanguageProvider>
         </CartProvider>
       </AuthProvider>

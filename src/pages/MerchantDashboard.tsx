@@ -18,6 +18,8 @@ import ProductManagement from "@/components/ProductManagement";
 import OrderManagement from "@/components/OrderManagement";
 import StockManagement from "@/components/StockManagement";
 import MerchantBNPLManager from "@/components/MerchantBNPLManager";
+import { AIInsights } from "@/components/ai/AIInsights";
+import { Sparkles } from "lucide-react";
 
 const MerchantDashboard = () => {
   const { user } = useAuth();
@@ -102,6 +104,10 @@ const MerchantDashboard = () => {
             <TabsTrigger value="bnpl">BNPL</TabsTrigger>
             <TabsTrigger value="stock">Stock</TabsTrigger>
             <TabsTrigger value="stats">Statistiques</TabsTrigger>
+            <TabsTrigger value="ai" className="flex items-center gap-1">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              IA Insights
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -129,6 +135,10 @@ const MerchantDashboard = () => {
                 <p>Ici, vous pourrez suivre les statistiques de votre boutique.</p>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="ai">
+            <AIInsights />
           </TabsContent>
         </Tabs>
       </div>
