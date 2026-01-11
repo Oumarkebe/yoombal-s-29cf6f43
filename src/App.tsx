@@ -22,7 +22,7 @@ import AdminOrders from './pages/AdminOrders';
 import AdminRoles from './pages/AdminRoles';
 import AdminDeliveries from './pages/AdminDeliveries';
 import AdminSettings from './pages/AdminSettings';
-import AdminAiCenter from './pages/AdminAiCenter';
+import AdminAICenter from './pages/admin/AdminAICenter';
 import AdminDashboard from './pages/AdminDashboard';
 import MerchantDashboard from './pages/MerchantDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
@@ -68,7 +68,7 @@ function App() {
                 <Route path="/admin/roles" element={<AdminRoles />} />
                 <Route path="/admin/deliveries" element={<AdminDeliveries />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/ai-center" element={<AdminAiCenter />} />
+                <Route path="/admin/ai" element={<AdminAICenter />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
               </Route>
 

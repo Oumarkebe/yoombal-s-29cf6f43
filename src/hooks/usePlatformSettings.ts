@@ -47,11 +47,10 @@ export type SettingsData = {
 async function fetchSettings(): Promise<SettingsData> {
   const { data, error } = await (supabase.from('platform_settings' as any) as any).select('key, value');
   if (error) throw new Error(error.message);
-  
-  const settings: SettingsData = {};
+
+
   const typedData = (data || []) as Array<{ key: string; value: any }>;
-  if (error) throw new Error(error.message);
-  
+
   const settings: SettingsData = {};
 
   const generalData = typedData.find(item => item.key === 'general');
@@ -72,7 +71,7 @@ async function fetchSettings(): Promise<SettingsData> {
   if (dashboardData && dashboardData.value && typeof dashboardData.value === 'object' && !Array.isArray(dashboardData.value)) {
     dashboardSettings = dashboardData.value as DashboardSettings;
   }
-  
+
   settings.dashboard = {
     showUserCount: dashboardSettings?.showUserCount ?? true,
     showProductCount: dashboardSettings?.showProductCount ?? true,
@@ -85,7 +84,7 @@ async function fetchSettings(): Promise<SettingsData> {
   if (publicStatsData && publicStatsData.value && typeof publicStatsData.value === 'object' && !Array.isArray(publicStatsData.value)) {
     publicStatsSettings = publicStatsData.value as PublicStatsSettings;
   }
-  
+
   settings.publicStats = {
     showPublicStats: publicStatsSettings?.showPublicStats ?? false,
     showUserCount: publicStatsSettings?.showUserCount ?? true,
@@ -98,7 +97,7 @@ async function fetchSettings(): Promise<SettingsData> {
   if (merchantPageData && merchantPageData.value && typeof merchantPageData.value === 'object' && !Array.isArray(merchantPageData.value)) {
     merchantPageSettings = merchantPageData.value as MerchantPageSettings;
   }
-  
+
   settings.merchantPage = {
     showStats: merchantPageSettings?.showStats ?? true,
     satisfactionRate: merchantPageSettings?.satisfactionRate ?? 98,
@@ -109,49 +108,49 @@ async function fetchSettings(): Promise<SettingsData> {
     settings.pricingPlans = pricingData.value as PricingPlan[];
   } else {
     settings.pricingPlans = [
-        {
-            title: 'Starter',
-            price: '0',
-            description: 'Idéal pour débuter sans engagement',
-            features: [
-                'Boutique en ligne gratuite',
-                'Paiement mobile & carte',
-                'Support email',
-                'Accès au BNPL (sur demande)',
-            ],
-            cta: 'Créer mon compte',
-            ctaLink: '/register?role=merchant',
-            highlight: false,
-        },
-        {
-            title: 'Pro',
-            price: '9 900',
-            description: 'Pour les marchands en croissance',
-            features: [
-                'Toutes les fonctionnalités Starter',
-                "Génération de description par IA",
-                'Support prioritaire',
-                'Statistiques avancées',
-                'Activation BNPL prioritaire',
-            ],
-            cta: 'Essayer Pro',
-            ctaLink: '/register?role=merchant',
-            highlight: true,
-        },
-        {
-            title: 'Entreprise',
-            price: 'Sur devis',
-            description: 'Pour les grandes entreprises et franchises',
-            features: [
-                'Fonctionnalités Pro +',
-                'Gestion multi-boutiques',
-                'Intégration API',
-                'Accompagnement dédié',
-            ],
-            cta: 'Contactez-nous',
-            ctaLink: '/contact',
-            highlight: false,
-        },
+      {
+        title: 'Starter',
+        price: '0',
+        description: 'Idéal pour débuter sans engagement',
+        features: [
+          'Boutique en ligne gratuite',
+          'Paiement mobile & carte',
+          'Support email',
+          'Accès au BNPL (sur demande)',
+        ],
+        cta: 'Créer mon compte',
+        ctaLink: '/register?role=merchant',
+        highlight: false,
+      },
+      {
+        title: 'Pro',
+        price: '9 900',
+        description: 'Pour les marchands en croissance',
+        features: [
+          'Toutes les fonctionnalités Starter',
+          "Génération de description par IA",
+          'Support prioritaire',
+          'Statistiques avancées',
+          'Activation BNPL prioritaire',
+        ],
+        cta: 'Essayer Pro',
+        ctaLink: '/register?role=merchant',
+        highlight: true,
+      },
+      {
+        title: 'Entreprise',
+        price: 'Sur devis',
+        description: 'Pour les grandes entreprises et franchises',
+        features: [
+          'Fonctionnalités Pro +',
+          'Gestion multi-boutiques',
+          'Intégration API',
+          'Accompagnement dédié',
+        ],
+        cta: 'Contactez-nous',
+        ctaLink: '/contact',
+        highlight: false,
+      },
     ];
   }
 
@@ -176,7 +175,7 @@ export function usePlatformSettings() {
     queryKey: ['platformSettings'],
     queryFn: fetchSettings,
   });
-  
+
   const mutation = useMutation({
     mutationFn: updateSetting,
     onSuccess: () => {

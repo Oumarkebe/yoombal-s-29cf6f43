@@ -42,7 +42,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   // État local pour le panier des utilisateurs non connectés
   const [localCart, setLocalCart] = React.useState<LocalCartItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -74,7 +74,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     return (data || []) as CartItem[];
   };
-  };
+
 
   const { data: dbItems = [], isLoading } = useQuery<CartItem[]>({
     queryKey: ['cart', user?.id],
@@ -89,7 +89,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       .select('*')
       .eq('id', productId)
       .single();
-    
+
     if (error) {
       console.error('Error fetching product:', error);
       return null;
@@ -135,7 +135,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         // Utilisateur non connecté - sauvegarder localement
         const existingItemIndex = localCart.findIndex(item => item.product_id === productId);
         const productDetails = await fetchProductDetails(productId);
-        
+
         if (existingItemIndex >= 0) {
           const updatedCart = [...localCart];
           updatedCart[existingItemIndex].quantity += quantity;
@@ -181,12 +181,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (quantity <= 0) {
         return removeItemMutation.mutate(cartItemId);
       }
-      
+
       if (user) {
         const { error } = await (supabase.from('cart' as any) as any).update({ quantity }).eq('id', cartItemId);
         if (error) throw error;
       } else {
-        const updatedCart = localCart.map(item => 
+        const updatedCart = localCart.map(item =>
           item.id === cartItemId ? { ...item, quantity } : item
         );
         saveLocalCart(updatedCart);
@@ -223,7 +223,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const getTotalItems = useCallback(() => {
     return items.reduce((total, item) => total + item.quantity, 0);
   }, [items]);
-  
+
   const isUpdating = addItemMutation.isPending || removeItemMutation.isPending || updateQuantityMutation.isPending || clearCartMutation.isPending;
 
   // Migrer le panier local vers la DB quand l'utilisateur se connecte
@@ -233,7 +233,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         try {
           for (const item of localCart) {
             const existingItem = dbItems.find(dbItem => dbItem.product_id === item.product_id);
-            
+
             if (existingItem) {
               await (supabase.from('cart' as any) as any)
                 .update({ quantity: existingItem.quantity + item.quantity })
@@ -243,11 +243,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
                 .insert({ user_id: user.id, product_id: item.product_id, quantity: item.quantity });
             }
           }
-          
+
           // Vider le panier local après migration
           saveLocalCart([]);
           queryClient.invalidateQueries({ queryKey: ['cart', user.id] });
-          
+
           toast({
             title: 'Panier synchronisé',
             description: 'Vos articles ont été ajoutés à votre compte'
