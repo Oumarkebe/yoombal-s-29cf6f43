@@ -23,8 +23,7 @@ export const useDrivers = () => {
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase
-        .from('profiles')
+      const { data, error } = await (supabase.from('profiles') as any)
         .select('*')
         .eq('role', 'delivery')
         .order('created_at');
@@ -34,7 +33,7 @@ export const useDrivers = () => {
         throw error;
       }
 
-      setDrivers(data || []);
+      setDrivers((data || []) as Driver[]);
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast({

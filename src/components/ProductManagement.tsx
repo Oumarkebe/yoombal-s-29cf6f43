@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const ProductManagement = () => {
-  const { products, categories, isLoading, fetchProducts, deleteProduct, createProduct, updateProduct } = useProducts();
+  const { products, categories, isLoading, deleteProduct, createProduct, updateProduct, refreshProducts } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -75,7 +75,7 @@ const ProductManagement = () => {
         });
       }
       setIsFormOpen(false);
-      fetchProducts(); // Rafraîchir la liste
+      refreshProducts(); // Rafraîchir la liste
       return { data: true, error: null };
     } catch (error: any) {
       console.error("Error submitting product:", error);
@@ -162,7 +162,7 @@ const ProductManagement = () => {
                   <ProductBNPLToggle
                     productId={product.id}
                     productName={product.name}
-                    currentBNPLStatus={product.bnpl_enabled || false}
+                    currentBNPLStatus={(product as any).bnpl_enabled || false}
                     onStatusChange={(newStatus) => {
                       console.log(`BNPL ${newStatus ? 'enabled' : 'disabled'} for ${product.name}`);
                     }}

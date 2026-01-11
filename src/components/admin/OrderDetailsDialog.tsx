@@ -31,8 +31,7 @@ interface OrderDetailsDialogProps {
 const fetchOrderDetails = async (orderId: string) => {
     // Parallel fetch for robust data retrieval
     const [orderRes, itemsRes] = await Promise.all([
-        supabase
-            .from('admin_orders_view')
+        (supabase.from('admin_orders_view' as any) as any)
             .select('*')
             .eq('id', orderId)
             .single(),
@@ -45,9 +44,11 @@ const fetchOrderDetails = async (orderId: string) => {
     if (orderRes.error) throw orderRes.error;
     if (itemsRes.error) throw itemsRes.error;
 
+    const orderData = orderRes.data as any;
+
     // Combine data to match expected structure
     // Validating delivery_address if string
-    let delivery_address = orderRes.data.delivery_address;
+    let delivery_address = orderData.delivery_address;
     if (typeof delivery_address === 'string') {
         try {
             delivery_address = JSON.parse(delivery_address);
@@ -57,18 +58,18 @@ const fetchOrderDetails = async (orderId: string) => {
     }
 
     return {
-        ...orderRes.data,
+        ...orderData,
         delivery_address,
         order_items: itemsRes.data,
         client: {
-            first_name: orderRes.data.client_first_name,
-            last_name: orderRes.data.client_last_name,
-            email: orderRes.data.client_email,
-            phone_number: orderRes.data.client_phone
+            first_name: orderData.client_first_name,
+            last_name: orderData.client_last_name,
+            email: orderData.client_email,
+            phone_number: orderData.client_phone
         },
         merchant: {
-            business_name: orderRes.data.merchant_business_name,
-            email: orderRes.data.merchant_email
+            business_name: orderData.merchant_business_name,
+            email: orderData.merchant_email
         }
     };
 };
@@ -106,7 +107,7 @@ export function OrderDetailsDialog({ orderId, onClose }: OrderDetailsDialogProps
             if (error) throw error;
 
             // Log action
-            await supabase.from('admin_logs').insert({
+            await (supabase.from('admin_logs' as any) as any).insert({
                 actor_id: (await supabase.auth.getUser()).data.user?.id,
                 action: 'UPDATE_ORDER_STATUS',
                 target_id: orderId,

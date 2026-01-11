@@ -40,14 +40,13 @@ export function useBNPLApplications() {
   const fetchApplications = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("bnpl_applications")
+      const { data, error } = await (supabase.from('bnpl_applications' as any) as any)
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+      setApplications((data || []) as BNPLApplication[]);
     } catch (err) {
       setError("Erreur lors de la récupération des demandes BNPL");
       console.error("Error fetching BNPL applications:", err);
@@ -71,8 +70,7 @@ export function useBNPLApplications() {
     contract_signed_at?: string;
   }) => {
     try {
-      const { data, error } = await supabase
-        .from("bnpl_applications")
+      const { data, error } = await (supabase.from('bnpl_applications' as any) as any)
         .insert({
           ...applicationData,
           user_id: user!.id,

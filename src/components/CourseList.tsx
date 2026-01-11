@@ -31,7 +31,7 @@ const CourseList = () => {
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {courses.map((c) => (
+        {(courses as any[]).map((c: any) => (
           <Card key={c.id} className="p-4 relative">
             <div className="flex items-center justify-between">
               <div>
@@ -90,7 +90,7 @@ const CourseList = () => {
           onClose={() => setEditing(null)}
           onSubmit={async (formData) => {
             try {
-              await addCourse.mutateAsync(formData);
+              await addCourse.mutateAsync(formData as any);
               toast.success("Course ajoutée !");
               setEditing(null);
             } catch {

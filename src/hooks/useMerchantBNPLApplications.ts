@@ -17,8 +17,7 @@ export function useMerchantBNPLApplications() {
   const fetchMerchantApplications = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("bnpl_applications")
+      const { data, error } = await (supabase.from('bnpl_applications' as any) as any)
         .select(`
           *,
           products (name, price, image_url)
@@ -42,8 +41,7 @@ export function useMerchantBNPLApplications() {
     notes?: string
   ) => {
     try {
-      const { error } = await supabase
-        .from("bnpl_applications")
+      const { error } = await (supabase.from('bnpl_applications' as any) as any)
         .update({
           merchant_decision: decision,
           merchant_decision_date: new Date().toISOString(),
@@ -77,21 +75,13 @@ export function useMerchantBNPLApplications() {
       .from("bnpl_plans")
       .insert({
         user_id: application.user_id,
-        // Generate a real UUID for order_id if no real order exists yet, 
-        // OR better: make order_id nullable in schema if allowed, but schema usually requires it.
-        // Since we don't have a real order here (BNPL standalone request), and order_id expects UUID,
-        // we should probably generate a new UUID or link to a real order.
-        // For now, let's generate a UUID to satisfy the constraint.
-        order_id: crypto.randomUUID(),
-
+        product_id: application.product_id,
         total_amount: application.requested_amount,
         monthly_payment: application.monthly_payment,
         remaining_months: application.plan_duration,
+        duration_months: application.plan_duration,
         next_payment_date: nextPaymentDate.toISOString().split('T')[0],
-        status: 'active',
-        plan_duration: application.plan_duration,
-        fees_amount: application.fees_amount,
-        first_payment_amount: application.first_payment_amount
+        status: 'active'
       });
 
     if (error) throw error;
@@ -100,8 +90,7 @@ export function useMerchantBNPLApplications() {
   const deleteApplication = async (applicationId: string) => {
     try {
       // 1. Fetch file paths before deleting the record
-      const { data: appData } = await supabase
-        .from("bnpl_applications")
+      const { data: appData } = await (supabase.from('bnpl_applications' as any) as any)
         .select("id_card_url, photo_url")
         .eq("id", applicationId)
         .single();
@@ -120,8 +109,7 @@ export function useMerchantBNPLApplications() {
       }
 
       // 3. Delete the database record
-      const { error } = await supabase
-        .from("bnpl_applications")
+      const { error } = await (supabase.from('bnpl_applications' as any) as any)
         .delete()
         .eq("id", applicationId);
 

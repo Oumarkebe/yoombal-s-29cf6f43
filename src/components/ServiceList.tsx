@@ -31,7 +31,7 @@ const ServiceList = () => {
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {services.map((s) => (
+        {(services as any[]).map((s: any) => (
           <Card key={s.id} className="p-4 flex flex-col gap-2 relative">
             <div>
               <h3 className="text-lg font-bold text-primary">{s.name}</h3>

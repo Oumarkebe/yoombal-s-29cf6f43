@@ -2,7 +2,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TablesInsert } from "@/integrations/supabase/types";
 
 export interface Course {
   id: string;
@@ -25,26 +24,24 @@ export const useCourses = () => {
     data: courses = [],
     isLoading,
     refetch,
-  } = useQuery<Course[]>({
+  } = useQuery({
     queryKey: ["courses", user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Course[]> => {
       if (!user) return [];
-      const { data, error } = await supabase
-        .from("courses")
+      const { data, error } = await (supabase.from('courses' as any) as any)
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Course[];
     },
     enabled: !!user,
   });
 
   // Create a course (admin or assignation)
   const addCourse = useMutation({
-    mutationFn: async (course: TablesInsert<"courses">) => {
-      const { data, error } = await supabase
-        .from("courses")
+    mutationFn: async (course: Partial<Course>) => {
+      const { data, error } = await (supabase.from('courses' as any) as any)
         .insert([course])
         .select()
         .single();
@@ -59,8 +56,7 @@ export const useCourses = () => {
   // Update
   const updateCourse = useMutation({
     mutationFn: async ({ id, ...update }: Partial<Course>) => {
-      const { data, error } = await supabase
-        .from("courses")
+      const { data, error } = await (supabase.from('courses' as any) as any)
         .update(update)
         .eq("id", id)
         .select()
@@ -76,7 +72,7 @@ export const useCourses = () => {
   // Delete
   const deleteCourse = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("courses").delete().eq("id", id);
+      const { error } = await (supabase.from('courses' as any) as any).delete().eq("id", id);
       if (error) throw error;
       return id;
     },

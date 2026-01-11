@@ -38,8 +38,7 @@ const fetchAllOrders = async (page: number, pageSize: number, searchTerm: string
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let query = supabase
-    .from('admin_orders_view')
+  let query = (supabase.from('admin_orders_view' as any) as any)
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to);
