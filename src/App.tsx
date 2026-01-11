@@ -34,6 +34,7 @@ import NotFound from './pages/NotFound';
 import { AIAssistant } from './components/ai/AIAssistant';
 import { Toaster } from "@/components/ui/sonner";
 import { AdminRoute } from './components/admin/AdminRoute';
+import AIErrorBoundary from './components/ai/AIErrorBoundary';
 
 function App() {
   return (
@@ -76,7 +77,9 @@ function App() {
               <Route path="/economic-model" element={<EconomicModel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <AIAssistant />
+            <AIErrorBoundary fallbackName="Assistant IA">
+              <AIAssistant />
+            </AIErrorBoundary>
             <Toaster position="top-right" richColors />
           </LanguageProvider>
         </CartProvider>
