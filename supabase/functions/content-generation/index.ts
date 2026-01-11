@@ -136,8 +136,9 @@ serve(async (req) => {
         } else {
             throw new Error(`Invalid completion response structure from ${provider.name}.`);
         }
-      } catch (error) {
-        console.error(`Generation with ${provider.name} failed:`, error.message);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Generation with ${provider.name} failed:`, errorMessage);
         lastError = `Échec avec ${provider.name}.`;
       }
     }
@@ -148,9 +149,10 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
-    console.error('Critical error in content generation function:', error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Critical error in content generation function:', errorMessage);
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

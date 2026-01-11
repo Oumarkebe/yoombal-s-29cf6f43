@@ -91,15 +91,14 @@ export function UserFeaturesModal({ user, onClose, onUpdate }: UserFeaturesModal
         setIsSaving(true);
         try {
             // 1. Update Profile
-            const { error } = await supabase
-                .from('profiles')
+            const { error } = await (supabase.from('profiles') as any)
                 .update({ permissions })
                 .eq('id', user.id);
 
             if (error) throw error;
 
             // 2. Log Action
-            await supabase.from('admin_logs').insert({
+            await (supabase.from('admin_logs' as any) as any).insert({
                 actor_id: (await supabase.auth.getUser()).data.user?.id,
                 action: 'UPDATE_USER_PERMISSIONS',
                 target_id: user.id,

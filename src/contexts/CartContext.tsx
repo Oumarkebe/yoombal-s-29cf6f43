@@ -7,7 +7,12 @@ import { type Database } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 
 type Product = Database['public']['Tables']['products']['Row'];
-export type CartItem = Database['public']['Tables']['cart']['Row'] & {
+export type CartItem = {
+  id: string;
+  user_id: string;
+  product_id: string;
+  quantity: number;
+  created_at?: string;
   products: Product | null;
 };
 
@@ -57,8 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchCartItems = async () => {
     if (!user) return [];
-    const { data, error } = await supabase
-      .from('cart')
+    const { data, error } = await (supabase.from('cart' as any) as any)
       .select(`
         *,
         products:product_id (*)
@@ -68,7 +72,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error("Error fetching cart:", error);
       throw new Error(error.message);
     }
-    return data as CartItem[];
+    return (data || []) as CartItem[];
+  };
   };
 
   const { data: dbItems = [], isLoading } = useQuery<CartItem[]>({
@@ -117,14 +122,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const existingItem = dbItems.find(item => item.product_id === productId);
 
         if (existingItem) {
-          const { error } = await supabase
-            .from('cart')
+          const { error } = await (supabase.from('cart' as any) as any)
             .update({ quantity: existingItem.quantity + quantity })
             .eq('id', existingItem.id);
           if (error) throw error;
         } else {
-          const { error } = await supabase
-            .from('cart')
+          const { error } = await (supabase.from('cart' as any) as any)
             .insert({ user_id: user.id, product_id: productId, quantity });
           if (error) throw error;
         }
@@ -157,7 +160,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const removeItemMutation = useMutation({
     mutationFn: async (cartItemId: string) => {
       if (user) {
-        const { error } = await supabase.from('cart').delete().eq('id', cartItemId);
+        const { error } = await (supabase.from('cart' as any) as any).delete().eq('id', cartItemId);
         if (error) throw error;
       } else {
         const updatedCart = localCart.filter(item => item.id !== cartItemId);
@@ -180,7 +183,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (user) {
-        const { error } = await supabase.from('cart').update({ quantity }).eq('id', cartItemId);
+        const { error } = await (supabase.from('cart' as any) as any).update({ quantity }).eq('id', cartItemId);
         if (error) throw error;
       } else {
         const updatedCart = localCart.map(item => 
@@ -195,7 +198,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearCartMutation = useMutation({
     mutationFn: async () => {
       if (user) {
-        const { error } = await supabase.from('cart').delete().eq('user_id', user.id);
+        const { error } = await (supabase.from('cart' as any) as any).delete().eq('user_id', user.id);
         if (error) throw error;
       } else {
         saveLocalCart([]);
@@ -232,13 +235,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             const existingItem = dbItems.find(dbItem => dbItem.product_id === item.product_id);
             
             if (existingItem) {
-              await supabase
-                .from('cart')
+              await (supabase.from('cart' as any) as any)
                 .update({ quantity: existingItem.quantity + item.quantity })
                 .eq('id', existingItem.id);
             } else {
-              await supabase
-                .from('cart')
+              await (supabase.from('cart' as any) as any)
                 .insert({ user_id: user.id, product_id: item.product_id, quantity: item.quantity });
             }
           }

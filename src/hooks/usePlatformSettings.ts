@@ -45,25 +45,29 @@ export type SettingsData = {
 
 // Fetch all settings
 async function fetchSettings(): Promise<SettingsData> {
-  const { data, error } = await supabase.from('platform_settings').select('key, value');
+  const { data, error } = await (supabase.from('platform_settings' as any) as any).select('key, value');
+  if (error) throw new Error(error.message);
+  
+  const settings: SettingsData = {};
+  const typedData = (data || []) as Array<{ key: string; value: any }>;
   if (error) throw new Error(error.message);
   
   const settings: SettingsData = {};
 
-  const generalData = data.find(item => item.key === 'general');
+  const generalData = typedData.find(item => item.key === 'general');
   if (generalData && generalData.value && typeof generalData.value === 'object' && !Array.isArray(generalData.value)) {
     const value = generalData.value as { siteName?: string; contactEmail?: string; };
     settings.siteName = value.siteName;
     settings.contactEmail = value.contactEmail;
   }
 
-  const paymentData = data.find(item => item.key === 'payment');
+  const paymentData = typedData.find(item => item.key === 'payment');
   if (paymentData && paymentData.value && typeof paymentData.value === 'object' && !Array.isArray(paymentData.value)) {
     const value = paymentData.value as { stripePk?: string; };
     settings.stripePk = value.stripePk;
   }
 
-  const dashboardData = data.find(item => item.key === 'dashboard');
+  const dashboardData = typedData.find(item => item.key === 'dashboard');
   let dashboardSettings: DashboardSettings | undefined;
   if (dashboardData && dashboardData.value && typeof dashboardData.value === 'object' && !Array.isArray(dashboardData.value)) {
     dashboardSettings = dashboardData.value as DashboardSettings;
@@ -76,7 +80,7 @@ async function fetchSettings(): Promise<SettingsData> {
     showTotalRevenue: dashboardSettings?.showTotalRevenue ?? true,
   };
 
-  const publicStatsData = data.find(item => item.key === 'public_stats');
+  const publicStatsData = typedData.find(item => item.key === 'public_stats');
   let publicStatsSettings: PublicStatsSettings | undefined;
   if (publicStatsData && publicStatsData.value && typeof publicStatsData.value === 'object' && !Array.isArray(publicStatsData.value)) {
     publicStatsSettings = publicStatsData.value as PublicStatsSettings;
@@ -89,7 +93,7 @@ async function fetchSettings(): Promise<SettingsData> {
     showDeliveryCount: publicStatsSettings?.showDeliveryCount ?? true,
   };
 
-  const merchantPageData = data.find(item => item.key === 'merchant_page');
+  const merchantPageData = typedData.find(item => item.key === 'merchant_page');
   let merchantPageSettings: MerchantPageSettings | undefined;
   if (merchantPageData && merchantPageData.value && typeof merchantPageData.value === 'object' && !Array.isArray(merchantPageData.value)) {
     merchantPageSettings = merchantPageData.value as MerchantPageSettings;
@@ -100,7 +104,7 @@ async function fetchSettings(): Promise<SettingsData> {
     satisfactionRate: merchantPageSettings?.satisfactionRate ?? 98,
   };
 
-  const pricingData = data.find(item => item.key === 'pricing_plans');
+  const pricingData = typedData.find(item => item.key === 'pricing_plans');
   if (pricingData && pricingData.value && Array.isArray(pricingData.value)) {
     settings.pricingPlans = pricingData.value as PricingPlan[];
   } else {
@@ -156,8 +160,7 @@ async function fetchSettings(): Promise<SettingsData> {
 
 // Update a setting
 async function updateSetting({ key, value }: { key: string; value: any }) {
-  const { data, error } = await supabase
-    .from('platform_settings')
+  const { data, error } = await (supabase.from('platform_settings' as any) as any)
     .upsert({ key, value }, { onConflict: 'key' })
     .select();
 

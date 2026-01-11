@@ -66,7 +66,7 @@ const DeliveryMap = () => {
     
     setIsLoadingLocations(true);
     const deliveryIds = activeDeliveries.map(d => d.id);
-    const { data, error } = await supabase.rpc('get_latest_delivery_locations', {
+    const { data, error } = await supabase.rpc('get_latest_delivery_locations' as any, {
       p_delivery_ids: deliveryIds
     });
 
@@ -74,7 +74,8 @@ const DeliveryMap = () => {
       console.error('Error fetching delivery locations:', error);
       setLocations([]);
     } else if (data) {
-      setLocations(data.filter(d => d.latitude && d.longitude) as DeliveryLocation[]);
+      const typedData = data as unknown as DeliveryLocation[];
+      setLocations(typedData.filter(d => d.latitude && d.longitude));
     }
     setIsLoadingLocations(false);
   };

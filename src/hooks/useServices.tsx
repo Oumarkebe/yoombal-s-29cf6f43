@@ -1,8 +1,6 @@
 
-import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TablesInsert } from "@/integrations/supabase/types";
 
 // Service interface
 export interface Service {
@@ -22,24 +20,22 @@ export const useServices = () => {
     data: services = [],
     isLoading,
     refetch,
-  } = useQuery<Service[]>({
+  } = useQuery({
     queryKey: ["services"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("services")
+    queryFn: async (): Promise<Service[]> => {
+      const { data, error } = await (supabase.from('services' as any) as any)
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as Service[];
     },
   });
 
   // Mutation: add new service (admin only)
   const addService = useMutation({
-    mutationFn: async (service: TablesInsert<"services">) => {
-      const { data, error } = await supabase
-        .from("services")
+    mutationFn: async (service: Partial<Service>) => {
+      const { data, error } = await (supabase.from('services' as any) as any)
         .insert([service])
         .select()
         .single();
@@ -54,8 +50,7 @@ export const useServices = () => {
   // Mutation: update service (admin only)
   const updateService = useMutation({
     mutationFn: async ({ id, ...update }: Partial<Service>) => {
-      const { data, error } = await supabase
-        .from("services")
+      const { data, error } = await (supabase.from('services' as any) as any)
         .update(update)
         .eq("id", id)
         .select()
@@ -71,7 +66,7 @@ export const useServices = () => {
   // Mutation: delete service (admin only)
   const deleteService = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("services").delete().eq("id", id);
+      const { error } = await (supabase.from('services' as any) as any).delete().eq("id", id);
       if (error) throw error;
       return id;
     },

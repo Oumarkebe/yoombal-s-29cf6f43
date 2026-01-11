@@ -6,9 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 export type BNPLPlan = {
   id: string;
   user_id: string;
-  order_id: string;
+  product_id?: string;
+  order_id?: string;
   total_amount: number;
   monthly_payment: number;
+  duration_months?: number;
   remaining_months: number;
   next_payment_date: string | null;
   status: string;
@@ -31,7 +33,7 @@ export function useBNPLPlans() {
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (error) setError("Erreur lors de la récupération des plans BNPL");
-        else setPlans(data || []);
+        else setPlans((data || []) as BNPLPlan[]);
         setIsLoading(false);
       });
   }, [user]);

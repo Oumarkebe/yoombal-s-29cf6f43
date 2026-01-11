@@ -8,7 +8,7 @@ export interface MerchantOrder {
   client_id: string;
   total_amount: number;
   status: string;
-  payment_status: string;
+  payment_status?: string;
   created_at: string;
   updated_at: string;
   delivery_address?: string;
