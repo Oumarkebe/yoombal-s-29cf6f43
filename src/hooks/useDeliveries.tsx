@@ -38,7 +38,7 @@ export const useDeliveries = () => {
   const fetchDeliveries = async () => {
     try {
       setIsLoading(true);
-      
+
       let query = supabase
         .from('deliveries')
         .select(`*`)
@@ -127,11 +127,11 @@ export const useDeliveries = () => {
   const updateDeliveryStatus = async (deliveryId: string, status: Delivery['status'], notes?: string) => {
     try {
       const updateData: any = { status };
-      
+
       if (status === 'delivered') {
         updateData.actual_delivery_time = new Date().toISOString();
       }
-      
+
       if (notes) {
         updateData.notes = notes;
       }
@@ -163,8 +163,8 @@ export const useDeliveries = () => {
     try {
       const { error } = await supabase
         .from('deliveries')
-        .update({ 
-          driver_id: driverId, 
+        .update({
+          driver_id: driverId,
           status: 'assigned',
           estimated_delivery_time: new Date(Date.now() + 60 * 60 * 1000).toISOString()
         })
@@ -191,6 +191,22 @@ export const useDeliveries = () => {
   useEffect(() => {
     if (user) {
       fetchDeliveries();
+
+      // Setup realtime subscription
+      const channel = supabase
+        .channel('public:deliveries')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'deliveries' },
+          () => {
+            fetchDeliveries();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 

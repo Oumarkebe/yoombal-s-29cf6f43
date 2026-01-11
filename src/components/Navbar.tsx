@@ -12,6 +12,7 @@ import {
   TrendingUp,
   User,
   X,
+  Truck,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -29,9 +30,11 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const { getTotalItems } = useCart();
 
-  const isAdmin = user?.role === 'admin';
-  const isMerchant = user?.role === 'merchant';
-  const isClient = user?.role === 'client';
+  const userRole = (user?.role as any);
+  const isAdmin = userRole === 'admin';
+  const isMerchant = userRole === 'merchant' || userRole === 'marchand';
+  const isClient = userRole === 'client';
+  const isDriver = userRole === 'driver' || userRole === 'delivery' || userRole === 'livreur';
 
   const totalItems = getTotalItems();
 
@@ -87,7 +90,12 @@ const Navbar = () => {
               )}
               {isMerchant && (
                 <Link to="/merchant" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Tableau de bord
+                  Merchant
+                </Link>
+              )}
+              {isDriver && (
+                <Link to="/delivery" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Livreur
                 </Link>
               )}
             </div>
@@ -137,8 +145,20 @@ const Navbar = () => {
                           Admin
                         </DropdownMenuItem>
                       )}
+                      {isMerchant && (
+                        <DropdownMenuItem onClick={() => navigate('/merchant')} className="cursor-pointer">
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Dashboard Marchand
+                        </DropdownMenuItem>
+                      )}
+                      {isDriver && (
+                        <DropdownMenuItem onClick={() => navigate('/delivery')} className="cursor-pointer">
+                          <Truck className="mr-2 h-4 w-4" />
+                          Dashboard Livreur
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-100 dark:focus:bg-red-900/30">
                         <LogOut className="mr-2 h-4 w-4" />
                         Déconnexion
                       </DropdownMenuItem>
@@ -219,7 +239,16 @@ const Navbar = () => {
               className="text-gray-700 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium"
               onClick={closeMenu}
             >
-              Tableau de bord
+              Dashboard Marchand
+            </Link>
+          )}
+          {isDriver && (
+            <Link
+              to="/delivery"
+              className="text-gray-700 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium"
+              onClick={closeMenu}
+            >
+              Dashboard Livreur
             </Link>
           )}
         </div>

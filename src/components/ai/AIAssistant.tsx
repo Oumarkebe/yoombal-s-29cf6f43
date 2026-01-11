@@ -24,7 +24,7 @@ import {
 
 
 import { supabase } from '@/integrations/supabase/client';
-import { useUserAiFeature } from '@/hooks/useUserAiFeature';
+import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -52,8 +52,8 @@ export function AIAssistant() {
 
 
 
-    // Permission check for monetization
-    const { isEnabled, isLoading: isCheckingPermission } = useUserAiFeature('ai_assistant');
+    const { checkAccess, isLoading: isCheckingPermission } = useUserPremiumSubscriptions();
+    const isEnabled = checkAccess('assistant_intelligent');
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -97,7 +97,7 @@ export function AIAssistant() {
     // If NOT enabled, we show an upgrade prompt instead of the full chat
     const handleInquiry = () => {
         if (!isEnabled) {
-            toast.info("L'assistant IA est une fonctionnalité Premium. Contactez l'administrateur pour l'activer !");
+            toast.info("L'assistant IA est une fonctionnalité Premium. Souscrivez à un pack ou contactez l'administrateur !");
             return;
         }
         setIsOpen(!isOpen);

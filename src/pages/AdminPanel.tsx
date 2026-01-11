@@ -11,23 +11,23 @@ import { Link } from 'react-router-dom';
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
 
 const AdminActionCard = ({ name, href, icon: Icon, description, disabled }: { name: string; href: string; icon: React.ElementType; description: string; disabled?: boolean; }) => {
-    const content = (
-        <div className={`p-6 flex flex-col items-start gap-4 rounded-xl border bg-white shadow-sm transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:border-amber-200'}`}>
-            <div className="p-3 rounded-full bg-amber-100">
-                <Icon className="w-6 h-6 text-amber-600" />
-            </div>
-            <div>
-                <h3 className="font-semibold text-lg text-gray-800">{name}</h3>
-                <p className="text-sm text-gray-500 mt-1">{description}</p>
-            </div>
-        </div>
-    );
+  const content = (
+    <div className={`p-6 flex flex-col items-start gap-4 rounded-xl border bg-white shadow-sm transition-all ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:border-amber-200'}`}>
+      <div className="p-3 rounded-full bg-amber-100">
+        <Icon className="w-6 h-6 text-amber-600" />
+      </div>
+      <div>
+        <h3 className="font-semibold text-lg text-gray-800">{name}</h3>
+        <p className="text-sm text-gray-500 mt-1">{description}</p>
+      </div>
+    </div>
+  );
 
-    if (disabled) {
-        return content;
-    }
+  if (disabled) {
+    return content;
+  }
 
-    return <Link to={href}>{content}</Link>;
+  return <Link to={href}>{content}</Link>;
 };
 
 export default function AdminPanel() {
@@ -66,13 +66,13 @@ export default function AdminPanel() {
                 <span className="ml-3 text-gray-600">Chargement des statistiques...</span>
               </div>
             ) : error ? (
-               <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Erreur</AlertTitle>
-                  <AlertDescription>
-                    Impossible de charger la vue d'ensemble. Veuillez réessayer plus tard.
-                  </AlertDescription>
-                </Alert>
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Erreur</AlertTitle>
+                <AlertDescription>
+                  Impossible de charger la vue d'ensemble. Veuillez réessayer plus tard.
+                </AlertDescription>
+              </Alert>
             ) : someStatIsVisible ? (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {settings?.dashboard?.showUserCount && <StatCard title="Utilisateurs" value={data?.userCount ?? 0} icon={<Users className="h-5 w-5 text-blue-500" />} description="Total des utilisateurs inscrits" />}
@@ -81,16 +81,16 @@ export default function AdminPanel() {
                 {settings?.dashboard?.showTotalRevenue && <StatCard title="Revenu Total" value={formatCurrency(data?.totalRevenue ?? 0)} icon={<DollarSign className="h-5 w-5 text-purple-500" />} description="Revenu total généré" />}
               </div>
             ) : (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Statistiques masquées</AlertTitle>
-                  <AlertDescription>
-                    Toutes les statistiques sont actuellement masquées. Vous pouvez les réactiver dans les <Link to="/admin/settings" className="font-semibold underline">paramètres</Link>.
-                  </AlertDescription>
-                </Alert>
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Statistiques masquées</AlertTitle>
+                <AlertDescription>
+                  Toutes les statistiques sont actuellement masquées. Vous pouvez les réactiver dans les <Link to="/admin/settings" className="font-semibold underline">paramètres</Link>.
+                </AlertDescription>
+              </Alert>
             )}
           </div>
-          
+
           <div>
             <h2 className="text-lg font-semibold mb-4 text-gray-700">Actions Rapides</h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -99,7 +99,7 @@ export default function AdminPanel() {
               <AdminActionCard name="Commandes" href="/admin/orders" icon={ShoppingCart} description="Voir et gérer les commandes." />
               <AdminActionCard name="Utilisateurs" href="/admin/roles" icon={Users} description="Gérer les utilisateurs et leurs rôles." />
               <AdminActionCard name="Livreurs" href="/admin/deliveries" icon={Truck} description="Gérer les livreurs." />
-              <AdminActionCard name="Centre Premium" href="/admin/ai-center" icon={BrainCircuit} description="Gérer toutes les fonctionnalités premium et IA." />
+              <AdminActionCard name="Centre Premium" href="/admin/ai" icon={BrainCircuit} description="Gérer toutes les fonctionnalités premium et IA." />
               <AdminActionCard name="Paramètres" href="/admin/settings" icon={Settings} description="Configurer les paramètres de la plateforme." />
             </div>
           </div>

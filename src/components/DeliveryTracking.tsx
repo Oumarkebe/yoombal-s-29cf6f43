@@ -4,24 +4,57 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Package, 
-  Truck, 
-  MapPin, 
-  Clock, 
+import {
+  Search,
+  Package,
+  Truck,
+  MapPin,
+  Clock,
   Phone,
   User,
   CheckCircle,
   AlertCircle,
   Navigation,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { useToast } from '@/hooks/use-toast';
 import { useDeliveries, Delivery } from '@/hooks/useDeliveries';
 
-const DeliveryTracking = () => {
+interface DeliveryTrackingProps {
+  onViewOnMap: (id?: string) => void;
+}
+
+const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { deliveries, isLoading, updateDeliveryStatus } = useDeliveries();
+  const { toast } = useToast();
+
+  const exportToExcel = () => {
+    const dataToExport = filteredDeliveries.map(d => ({
+      ID: d.id,
+      'ID Commande': d.order_id,
+      Client: d.customer_name,
+      Telephone: d.customer_phone,
+      Livreur: d.driver_profile ? `${d.driver_profile.first_name} ${d.driver_profile.last_name}` : 'Non assigné',
+      Statut: d.status,
+      'Adresse Depart': d.pickup_address,
+      'Adresse Destination': d.delivery_address,
+      'Frais (CFA)': d.delivery_fee,
+      'Date Creation': new Date(d.created_at || '').toLocaleString()
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Livraisons Yoombal");
+    XLSX.writeFile(workbook, `Rapport_Livraisons_${new Date().toLocaleDateString()}.xlsx`);
+
+    toast({
+      title: "Export réussi ✅",
+      description: "La liste des livraisons a été exportée en Excel.",
+    });
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -61,7 +94,7 @@ const DeliveryTracking = () => {
     }
   };
 
-  const filteredDeliveries = deliveries.filter(delivery => 
+  const filteredDeliveries = deliveries.filter(delivery =>
     delivery.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     delivery.order_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     delivery.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -96,7 +129,11 @@ const DeliveryTracking = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={exportToExcel} className="text-green-600 border-green-200 hover:bg-green-50">
+            <Download className="mr-2 h-4 w-4" />
+            Exporter Excel
+          </Button>
+          <Button variant="outline" onClick={() => onViewOnMap()}>
             <MapPin className="mr-2 h-4 w-4" />
             Voir sur la carte
           </Button>
@@ -183,25 +220,29 @@ const DeliveryTracking = () => {
 
               {/* Actions */}
               <div className="flex flex-col gap-3 min-w-[200px]">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => onViewOnMap(delivery.id)}>
                   <MapPin className="h-4 w-4 mr-1" />
                   Localiser
                 </Button>
-                <Button size="sm" variant="outline">
-                  <Phone className="h-4 w-4 mr-1" />
-                  Appeler client
+                <Button size="sm" variant="outline" asChild>
+                  <a href={`tel:${delivery.customer_phone}`}>
+                    <Phone className="h-4 w-4 mr-1" />
+                    Appeler client
+                  </a>
                 </Button>
                 {delivery.driver_profile && (
-                  <Button size="sm" variant="outline">
-                    <Phone className="h-4 w-4 mr-1" />
-                    Appeler livreur
+                  <Button size="sm" variant="outline" asChild>
+                    <a href={`tel:${delivery.driver_profile.phone}`}>
+                      <Phone className="h-4 w-4 mr-1" />
+                      Appeler livreur
+                    </a>
                   </Button>
                 )}
-                
+
                 {/* Status Update Actions */}
                 {delivery.status === 'assigned' && (
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => handleStatusUpdate(delivery.id, 'picked_up')}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
@@ -209,8 +250,8 @@ const DeliveryTracking = () => {
                   </Button>
                 )}
                 {delivery.status === 'picked_up' && (
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => handleStatusUpdate(delivery.id, 'in_transit')}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
@@ -218,8 +259,8 @@ const DeliveryTracking = () => {
                   </Button>
                 )}
                 {delivery.status === 'in_transit' && (
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     onClick={() => handleStatusUpdate(delivery.id, 'delivered')}
                     className="bg-green-600 hover:bg-green-700"
                   >
@@ -239,8 +280,8 @@ const DeliveryTracking = () => {
             Aucune livraison trouvée
           </h3>
           <p className="text-gray-600">
-            {searchTerm 
-              ? 'Aucune livraison ne correspond à vos critères de recherche' 
+            {searchTerm
+              ? 'Aucune livraison ne correspond à vos critères de recherche'
               : 'Aucune livraison en cours pour le moment'}
           </p>
         </Card>

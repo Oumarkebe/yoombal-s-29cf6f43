@@ -35,9 +35,9 @@ serve(async (req) => {
     });
 
     const { data: settings, error: settingsError } = await supabaseAdmin
-      .from('ai_module_settings')
-      .select('is_enabled, configuration')
-      .eq('key', 'ai_assistant')
+      .from('premium_features')
+      .select('is_enabled, is_free, configuration')
+      .eq('feature_key', 'assistant_intelligent')
       .maybeSingle();
 
     if (settingsError) {
@@ -48,7 +48,7 @@ serve(async (req) => {
       });
     }
 
-    if (!settings || !settings.is_enabled) {
+    if (!settings || (!settings.is_enabled && !settings.is_free)) {
       console.error('Chatbot is not configured or is disabled.');
       console.log('Fetched settings from DB:', settings);
       return new Response(JSON.stringify({ error: 'Le chatbot est actuellement désactivé.' }), {
@@ -58,16 +58,16 @@ serve(async (req) => {
     }
 
     const config = settings.configuration || {};
-    const tone = config.response_tone === 'friendly' ? 'chaleureux et amical' : 'professionnel et direct';
-    const language = config.language === 'wolof' ? 'Wolof et Français' : 'Français';
-    const wolofSupport = config.support_wolof ? "Tu comprends et peux répondre en Wolof si on te le demande." : "";
+    const tone = config.tone || 'professionnel et chaleureux';
+    const systemPromptFromDb = config.system_prompt || "";
 
     const systemPrompt = `Tu es Yoombal Assistant, l'assistant virtuel intelligent et ${tone} de Yoombal, la marketplace de référence au Sénégal. 
     
+    ${systemPromptFromDb}
+
     🌍 CONTEXTE : 
     - Pays : Sénégal 🇸🇳.
     - Valeurs : Teranga (accueil), Honnêteté, Efficacité.
-    - Langues : Tu communiques en ${language}. ${wolofSupport}
     
     - Ton nom est "Yoombal Assistant", mais tu portes en toi l'esprit d'un Griot moderne.
     - Ta voix est celle de Pape Faye, symbole de sagesse et d'éloquence sénégalaise.

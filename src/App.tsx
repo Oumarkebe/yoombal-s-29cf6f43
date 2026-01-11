@@ -26,6 +26,9 @@ import AdminAICenter from './pages/admin/AdminAICenter';
 import AdminDashboard from './pages/AdminDashboard';
 import MerchantDashboard from './pages/MerchantDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
+import SubscriptionShop from './pages/premium/SubscriptionShop';
+import MySubscriptions from './pages/premium/MySubscriptions';
+import UserCredits from './pages/premium/UserCredits';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -58,6 +61,11 @@ function App() {
               <Route path="/bnpl" element={<BNPL />} />
               <Route path="/merchant-store/:merchantId" element={<MerchantStore />} />
               <Route path="/profile" element={<Profile />} />
+
+              {/* Premium Routes */}
+              <Route path="/premium/subscriptions" element={<SubscriptionShop />} />
+              <Route path="/premium/my-subscriptions" element={<MySubscriptions />} />
+              <Route path="/premium/credits" element={<UserCredits />} />
 
               {/* Admin Routes Protected */}
               <Route element={<AdminRoute />}>

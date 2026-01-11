@@ -75,43 +75,43 @@ type MerchantPageSettingsValues = z.infer<typeof merchantPageSettingsSchema>;
 type PricingSettingsValues = z.infer<typeof pricingSettingsSchema>;
 
 const FeatureArray = ({ planIndex, control }: { planIndex: number, control: Control<PricingSettingsValues> }) => {
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: `plans.${planIndex}.features` as any // Use `any` to bypass complex RHF nested type issue
-    });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `plans.${planIndex}.features` as any // Use `any` to bypass complex RHF nested type issue
+  });
 
-    return (
-        <div className="space-y-2 pt-2">
-            {fields.map((item, k) => (
-                <div key={item.id} className="flex items-center gap-2">
-                    <FormField
-                        control={control}
-                        name={`plans.${planIndex}.features.${k}` as any} // Also use `any` here for the same reason
-                        render={({ field }) => (
-                            <FormItem className="flex-grow">
-                                <FormControl>
-                                    <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(k)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                </div>
-            ))}
-            <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => append("Nouvelle caractéristique")} // No longer needs `any` cast here
-            >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Ajouter une caractéristique
-            </Button>
+  return (
+    <div className="space-y-2 pt-2">
+      {fields.map((item, k) => (
+        <div key={item.id} className="flex items-center gap-2">
+          <FormField
+            control={control}
+            name={`plans.${planIndex}.features.${k}` as any} // Also use `any` here for the same reason
+            render={({ field }) => (
+              <FormItem className="flex-grow">
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="button" variant="ghost" size="icon" onClick={() => remove(k)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
         </div>
-    );
+      ))}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => append("Nouvelle caractéristique")} // No longer needs `any` cast here
+      >
+        <PlusCircle className="mr-2 h-4 w-4" />
+        Ajouter une caractéristique
+      </Button>
+    </div>
+  );
 };
 
 export default function AdminSettings() {
@@ -127,12 +127,12 @@ export default function AdminSettings() {
     resolver: zodResolver(paymentSettingsSchema),
     defaultValues: { stripePk: '', stripeSk: '' },
   });
-  
+
   const aiForm = useForm<AiSettingsValues>({
     resolver: zodResolver(aiSettingsSchema),
     defaultValues: { openaiApiKey: '', groqApiKey: '', perplexityApiKey: '', mistralApiKey: '', togetherApiKey: '' },
   });
-  
+
   const dashboardForm = useForm<DashboardSettingsValues>({
     resolver: zodResolver(dashboardSettingsSchema),
     defaultValues: {
@@ -164,13 +164,13 @@ export default function AdminSettings() {
   const pricingForm = useForm<PricingSettingsValues>({
     resolver: zodResolver(pricingSettingsSchema),
     defaultValues: {
-        plans: [],
+      plans: [],
     },
   });
 
   const { fields: pricingFields, append: appendPlan, remove: removePlan } = useFieldArray({
-      control: pricingForm.control,
-      name: "plans"
+    control: pricingForm.control,
+    name: "plans"
   });
 
   useEffect(() => {
@@ -215,25 +215,25 @@ export default function AdminSettings() {
   const onGeneralSubmit = (data: GeneralSettingsValues) => {
     updateSetting({ key: 'general', value: data });
   };
-  
+
   const onPaymentSubmit = (data: PaymentSettingsValues) => {
     if (!data.stripePk && !data.stripeSk) {
-        toast({ title: "Aucune modification", description: "Veuillez remplir au moins une clé.", variant: "default" });
-        return;
+      toast({ title: "Aucune modification", description: "Veuillez remplir au moins une clé.", variant: "default" });
+      return;
     }
     const valueToSave: { stripePk?: string; stripeSk?: string } = {};
     if (data.stripePk) valueToSave.stripePk = data.stripePk;
     if (data.stripeSk) valueToSave.stripeSk = data.stripeSk;
-    
+
     updateSetting({ key: 'payment', value: valueToSave }, {
-        onSuccess: () => paymentForm.reset({ ...paymentForm.getValues(), stripeSk: '' })
+      onSuccess: () => paymentForm.reset({ ...paymentForm.getValues(), stripeSk: '' })
     });
   };
 
   const onAiSubmit = (data: AiSettingsValues) => {
     if (!data.openaiApiKey && !data.groqApiKey && !data.perplexityApiKey && !data.mistralApiKey && !data.togetherApiKey) {
-        toast({ title: "Aucune modification", description: "Veuillez remplir au moins une clé API.", variant: "default" });
-        return;
+      toast({ title: "Aucune modification", description: "Veuillez remplir au moins une clé API.", variant: "default" });
+      return;
     }
     const valueToSave: { openaiApiKey?: string; groqApiKey?: string; perplexityApiKey?: string; mistralApiKey?: string; togetherApiKey?: string; } = {};
     if (data.openaiApiKey) valueToSave.openaiApiKey = data.openaiApiKey;
@@ -243,7 +243,7 @@ export default function AdminSettings() {
     if (data.togetherApiKey) valueToSave.togetherApiKey = data.togetherApiKey;
 
     updateSetting({ key: 'ai_keys', value: valueToSave }, {
-        onSuccess: () => aiForm.reset({ openaiApiKey: '', groqApiKey: '', perplexityApiKey: '', mistralApiKey: '', togetherApiKey: '' })
+      onSuccess: () => aiForm.reset({ openaiApiKey: '', groqApiKey: '', perplexityApiKey: '', mistralApiKey: '', togetherApiKey: '' })
     });
   };
 
@@ -278,7 +278,7 @@ export default function AdminSettings() {
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="mb-6 flex items-center gap-4">
             <Link to="/admin" className="text-amber-600 hover:underline">← Retour Admin</Link>
-            <Link to="/admin/ai-center" className="text-sm text-purple-600 hover:underline flex items-center gap-1">
+            <Link to="/admin/ai" className="text-sm text-purple-600 hover:underline flex items-center gap-1">
               <BrainCircuit size={16} /> Gérer les paramètres IA
             </Link>
           </div>
@@ -289,7 +289,7 @@ export default function AdminSettings() {
             </h1>
             <p className="text-lg text-gray-500 mt-2">Configuration générale de l'application.</p>
           </div>
-          
+
           <div className="space-y-8">
             <Form {...generalForm}>
               <form onSubmit={generalForm.handleSubmit(onGeneralSubmit)}>
@@ -324,17 +324,17 @@ export default function AdminSettings() {
                     <CardDescription>Configurez vos intégrations de paiement (Stripe). Les clés secrètes ne sont jamais affichées.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                     <FormField control={paymentForm.control} name="stripePk" render={({ field }) => (
+                    <FormField control={paymentForm.control} name="stripePk" render={({ field }) => (
                       <FormItem><FormLabel>Clé publique Stripe</FormLabel><FormControl><Input placeholder="pk_test_..." {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                     <FormField control={paymentForm.control} name="stripeSk" render={({ field }) => (
+                    <FormField control={paymentForm.control} name="stripeSk" render={({ field }) => (
                       <FormItem><FormLabel>Clé secrète Stripe</FormLabel><FormControl><Input type="password" placeholder="sk_test_... (laisser vide pour ne pas changer)" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </CardContent>
                   <CardFooter>
-                     <Button type="submit" disabled={isUpdating}>
-                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                       Enregistrer les clés API
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Enregistrer les clés API
                     </Button>
                   </CardFooter>
                 </Card>
@@ -349,35 +349,35 @@ export default function AdminSettings() {
                     <CardDescription>Configurez les clés API pour les fournisseurs d'IA (OpenAI, Groq). Les clés ne sont jamais affichées ici après sauvegarde.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                     <FormField control={aiForm.control} name="openaiApiKey" render={({ field }) => (
+                    <FormField control={aiForm.control} name="openaiApiKey" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clé API OpenAI</FormLabel>
                         <FormControl><Input type="password" placeholder="sk-... (laisser vide pour ne pas changer)" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <FormField control={aiForm.control} name="groqApiKey" render={({ field }) => (
+                    <FormField control={aiForm.control} name="groqApiKey" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clé API Groq</FormLabel>
                         <FormControl><Input type="password" placeholder="gsk_... (laisser vide pour ne pas changer)" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <FormField control={aiForm.control} name="perplexityApiKey" render={({ field }) => (
+                    <FormField control={aiForm.control} name="perplexityApiKey" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clé API Perplexity</FormLabel>
                         <FormControl><Input type="password" placeholder="ppl-... (laisser vide pour ne pas changer)" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <FormField control={aiForm.control} name="mistralApiKey" render={({ field }) => (
+                    <FormField control={aiForm.control} name="mistralApiKey" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clé API Mistral</FormLabel>
                         <FormControl><Input type="password" placeholder="Clé API... (laisser vide pour ne pas changer)" {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <FormField control={aiForm.control} name="togetherApiKey" render={({ field }) => (
+                    <FormField control={aiForm.control} name="togetherApiKey" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Clé API Together.ai</FormLabel>
                         <FormControl><Input type="password" placeholder="Clé API... (laisser vide pour ne pas changer)" {...field} /></FormControl>
@@ -386,9 +386,9 @@ export default function AdminSettings() {
                     )} />
                   </CardContent>
                   <CardFooter>
-                     <Button type="submit" disabled={isUpdating}>
-                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                       Enregistrer les clés IA
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Enregistrer les clés IA
                     </Button>
                   </CardFooter>
                 </Card>
@@ -429,9 +429,9 @@ export default function AdminSettings() {
                     )} />
                   </CardContent>
                   <CardFooter>
-                     <Button type="submit" disabled={isUpdating}>
-                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                       Enregistrer les préférences
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Enregistrer les préférences
                     </Button>
                   </CardFooter>
                 </Card>
@@ -472,9 +472,9 @@ export default function AdminSettings() {
                     )} />
                   </CardContent>
                   <CardFooter>
-                     <Button type="submit" disabled={isUpdating}>
-                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                       Enregistrer les préférences
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Enregistrer les préférences
                     </Button>
                   </CardFooter>
                 </Card>
@@ -505,9 +505,9 @@ export default function AdminSettings() {
                     )} />
                   </CardContent>
                   <CardFooter>
-                     <Button type="submit" disabled={isUpdating}>
-                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                       Enregistrer les préférences
+                    <Button type="submit" disabled={isUpdating}>
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Enregistrer les préférences
                     </Button>
                   </CardFooter>
                 </Card>
