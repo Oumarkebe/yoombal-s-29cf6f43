@@ -17,6 +17,8 @@ import { useGuestCheckout } from '@/hooks/useGuestCheckout';
 import { CreditCard, Smartphone, Building2, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { KYCVerificationDialog } from '@/components/KYCVerificationDialog';
+
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { items, clearCart, getTotalPrice } = useCart();
@@ -43,6 +45,7 @@ const CheckoutPage = () => {
 
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isKYCOpen, setIsKYCOpen] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -65,6 +68,32 @@ const CheckoutPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // BNPL Checks
+    if (paymentMethod === 'bnpl') {
+      if (!user) {
+        alert("Vous devez être connecté pour utiliser le paiement en plusieurs fois.");
+        navigate('/login?redirect=/checkout');
+        return;
+      }
+
+      // Check KYC Status
+      if (user.kyc_status !== 'verified') {
+        setIsKYCOpen(true);
+        return;
+      }
+
+      // Check Credit Limit
+      const total = getTotalPrice();
+      const debt = user.current_debt || 0;
+      const limit = user.credit_limit || 0;
+
+      if ((debt + total) > limit) {
+        alert(`Plafond de crédit dépassé. Votre limite est de ${limit} FCFA et votre dette actuelle est de ${debt} FCFA.`);
+        return;
+      }
+    }
+
     setIsProcessing(true);
 
     try {
@@ -100,7 +129,7 @@ const CheckoutPage = () => {
             localStorage.removeItem('guestCart');
           }
           clearCart();
-          navigate(`/order-confirmation?orderId=${result.data.order_id || 'GUEST'}`);
+          navigate(`/order-confirmation?orderId=${result.data.id || 'GUEST'}`);
         }
       }
     } catch (error) {
@@ -258,9 +287,33 @@ const CheckoutPage = () => {
                       Paiement à la livraison
                     </Label>
                   </div>
+
+                  {/* Option BNPL */}
+                  <div className={`flex items-start space-x-2 p-3 rounded-lg border ${paymentMethod === 'bnpl' ? 'border-purple-500 bg-purple-50' : 'border-transparent'}`}>
+                    <RadioGroupItem value="bnpl" id="bnpl" className="mt-1" />
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="bnpl" className="flex items-center gap-2 font-semibold">
+                        <CreditCard className="h-4 w-4 text-purple-600" />
+                        Paiement en 3x (BNPL)
+                      </Label>
+                      <p className="text-xs text-slate-500">
+                        Payez 33% aujourd'hui, le reste sur 2 mois. <br />
+                        <span className="text-purple-600 font-medium">Inscription et validation d'identité requises.</span>
+                      </p>
+                    </div>
+                  </div>
                 </RadioGroup>
               </Card>
             </div>
+
+            <KYCVerificationDialog
+              isOpen={isKYCOpen}
+              onOpenChange={setIsKYCOpen}
+              onSuccess={() => {
+                // Refresh profile or allow proceed
+                window.location.reload(); // Simple refresh to fetch new status
+              }}
+            />
 
             <div className="lg:col-span-1">
               <Card className="p-6 sticky top-4">

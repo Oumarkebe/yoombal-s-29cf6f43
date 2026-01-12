@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { useQuery } from "@tanstack/react-query";
 import { fetchAdminStats, formatCurrency } from "./AdminStatistics";
 import { StatCard } from "@/components/admin/StatCard";
-import { Loader2, Users, Package, ShoppingCart, DollarSign, AlertTriangle, BarChart, Truck, Settings, BrainCircuit } from 'lucide-react';
+import { Loader2, Users, Package, ShoppingCart, DollarSign, AlertTriangle, BarChart, Truck, Settings, BrainCircuit, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Link } from 'react-router-dom';
 import { usePlatformSettings } from "@/hooks/usePlatformSettings";
@@ -99,6 +99,7 @@ export default function AdminPanel() {
               <AdminActionCard name="Commandes" href="/admin/orders" icon={ShoppingCart} description="Voir et gérer les commandes." />
               <AdminActionCard name="Utilisateurs" href="/admin/roles" icon={Users} description="Gérer les utilisateurs et leurs rôles." />
               <AdminActionCard name="Livreurs" href="/admin/deliveries" icon={Truck} description="Gérer les livreurs." />
+              <AdminActionCard name="Demandes KYC" href="/admin/kyc" icon={ShieldCheck} description="Valider les identités pour BNPL." />
               <AdminActionCard name="Centre Premium" href="/admin/ai" icon={BrainCircuit} description="Gérer toutes les fonctionnalités premium et IA." />
               <AdminActionCard name="Paramètres" href="/admin/settings" icon={Settings} description="Configurer les paramètres de la plateforme." />
             </div>

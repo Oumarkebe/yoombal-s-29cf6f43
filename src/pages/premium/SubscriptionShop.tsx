@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePremiumFeatures } from '@/hooks/usePremiumFeatures';
 import { usePremiumBundles } from '@/hooks/usePremiumBundles';
 import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
@@ -9,21 +10,44 @@ import { CreditBalance } from '@/components/premium/CreditBalance';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Zap, Sparkles, Globe, Package } from 'lucide-react';
+import { PaymentDialog } from '@/components/PaymentDialog';
 
 export default function SubscriptionShop() {
+    const navigate = useNavigate();
     const { featuresByCategory, isLoading: isLoadingFeatures } = usePremiumFeatures();
     const { bundles, isLoading: isLoadingBundles } = usePremiumBundles();
-    const { subscribe, isSubscribing, checkAccess } = useUserPremiumSubscriptions();
+    const { subscribe, isSubscribing, checkAccess, subscriptions } = useUserPremiumSubscriptions();
     const { balance } = useUserCredits();
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+    const [paymentRequest, setPaymentRequest] = useState<{ id: string, price: number, name: string } | null>(null);
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
 
-    const handleSubscribe = (featureId: string, price: number) => {
-        if (balance < price) {
-            // Logic for insufficient credits (redirect to recharge)
-            window.location.href = '/premium/credits';
+    // Helper to check if a specific bundle (by ID) is active
+    const hasBundleAccess = (bundleId: string) => {
+        return subscriptions.some(sub =>
+            sub.feature_id === bundleId &&
+            (sub.status === 'active' || sub.status === 'trial') &&
+            (!sub.expires_at || new Date(sub.expires_at) > new Date())
+        );
+    };
+
+    const handleSubscribe = (featureId: string, price: number, name: string) => {
+        // Option 1: Pay with Wallet if sufficient balance
+        if (balance >= price) {
+            subscribe({ featureId, billingPeriod });
             return;
         }
-        subscribe({ featureId, billingPeriod });
+
+        // Option 2: Direct Payment via OM/Wave
+        setPaymentRequest({ id: featureId, price, name });
+        setIsPaymentOpen(true);
+    };
+
+    const handlePaymentSuccess = () => {
+        // Refresh subscriptions
+        checkAccess(''); // Trigger refetch if possible or reload
+        // Since useUserPremiumSubscriptions uses useQuery, we might need to invalidate 'userPremiumSubscriptions'
+        window.location.reload(); // Simple refresh to ensure all states (credits/subs) are sync
     };
 
     return (
@@ -64,20 +88,24 @@ export default function SubscriptionShop() {
 
                 <TabsContent value="bundles" className="space-y-8">
                     <div className="grid gap-6 md:grid-cols-3">
-                        {bundles.map(bundle => (
-                            <SubscriptionCard
-                                key={bundle.id}
-                                name={bundle.name}
-                                description={bundle.description}
-                                price={billingPeriod === 'monthly' ? bundle.price_monthly : bundle.price_yearly || (bundle.price_monthly * 10)}
-                                period={billingPeriod}
-                                features={bundle.features.map(f => f.name)}
-                                badge={bundle.badge_text}
-                                isPopular={bundle.badge_text === 'Populaire'}
-                                onSubscribe={() => handleSubscribe(bundle.id, bundle.price_monthly)} // Simplification: assume bundle is in premium_features table too or handle differently
-                                isLoading={isSubscribing}
-                            />
-                        ))}
+                        {bundles.map(bundle => {
+                            const isOwned = hasBundleAccess(bundle.id);
+                            return (
+                                <SubscriptionCard
+                                    key={bundle.id}
+                                    name={bundle.name}
+                                    description={bundle.description}
+                                    price={billingPeriod === 'monthly' ? bundle.price_monthly : bundle.price_yearly || (bundle.price_monthly * 10)}
+                                    period={billingPeriod}
+                                    features={bundle.features.map(f => f.name)}
+                                    badge={bundle.badge_text}
+                                    isPopular={bundle.badge_text === 'Populaire'}
+                                    buttonText={isOwned ? "Déjà Actif" : "S'abonner"}
+                                    onSubscribe={() => isOwned ? navigate('/premium/my-subscriptions') : handleSubscribe(bundle.id, bundle.price_monthly, bundle.name)}
+                                    isLoading={isSubscribing}
+                                />
+                            );
+                        })}
 
                         {/* Fallback if no bundles are created yet */}
                         {bundles.length === 0 && (
@@ -109,7 +137,7 @@ export default function SubscriptionShop() {
                                             period={billingPeriod}
                                             features={[feature.description]}
                                             buttonText={hasAccess ? "Déjà Actif" : "S'abonner"}
-                                            onSubscribe={() => !hasAccess && handleSubscribe(feature.id, feature.price_monthly)}
+                                            onSubscribe={() => hasAccess ? navigate('/premium/my-subscriptions') : handleSubscribe(feature.id, feature.price_monthly, feature.name)}
                                             isLoading={isSubscribing}
                                         />
                                     );
@@ -119,6 +147,38 @@ export default function SubscriptionShop() {
                     ))}
                 </TabsContent>
             </Tabs>
+
+            {/* Direct Payment Dialog */}
+            {paymentRequest && (
+                <div style={
+                    /* Hack as lazy import won't work in replacement without updating imports */
+                    {}
+                }>
+                    {/* Actually, I need to Import PaymentDialog at the top. I cannot add imports easily with replace_file_content if I only target the body. 
+                    I'll use replace_file_content to replace the whole file or carefully inject import. 
+                    Wait, I replaced lines 18-123. The logic is fine. But I missed the import. 
+                    I should have targeted top of file too.
+                    I will use a second tool call for import or just rewrite the whole file for safety?
+                    Let's use `create-payment-intent` earlier established `PaymentDialog` path.
+                    I didn't import PaymentDialog in the snippet below. 
+                    The tool call below REPLACES the body. 
+                    I will include the PaymentDialog Logic here, but I must add the import in a separate call or same call if I target appropriately.
+                    Actually, I'll replace the StartLine 1 to 125? No, file is larger.
+                    I'll target the whole file content.
+                    Wait, lines 1-125 is the WHOLE file.
+                    So I can rewrite the whole file.
+                 */}
+                    <PaymentDialog
+                        isOpen={isPaymentOpen}
+                        onClose={() => setIsPaymentOpen(false)}
+                        amount={paymentRequest.price}
+                        description={`Abonnement: ${paymentRequest.name}`}
+                        type="subscription_purchase"
+                        metadata={{ featureId: paymentRequest.id }}
+                        onSuccess={handlePaymentSuccess}
+                    />
+                </div>
+            )}
         </div>
     );
 }

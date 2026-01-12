@@ -13,6 +13,7 @@ import {
   User,
   X,
   Truck,
+  Store,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -77,6 +78,35 @@ const Navbar = () => {
               <Link to="/pricing" className="text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 px-3 py-2 rounded-md text-sm font-bold transition-all border border-amber-200">
                 Premium
               </Link>
+              <div className="relative inline-block text-left">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-1 text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors outline-none">
+                    Rejoindre <TrendingUp className="h-4 w-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56 bg-white">
+                    <DropdownMenuItem asChild>
+                      <Link to="/join/merchant" className="cursor-pointer w-full flex items-center">
+                        <Store className="mr-2 h-4 w-4 text-amber-600" />
+                        <span>Devenir Marchand</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/join/delivery" className="cursor-pointer w-full flex items-center">
+                        <Truck className="mr-2 h-4 w-4 text-emerald-600" />
+                        <span>Devenir Livreur</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/join/client" className="cursor-pointer w-full flex items-center">
+                        <User className="mr-2 h-4 w-4 text-blue-600" />
+                        <span>Devenir Client</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               <Link to="/merchants" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Marchands
               </Link>

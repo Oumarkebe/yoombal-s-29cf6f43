@@ -9,6 +9,8 @@ import { fr } from "date-fns/locale";
 import { Calendar, Clock, AlertCircle, Zap, Shield, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+import DebtRepaymentDashboard from '@/components/premium/DebtRepaymentDashboard';
+
 export default function MySubscriptions() {
     const { subscriptions, isLoading } = useUserPremiumSubscriptions();
     const navigate = useNavigate();
@@ -16,9 +18,10 @@ export default function MySubscriptions() {
     if (isLoading) {
         return <div className="container p-8 text-center text-muted-foreground">Chargement de vos abonnements...</div>;
     }
-
     return (
         <div className="container mx-auto p-6 space-y-8">
+            <DebtRepaymentDashboard />
+
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Mes Abonnements</h1>
                 <p className="text-muted-foreground">Gérez vos modules premium et vos accès.</p>
@@ -46,7 +49,7 @@ export default function MySubscriptions() {
                     {subscriptions.map(sub => (
                         <Card key={sub.id} className="relative overflow-hidden group">
                             <div className={`absolute top-0 left-0 w-full h-1 ${sub.status === 'active' ? 'bg-green-500' :
-                                    sub.status === 'trial' ? 'bg-blue-500' : 'bg-red-500'
+                                sub.status === 'trial' ? 'bg-blue-500' : 'bg-red-500'
                                 }`} />
 
                             <CardHeader>

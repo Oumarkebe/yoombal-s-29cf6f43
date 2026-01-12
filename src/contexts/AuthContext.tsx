@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
-interface UserProfile {
+export interface UserProfile {
   id: string;
   email: string;
   firstName: string;
@@ -15,10 +15,16 @@ interface UserProfile {
   businessType?: string;
   vehicleType?: string;
   zone?: string;
+  kyc_status?: 'none' | 'pending' | 'verified' | 'rejected';
+  kyc_id_card_url?: string;
+  kyc_selfie_url?: string;
+  credit_limit?: number;
+  current_debt?: number;
 }
 
 interface AuthContextType {
   user: UserProfile | null;
+  profile: UserProfile | null;
   session: Session | null;
   login: (email: string, password: string) => Promise<{ error?: string }>;
   register: (userData: RegisterData) => Promise<{ error?: string }>;
@@ -165,7 +171,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           businessName: profile.business_name,
           businessType: profile.business_type,
           vehicleType: profile.vehicle_type,
-          zone: profile.zone
+          zone: profile.zone,
+          kyc_status: profile.kyc_status || 'none',
+          kyc_id_card_url: profile.kyc_id_card_url,
+          kyc_selfie_url: profile.kyc_selfie_url,
+          credit_limit: profile.credit_limit || 0,
+          current_debt: profile.current_debt || 0
         });
         console.log('Profile and roles loaded:', { roles: allRoles, email: authUser.email });
       }
@@ -249,7 +260,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value = {
-    user,
+    user: user, // Keep backward compatibility if needed, though user now contains profile data in our implementation
+    profile: user, // Alias user as profile since we merged them
     session,
     login,
     register,

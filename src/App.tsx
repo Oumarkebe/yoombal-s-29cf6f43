@@ -29,6 +29,10 @@ import DeliveryDashboard from './pages/DeliveryDashboard';
 import SubscriptionShop from './pages/premium/SubscriptionShop';
 import MySubscriptions from './pages/premium/MySubscriptions';
 import UserCredits from './pages/premium/UserCredits';
+import BecomeMerchant from './pages/landing/BecomeMerchant';
+import BecomeDelivery from './pages/landing/BecomeDelivery';
+import BecomeClient from './pages/landing/BecomeClient';
+import AdminKYCRequests from "./pages/admin/AdminKYCRequests";
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -61,6 +65,12 @@ function App() {
               <Route path="/bnpl" element={<BNPL />} />
               <Route path="/merchant-store/:merchantId" element={<MerchantStore />} />
               <Route path="/profile" element={<Profile />} />
+
+              {/* Marketing Landing Pages */}
+              <Route path="/join/merchant" element={<BecomeMerchant />} />
+              <Route path="/join/delivery" element={<BecomeDelivery />} />
+              <Route path="/join/client" element={<BecomeClient />} />
+              <Route path="/admin/kyc" element={<AdminKYCRequests />} />
 
               {/* Premium Routes */}
               <Route path="/premium/subscriptions" element={<SubscriptionShop />} />

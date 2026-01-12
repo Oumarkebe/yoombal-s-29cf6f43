@@ -73,11 +73,17 @@ export function useUserCredits() {
         }
     });
 
+    const refetchCredits = () => {
+        queryClient.invalidateQueries({ queryKey: ['userBalance', user?.id] });
+        queryClient.invalidateQueries({ queryKey: ['userCreditTransactions', user?.id] });
+    };
+
     return {
         balance,
         transactions,
         isLoading: isLoadingBalance || isLoadingTransactions,
         addCredits: addCreditsMutation.mutate,
         isAddingCredits: addCreditsMutation.isPending,
+        refetchCredits
     };
 }

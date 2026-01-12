@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePlatformSettings } from '@/hooks/usePlatformSettings';
+import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
 
 const Pricing = () => {
     const { user } = useAuth();
@@ -124,6 +125,10 @@ const Pricing = () => {
         );
     }
 
+    // Check if user has Premium access (proxy via ai_assistant or pricing_optimization which are in the pack)
+    const { checkAccess } = useUserPremiumSubscriptions();
+    const hasPremiumAccess = checkAccess('ai_assistant') || checkAccess('pricing_optimization');
+
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-amber-50 to-indigo-50">
             <Navbar />
@@ -182,7 +187,9 @@ const Pricing = () => {
                                             asChild
                                             className={`w-full ${plan.highlight ? 'bg-amber-600 hover:bg-amber-700' : 'bg-gray-900 hover:bg-gray-800'}`}
                                         >
-                                            <Link to={plan.ctaLink || plan.link || '/register'}>{plan.cta}</Link>
+                                            <Link to={user ? '/profile' : (plan.ctaLink || plan.link || '/register')}>
+                                                {user ? "Mon Espace" : plan.cta}
+                                            </Link>
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -244,17 +251,28 @@ const Pricing = () => {
                                     </div>
                                 </CardContent>
                                 <CardFooter>
-                                    <Button
-                                        className="w-full h-12 text-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg"
-                                        onClick={() => handleSubscribe('premium_bundle')}
-                                        disabled={!!loading}
-                                    >
-                                        {loading === 'premium_bundle' ? (
-                                            <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Activation...</>
-                                        ) : (
-                                            "Activer Premium IA"
-                                        )}
-                                    </Button>
+                                    {hasPremiumAccess ? (
+                                        <Button
+                                            asChild
+                                            className="w-full h-12 text-lg bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                                        >
+                                            <Link to="/premium/my-subscriptions">
+                                                Gérer mon abonnement
+                                            </Link>
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            className="w-full h-12 text-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg"
+                                            onClick={() => handleSubscribe('premium_bundle')}
+                                            disabled={!!loading}
+                                        >
+                                            {loading === 'premium_bundle' ? (
+                                                <><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Activation...</>
+                                            ) : (
+                                                "Activer Premium IA"
+                                            )}
+                                        </Button>
+                                    )}
                                 </CardFooter>
                             </Card>
                         </div>

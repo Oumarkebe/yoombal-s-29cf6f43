@@ -13,9 +13,15 @@ const Login = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
-  const { login } = useAuth();
+
+  const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (user) {
+      navigate('/profile');
+    }
+  }, [user, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -104,7 +110,7 @@ const Login = () => {
             <Link to="/forgot-password" className="text-sm text-amber-600 hover:text-amber-500">
               Mot de passe oublié ?
             </Link>
-            
+
             <div className="border-t pt-4">
               <p className="text-sm text-gray-600">
                 Pas encore de compte ?{' '}

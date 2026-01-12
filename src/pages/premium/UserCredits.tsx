@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -8,15 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, History, Loader2, Coins } from 'lucide-react';
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { PaymentDialog } from '@/components/PaymentDialog';
 
 export default function UserCredits() {
-    const { balance, transactions, isLoading, addCredits, isAddingCredits } = useUserCredits();
+    const { balance, transactions, isLoading, refetchCredits } = useUserCredits();
     const [rechargeAmount, setRechargeAmount] = useState<string>('5000');
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
 
-    const handleRecharge = () => {
+    const handleRechargeClick = () => {
         const amount = parseFloat(rechargeAmount);
         if (isNaN(amount) || amount <= 0) return;
-        addCredits({ amount, description: 'Recharge manuelle (Mock)' });
+        setIsPaymentOpen(true);
+    };
+
+    const handlePaymentSuccess = () => {
+        refetchCredits();
     };
 
     const rechargePresets = ['1000', '2500', '5000', '10000', '25000', '50000'];
@@ -82,8 +89,7 @@ export default function UserCredits() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" onClick={handleRecharge} disabled={isAddingCredits}>
-                            {isAddingCredits && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        <Button className="w-full" onClick={handleRechargeClick}>
                             Recharger via Orange Money / Wave
                         </Button>
                     </CardFooter>
@@ -135,6 +141,16 @@ export default function UserCredits() {
                     </CardContent>
                 </Card>
             </div>
+
+            <PaymentDialog
+                isOpen={isPaymentOpen}
+                onClose={() => setIsPaymentOpen(false)}
+                amount={parseFloat(rechargeAmount) || 0}
+                description="Rechargement Portefeuille"
+                type="credit_topup"
+                onSuccess={handlePaymentSuccess}
+            />
         </div>
     );
 }
+
