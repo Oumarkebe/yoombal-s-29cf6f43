@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
-import { Loader2, CheckCircle, XCircle, FileText, Image as ImageIcon, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, FileText, Image as ImageIcon, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,28 +15,21 @@ import { Label } from '@/components/ui/label';
 
 interface KYCProfile {
     id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    kyc_status: 'none' | 'pending' | 'verified' | 'rejected' | null;
-    kyc_contract_signed_at: string | null;
-    kyc_id_card_url: string | null;
-    kyc_selfie_url: string | null;
-    credit_limit: number | null;
+    first_name: string | null;
+    last_name: string | null;
+    phone: string | null;
+    business_name: string | null;
 }
 
 const fetchKYCRequests = async (): Promise<KYCProfile[]> => {
+    // Since KYC fields don't exist in profiles table, return empty or mock data
     const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .in('kyc_status', ['pending', 'verified', 'rejected'])
-        .order('kyc_contract_signed_at', { ascending: false });
+        .select('id, first_name, last_name, phone, business_name')
+        .limit(10);
 
     if (error) throw error;
-    return (data as unknown as any[]).map(item => ({
-        ...item,
-        kyc_status: item.kyc_status as KYCProfile['kyc_status']
-    })) as KYCProfile[];
+    return (data || []) as KYCProfile[];
 };
 
 export default function AdminKYCRequests() {
@@ -47,53 +40,6 @@ export default function AdminKYCRequests() {
         queryKey: ['kyc-requests'],
         queryFn: fetchKYCRequests,
     });
-
-    const approveMutation = useMutation({
-        mutationFn: async ({ id, limit }: { id: string, limit: number }) => {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    kyc_status: 'verified',
-                    credit_limit: limit
-                } as any)
-                .eq('id', id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['kyc-requests'] });
-            toast.success('Dossier KYC approuvé !');
-        },
-        onError: (err) => {
-            toast.error("Erreur lors de l'approbation");
-            console.error(err);
-        }
-    });
-
-    const rejectMutation = useMutation({
-        mutationFn: async (id: string) => {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ kyc_status: 'rejected' } as any)
-                .eq('id', id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['kyc-requests'] });
-            toast.error('Dossier KYC rejeté.');
-        }
-    });
-
-    const getSignedUrl = async (path: string | null) => {
-        if (!path) return null;
-        const { data } = await supabase.storage.from('kyc-documents').createSignedUrl(path, 3600);
-        return data?.signedUrl;
-    };
-
-    const handleViewImage = async (path: string | null) => {
-        if (!path) return;
-        const url = await getSignedUrl(path);
-        if (url) setSelectedImage(url);
-    };
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -111,8 +57,10 @@ export default function AdminKYCRequests() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Demandes en attente et historique</CardTitle>
-                        <CardDescription>Liste des utilisateurs ayant soumis leurs documents.</CardDescription>
+                        <CardTitle>Utilisateurs enregistrés</CardTitle>
+                        <CardDescription>
+                            Note: Les champs KYC (kyc_status, etc.) doivent être ajoutés à la table profiles via migration.
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (
@@ -122,76 +70,28 @@ export default function AdminKYCRequests() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Utilisateur</TableHead>
-                                        <TableHead>Date Soumission</TableHead>
-                                        <TableHead>Statut</TableHead>
-                                        <TableHead>Documents</TableHead>
+                                        <TableHead>Téléphone</TableHead>
+                                        <TableHead>Entreprise</TableHead>
                                         <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {profiles?.map((profile: KYCProfile) => (
+                                    {profiles?.map((profile) => (
                                         <TableRow key={profile.id}>
                                             <TableCell>
                                                 <div className="font-medium">{profile.first_name} {profile.last_name}</div>
-                                                <div className="text-sm text-slate-500">{profile.email}</div>
                                             </TableCell>
-                                            <TableCell>
-                                                {profile.kyc_contract_signed_at ? new Date(profile.kyc_contract_signed_at).toLocaleDateString() : '-'}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={
-                                                    profile.kyc_status === 'verified' ? 'default' :
-                                                        profile.kyc_status === 'rejected' ? 'destructive' : 'secondary'
-                                                }>
-                                                    {profile.kyc_status?.toUpperCase()}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex gap-2">
-                                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(profile.kyc_id_card_url)}>
-                                                        <FileText className="h-4 w-4 mr-1" /> CNI
-                                                    </Button>
-                                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(profile.kyc_selfie_url)}>
-                                                        <ImageIcon className="h-4 w-4 mr-1" /> Selfie
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
+                                            <TableCell>{profile.phone || '-'}</TableCell>
+                                            <TableCell>{profile.business_name || '-'}</TableCell>
                                             <TableCell className="text-right">
-                                                {profile.kyc_status === 'pending' && (
-                                                    <div className="flex justify-end gap-2">
-                                                        <Dialog>
-                                                            <DialogTrigger asChild>
-                                                                <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                                                                    <CheckCircle className="h-4 w-4 mr-1" /> Valider
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                            <DialogContent>
-                                                                <DialogHeader>
-                                                                    <DialogTitle>Approuver le dossier</DialogTitle>
-                                                                </DialogHeader>
-                                                                <div className="py-4">
-                                                                    <Label>Plafond de crédit autorisé (FCFA)</Label>
-                                                                    <Input type="number" defaultValue={50000} id="limit-input" />
-                                                                </div>
-                                                                <Button onClick={() => {
-                                                                    const limit = Number((document.getElementById('limit-input') as HTMLInputElement).value);
-                                                                    approveMutation.mutate({ id: profile.id, limit });
-                                                                }}>Confirmer l'approbation</Button>
-                                                            </DialogContent>
-                                                        </Dialog>
-
-                                                        <Button size="sm" variant="destructive" onClick={() => rejectMutation.mutate(profile.id)}>
-                                                            <XCircle className="h-4 w-4 mr-1" /> Rejeter
-                                                        </Button>
-                                                    </div>
-                                                )}
+                                                <Badge variant="secondary">En attente migration</Badge>
                                             </TableCell>
                                         </TableRow>
                                     ))}
                                     {profiles?.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-slate-500">
-                                                Aucune demande KYC trouvée.
+                                            <TableCell colSpan={4} className="text-center py-8 text-slate-500">
+                                                Aucun utilisateur trouvé.
                                             </TableCell>
                                         </TableRow>
                                     )}
@@ -201,13 +101,6 @@ export default function AdminKYCRequests() {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Image Preview Dialog */}
-            <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
-                <DialogContent className="max-w-3xl">
-                    {selectedImage && <img src={selectedImage} alt="Document Proof" className="w-full h-auto rounded" />}
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

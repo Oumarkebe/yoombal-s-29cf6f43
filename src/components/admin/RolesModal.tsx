@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { UserAiSettingsManager } from "./UserAiSettingsManager";
+import { Database } from '@/integrations/supabase/types';
 
-const ROLE_OPTIONS = ["admin", "client", "marchand", "livreur"];
+type AppRole = Database['public']['Enums']['app_role'];
+
+const ROLE_OPTIONS: AppRole[] = ["admin", "user", "merchant", "driver", "moderator"];
 const ADMIN_CONFIRM_PASSWORD = "010101";
 
 interface RolesModalProps {
@@ -27,7 +31,7 @@ interface RolesModalProps {
 
 export function RolesModal({ user, onClose }: RolesModalProps) {
   const { roles, isLoading, addRole, removeRole, isPending } = useUserRoles({ userId: user.id });
-  const [addInput, setAddInput] = useState("");
+  const [addInput, setAddInput] = useState<AppRole | "">("");
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [actionToConfirm, setActionToConfirm] = useState<(() => Promise<void>) | null>(null);
@@ -35,7 +39,7 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
 
   const customRoleOptions = ROLE_OPTIONS.filter(opt => !roles.some(r => r.role === opt));
 
-  const handleAdd = async (role: string) => {
+  const handleAdd = async (role: AppRole) => {
     if (!role) return;
     const action = async () => {
       await addRole(role);
@@ -50,7 +54,7 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
     }
   };
 
-  const handleRemove = async (role: string) => {
+  const handleRemove = async (role: AppRole) => {
     const action = async () => {
       await removeRole(role);
     };
@@ -121,7 +125,7 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
             <div className="flex gap-2">
               <select
                 value={addInput}
-                onChange={e => setAddInput(e.target.value)}
+                onChange={e => setAddInput(e.target.value as AppRole | "")}
                 className="border rounded px-2 py-1 text-sm w-full"
                 disabled={customRoleOptions.length === 0}
               >

@@ -4,8 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Loader2 } from "lucide-react";
+import { Database } from '@/integrations/supabase/types';
 
-const ROLE_OPTIONS = ["admin", "client", "marchand", "livreur"];
+type AppRole = Database['public']['Enums']['app_role'];
+
+const ROLE_OPTIONS: AppRole[] = ["admin", "user", "merchant", "driver", "moderator"];
 
 export function ProfileRolesManager() {
   const {
@@ -16,7 +19,7 @@ export function ProfileRolesManager() {
     error,
     isPending,
   } = useUserRoles();
-  const [newRole, setNewRole] = useState("");
+  const [newRole, setNewRole] = useState<AppRole | "">("");
 
   const canAddRoles = true; // ici tu pourras adapter les permissions selon les besoins
 
@@ -31,7 +34,7 @@ export function ProfileRolesManager() {
     setNewRole("");
   };
 
-  const handleRemove = async (role: string) => {
+  const handleRemove = async (role: AppRole) => {
     if (isPending) return;
     await removeRole(role);
   };
@@ -65,7 +68,7 @@ export function ProfileRolesManager() {
           <select
             className="border rounded px-2 py-1 text-xs"
             value={newRole}
-            onChange={(e) => setNewRole(e.target.value)}
+            onChange={(e) => setNewRole(e.target.value as AppRole | "")}
             disabled={isPending || availableRoles.length === 0}
           >
             <option value="">Sélectionner un rôle</option>

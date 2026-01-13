@@ -25,6 +25,7 @@ import { useDrivers } from '@/hooks/useDrivers';
 
 const DeliveryPage = () => {
   const [activeTab, setActiveTab] = useState('tracking');
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | undefined>();
   const { deliveries } = useDeliveries();
   const { drivers } = useDrivers();
 
@@ -84,6 +85,11 @@ const DeliveryPage = () => {
       bg: "bg-amber-50"
     }
   ];
+
+  const handleViewOnMap = (id?: string) => {
+    setSelectedDeliveryId(id);
+    setActiveTab('map');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -150,11 +156,14 @@ const DeliveryPage = () => {
           </TabsList>
 
           <TabsContent value="tracking" className="mt-6">
-            <DeliveryTracking />
+            <DeliveryTracking onViewOnMap={handleViewOnMap} />
           </TabsContent>
 
           <TabsContent value="map" className="mt-6">
-            <DeliveryMap />
+            <DeliveryMap 
+              selectedDeliveryId={selectedDeliveryId} 
+              onSelectDelivery={setSelectedDeliveryId} 
+            />
           </TabsContent>
 
           <TabsContent value="management" className="mt-6">
