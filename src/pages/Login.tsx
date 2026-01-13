@@ -19,7 +19,14 @@ const Login = () => {
 
   React.useEffect(() => {
     if (user) {
-      navigate('/profile');
+      // Redirect based on user role
+      if (user.role === 'merchant') {
+        navigate('/merchant');
+      } else if (user.role === 'delivery') {
+        navigate('/delivery');
+      } else {
+        navigate('/profile');
+      }
     }
   }, [user, navigate]);
 
@@ -39,12 +46,16 @@ const Login = () => {
       const result = await login(formData.email, formData.password);
       if (result.error) {
         setError(result.error);
+        setIsLoading(false);
       } else {
-        navigate('/');
+        // Wait a bit for AuthContext to load user profile
+        setTimeout(() => {
+          setIsLoading(false);
+          // Navigation will be handled by the useEffect below
+        }, 500);
       }
     } catch (err: any) {
       setError(err.message || 'Identifiants incorrects');
-    } finally {
       setIsLoading(false);
     }
   };

@@ -8,7 +8,8 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Product, Category } from '@/hooks/useProducts';
 import ContentGenerationModal from './ContentGenerationModal';
@@ -105,6 +106,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       ...formData,
       price: parseFloat(formData.price.toString()),
       stock: parseInt(formData.stock.toString()),
+      category_id: formData.category_id || null, // Convert empty string to null
       features,
       specs
     });
@@ -169,14 +171,17 @@ const ProductForm: React.FC<ProductFormProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {product ? 'Modifier le produit' : 'Nouveau produit'}
             </DialogTitle>
+            <DialogDescription>
+              {product ? 'Modifiez les informations de votre produit' : 'Ajoutez un nouveau produit à votre catalogue'}
+            </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 pb-6">
             <div>
               <Label htmlFor="name">Nom du produit</Label>
               <Input

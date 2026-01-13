@@ -156,27 +156,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (profile) {
-        const primaryRole = profile.role && isValidRole(profile.role) ? profile.role : 'client';
+        const profileData = profile as any;
+        const primaryRole = profileData.role && isValidRole(profileData.role) ? profileData.role : 'client';
         const allRolesFromHook = userRolesData?.map(r => r.role) || [];
         const allRoles = [...new Set([primaryRole, ...allRolesFromHook])];
 
         setUser({
-          id: profile.id,
+          id: profileData.id,
           email: authUser.email || '',
-          firstName: profile.first_name || '',
-          lastName: profile.last_name || '',
-          phone: profile.phone || '',
+          firstName: profileData.first_name || '',
+          lastName: profileData.last_name || '',
+          phone: profileData.phone || '',
           role: primaryRole,
           roles: allRoles,
-          businessName: profile.business_name,
-          businessType: profile.business_type,
-          vehicleType: profile.vehicle_type,
-          zone: profile.zone,
-          kyc_status: profile.kyc_status || 'none',
-          kyc_id_card_url: profile.kyc_id_card_url,
-          kyc_selfie_url: profile.kyc_selfie_url,
-          credit_limit: profile.credit_limit || 0,
-          current_debt: profile.current_debt || 0
+          businessName: profileData.business_name,
+          businessType: profileData.business_type,
+          vehicleType: profileData.vehicle_type,
+          zone: profileData.zone,
+          kyc_status: profileData.kyc_status || 'none',
+          kyc_id_card_url: profileData.kyc_id_card_url,
+          kyc_selfie_url: profileData.kyc_selfie_url,
+          credit_limit: profileData.credit_limit || 0,
+          current_debt: profileData.current_debt || 0
         });
         console.log('Profile and roles loaded:', { roles: allRoles, email: authUser.email });
       }
@@ -237,6 +238,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Registration error:', error);
         setIsLoading(false);
         return { error: error.message };
+      }
+
+      // Automatically create a profile if it doesn't exist (useful for local dev without triggers)
+      if (data.user) {
+        console.log('Creating profile for new user:', data.user.id);
+        const { error: profileError } = await supabase.from('profiles').insert([
+          {
+            id: data.user.id,
+            email: userData.email,
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            phone: userData.phone,
+            role: userData.role,
+            business_name: userData.businessName,
+            business_type: userData.businessType,
+            vehicle_type: userData.vehicleType,
+            zone: userData.zone,
+            kyc_status: 'none'
+          }
+        ]);
+
+        if (profileError) {
+          console.warn('Manual profile creation error (might already exist):', profileError);
+        } else {
+          console.log('Profile created successfully');
+        }
+
+        // Also add the role to user_roles
+        const { error: roleError } = await (supabase.from('user_roles').insert([
+          { user_id: data.user.id, role: userData.role }
+        ] as any) as any);
+
+        if (roleError) {
+          console.warn('User role insertion error:', roleError);
+        }
       }
 
       console.log('Registration successful for:', userData.email);

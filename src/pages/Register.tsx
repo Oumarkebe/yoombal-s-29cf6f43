@@ -10,7 +10,7 @@ import { UserPlus, Store, Truck, User } from 'lucide-react';
 const Register = () => {
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get('role') || 'client';
-  
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -25,7 +25,7 @@ const Register = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -78,11 +78,14 @@ const Register = () => {
         businessType: formData.businessType,
         vehicleType: formData.vehicleType
       });
-      
+
       if (result.error) {
         setError(result.error);
       } else {
-        navigate('/');
+        // Rediriger vers le tableau de bord approprié
+        if (formData.role === 'merchant') navigate('/merchant');
+        else if (formData.role === 'delivery') navigate('/delivery');
+        else navigate('/profile');
       }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'inscription');

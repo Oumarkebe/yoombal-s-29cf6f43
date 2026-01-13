@@ -25,8 +25,21 @@ const ProductManagement = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
+
+  const toggleExpanded = (productId: string) => {
+    setExpandedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
 
   const handleCreateClick = () => {
     setSelectedProduct(null);
@@ -106,82 +119,163 @@ const ProductManagement = () => {
         </Button>
       </div>
 
-      <div className="grid gap-6">
+      <div className="space-y-3">
         {products.length === 0 ? (
           <Card className="p-12 text-center text-gray-500">
             <p>Aucun produit trouvé. Commencez par en ajouter un !</p>
           </Card>
         ) : (
-          products.map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow">
-              <div className="grid md:grid-cols-3 gap-6 p-6">
-                <div className="md:col-span-1">
-                  <img
-                    src={product.image_url || '/placeholder.svg'}
-                    alt={product.name}
-                    className="w-full h-48 object-cover rounded-md bg-gray-100"
-                  />
-                </div>
-                <div className="md:col-span-1 space-y-2">
-                  <h3 className="text-xl font-semibold">{product.name}</h3>
-                  <p className="text-xs text-gray-500 font-mono">ID: {product.id.substring(0, 8)}</p>
-                  <p className="text-gray-600 line-clamp-2">
-                    {product.description || 'Aucune description disponible.'}
-                  </p>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {product.features?.slice(0, 3).map((feature, idx) => (
-                      <span key={idx} className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+          products.map((product, index) => {
+            const isExpanded = expandedProducts.has(product.id);
+            const gradients = [
+              'from-blue-500 to-indigo-600',
+              'from-purple-500 to-pink-600',
+              'from-green-500 to-teal-600',
+              'from-orange-500 to-red-600',
+              'from-cyan-500 to-blue-600',
+            ];
+            const gradient = gradients[index % gradients.length];
 
-                <div className="space-y-4 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <p className="text-2xl font-bold text-blue-600">
-                      {new Intl.NumberFormat('fr-SN', {
-                        style: 'currency',
-                        currency: 'XOF',
-                      }).format(product.price)}
-                    </p>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Stock:</span>
-                      <span className={`font-medium ${product.stock < 10 ? 'text-orange-600' : 'text-green-600'}`}>
-                        {product.stock} unités
-                      </span>
+            return (
+              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-200">
+                {/* Header - Always Visible */}
+                <div
+                  className={`bg-gradient-to-r ${gradient} p-4 cursor-pointer`}
+                  onClick={() => toggleExpanded(product.id)}
+                >
+                  <div className="flex items-center justify-between text-white">
+                    <div className="flex items-center gap-4 flex-1">
+                      <img
+                        src={product.image_url || '/placeholder.svg'}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover rounded-lg border-2 border-white shadow-md"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold">{product.name}</h3>
+                        <p className="text-sm opacity-90">
+                          {new Intl.NumberFormat('fr-SN', {
+                            style: 'currency',
+                            currency: 'XOF',
+                          }).format(product.price)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Statut:</span>
-                      <span className={`font-medium capitalize ${product.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
-                        {product.status}
-                      </span>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-sm font-medium">Stock: {product.stock}</p>
+                        <p className="text-xs opacity-90 capitalize">{product.status}</p>
+                      </div>
+                      <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
-
-                  <ProductBNPLToggle
-                    productId={product.id}
-                    productName={product.name}
-                    currentBNPLStatus={(product as any).bnpl_enabled || false}
-                    onStatusChange={(newStatus) => {
-                      console.log(`BNPL ${newStatus ? 'enabled' : 'disabled'} for ${product.name}`);
-                    }}
-                  />
-
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEditClick(product)} className="flex-1">
-                      <Edit className="h-4 w-4 mr-2" />
-                      Modifier
-                    </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(product.id)} className="flex-1">
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Supprimer
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            </Card>
-          ))
+
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <div className="bg-white p-6 border-t-4 border-gray-100 animate-in slide-in-from-top duration-300">
+                    <div className="grid md:grid-cols-3 gap-6">
+                      {/* Image & Description */}
+                      <div className="md:col-span-2 space-y-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2">Description</h4>
+                          <p className="text-gray-600">
+                            {product.description || 'Aucune description disponible.'}
+                          </p>
+                        </div>
+
+                        {product.features && product.features.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Avantages</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {product.features.map((feature, idx) => (
+                                <span key={idx} className={`text-xs bg-gradient-to-r ${gradient} text-white px-3 py-1 rounded-full shadow-sm`}>
+                                  ✓ {feature}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {product.specs && Object.keys(product.specs).length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Spécifications</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              {Object.entries(product.specs).map(([key, value]) => (
+                                <div key={key} className="text-sm">
+                                  <span className="font-medium text-gray-700">{key}:</span>{' '}
+                                  <span className="text-gray-600">{String(value)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Actions & Info */}
+                      <div className="space-y-4">
+                        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-3">Informations</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Prix:</span>
+                              <span className="font-bold text-green-600">
+                                {new Intl.NumberFormat('fr-SN', {
+                                  style: 'currency',
+                                  currency: 'XOF',
+                                }).format(product.price)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Stock:</span>
+                              <span className={`font-medium ${product.stock < 10 ? 'text-orange-600' : 'text-green-600'}`}>
+                                {product.stock} unités
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">ID:</span>
+                              <span className="font-mono text-xs text-gray-500">{product.id.substring(0, 8)}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <ProductBNPLToggle
+                          productId={product.id}
+                          productName={product.name}
+                          currentBNPLStatus={(product as any).bnpl_enabled || false}
+                          onStatusChange={(newStatus) => {
+                            console.log(`BNPL ${newStatus ? 'enabled' : 'disabled'} for ${product.name}`);
+                          }}
+                        />
+
+                        <div className="space-y-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleEditClick(product)}
+                            className="w-full border-2 hover:border-blue-500 hover:bg-blue-50"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Modifier
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            onClick={() => handleDeleteClick(product.id)}
+                            className="w-full"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })
         )}
       </div>
 
