@@ -7,18 +7,12 @@ export interface UserProfile {
   id: string;
   firstName?: string;
   lastName?: string;
-  email?: string;
   phone?: string;
   businessName?: string;
   businessType?: string;
-  city?: string;
-  postalCode?: string;
-  address?: string;
-  businessAddress?: string;
-  businessCity?: string;
-  businessPostalCode?: string;
-  businessTaxId?: string;
-  role?: string;
+  avatarUrl?: string;
+  vehicleType?: string;
+  zone?: string;
 }
 
 export interface UpdateProfileData {
@@ -27,13 +21,8 @@ export interface UpdateProfileData {
   phone?: string;
   businessName?: string;
   businessType?: string;
-  city?: string;
-  postalCode?: string;
-  address?: string;
-  businessAddress?: string;
-  businessCity?: string;
-  businessPostalCode?: string;
-  businessTaxId?: string;
+  vehicleType?: string;
+  zone?: string;
 }
 
 const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -50,20 +39,14 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
 
   return data ? {
     id: data.id,
-    firstName: data.first_name,
-    lastName: data.last_name,
-    email: data.email,
-    phone: data.phone,
-    businessName: data.business_name,
-    businessType: data.business_type,
-    city: data.city,
-    postalCode: data.postal_code,
-    address: data.address,
-    businessAddress: data.business_address,
-    businessCity: data.business_city,
-    businessPostalCode: data.business_postal_code,
-    businessTaxId: data.business_tax_id,
-    role: data.role,
+    firstName: data.first_name || undefined,
+    lastName: data.last_name || undefined,
+    phone: data.phone || undefined,
+    businessName: data.business_name || undefined,
+    businessType: data.business_type || undefined,
+    avatarUrl: data.avatar_url || undefined,
+    vehicleType: data.vehicle_type || undefined,
+    zone: data.zone || undefined,
   } : null;
 };
 
@@ -76,13 +59,8 @@ const updateUserProfile = async (userId: string, profileData: UpdateProfileData)
       phone: profileData.phone,
       business_name: profileData.businessName,
       business_type: profileData.businessType,
-      city: profileData.city,
-      postal_code: profileData.postalCode,
-      address: profileData.address,
-      business_address: profileData.businessAddress,
-      business_city: profileData.businessCity,
-      business_postal_code: profileData.businessPostalCode,
-      business_tax_id: profileData.businessTaxId,
+      vehicle_type: profileData.vehicleType,
+      zone: profileData.zone,
       updated_at: new Date().toISOString(),
     })
     .eq('id', userId)
@@ -116,11 +94,12 @@ export const useProfile = (userId?: string) => {
         description: "Profil mis à jour avec succès",
       });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       console.error('Error updating profile:', error);
       toast({
         title: "Erreur",
-        description: "Erreur lors de la mise à jour du profil",
+        description: "Erreur lors de la mise à jour du profil: " + errorMessage,
         variant: "destructive",
       });
     },
