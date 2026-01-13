@@ -109,16 +109,8 @@ export default function AdminAICenter() {
                 await initializeDefaultFeatures();
             }
 
-            // Also fetch AI keys
-            const { data: keysData } = await supabase
-                .from('platform_settings' as any)
-                .select('value')
-                .eq('key', 'ai_keys')
-                .maybeSingle();
-
-            if (keysData?.value) {
-                setAiKeys(keysData.value as any);
-            }
+            // AI keys are stored elsewhere - skip for now
+            // This would require a platform_settings table migration
         } catch (error) {
             console.error("Error fetching features:", error);
             toast({

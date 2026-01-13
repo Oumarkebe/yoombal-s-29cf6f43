@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, User, Phone, Building, MapPin, Pencil } from "lucide-react";
+import { Loader2, User, Phone, Building, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import Navbar from "@/components/Navbar";
@@ -17,51 +18,38 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import MyAiSettingsManager from "@/components/profile/MyAiSettingsManager";
 import { supabase } from "@/integrations/supabase/client";
 import OrdersList from "@/components/OrdersList";
 
+// Schema based on actual profiles table columns
 const profileSchema = z.object({
   firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
   lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Email invalide"),
   phone: z.string().optional(),
   businessName: z.string().optional(),
   businessType: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
-  address: z.string().optional(),
-  businessAddress: z.string().optional(),
-  businessCity: z.string().optional(),
-  businessPostalCode: z.string().optional(),
-  businessTaxId: z.string().optional(),
+  vehicleType: z.string().optional(),
+  zone: z.string().optional(),
 });
 
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const { profile, isLoading: profileLoading, updateProfile, isUpdating } = useProfile(user?.id);
-  const isPro = user?.role === "client" && !!user?.businessName;
 
   const form = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
-      email: "",
       phone: "",
       businessName: "",
       businessType: "",
-      city: "",
-      postalCode: "",
-      address: "",
-      businessAddress: "",
-      businessCity: "",
-      businessPostalCode: "",
-      businessTaxId: "",
+      vehicleType: "",
+      zone: "",
     },
   });
 
@@ -70,17 +58,11 @@ const Profile = () => {
       form.reset({
         firstName: profile.firstName || "",
         lastName: profile.lastName || "",
-        email: profile.email || "",
         phone: profile.phone || "",
         businessName: profile.businessName || "",
         businessType: profile.businessType || "",
-        city: profile.city || "",
-        postalCode: profile.postalCode || "",
-        address: profile.address || "",
-        businessAddress: profile.businessAddress || "",
-        businessCity: profile.businessCity || "",
-        businessPostalCode: profile.businessPostalCode || "",
-        businessTaxId: profile.businessTaxId || "",
+        vehicleType: profile.vehicleType || "",
+        zone: profile.zone || "",
       });
     }
   }, [profile, form]);
@@ -115,7 +97,7 @@ const Profile = () => {
     }
   };
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     if (!user?.id) return;
     
     updateProfile({
@@ -124,13 +106,8 @@ const Profile = () => {
       phone: values.phone,
       businessName: values.businessName,
       businessType: values.businessType,
-      city: values.city,
-      postalCode: values.postalCode,
-      address: values.address,
-      businessAddress: values.businessAddress,
-      businessCity: values.businessCity,
-      businessPostalCode: values.businessPostalCode,
-      businessTaxId: values.businessTaxId,
+      vehicleType: values.vehicleType,
+      zone: values.zone,
     });
   };
 
@@ -156,8 +133,6 @@ const Profile = () => {
     );
   }
 
-  const displayProfile = profile || user;
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100 flex flex-col">
       <Navbar />
@@ -168,46 +143,41 @@ const Profile = () => {
               <CardHeader className="pb-2">
                 <div className="flex justify-center">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src={""} alt={displayProfile.firstName} />
+                    <AvatarImage src={profile?.avatarUrl || ""} alt={profile?.firstName} />
                     <AvatarFallback className="text-2xl">
-                      {displayProfile.firstName?.[0]}{displayProfile.lastName?.[0]}
+                      {profile?.firstName?.[0]}{profile?.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 <CardTitle className="text-center mt-4">
-                  {displayProfile.firstName} {displayProfile.lastName}
+                  {profile?.firstName} {profile?.lastName}
                 </CardTitle>
-                <CardDescription className="text-center">{displayProfile.email}</CardDescription>
+                <CardDescription className="text-center">{user?.email}</CardDescription>
               </CardHeader>
               <CardContent className="pb-2">
                 <div className="flex justify-center space-x-2 mb-4">
-                  {displayProfile.role && (
-                    <Badge variant="outline" className="capitalize">
-                      {displayProfile.role}
-                    </Badge>
-                  )}
-                  {displayProfile.businessName && (
+                  {profile?.businessName && (
                     <Badge variant="secondary">PRO</Badge>
                   )}
                 </div>
                 <Separator className="my-4" />
                 <div className="space-y-2 text-sm">
-                  {displayProfile.phone && (
+                  {profile?.phone && (
                     <div className="flex items-center">
                       <Phone className="h-4 w-4 mr-2 opacity-70" />
-                      <span>{displayProfile.phone}</span>
+                      <span>{profile.phone}</span>
                     </div>
                   )}
-                  {displayProfile.businessName && (
+                  {profile?.businessName && (
                     <div className="flex items-center">
                       <Building className="h-4 w-4 mr-2 opacity-70" />
-                      <span>{displayProfile.businessName}</span>
+                      <span>{profile.businessName}</span>
                     </div>
                   )}
-                  {profile?.city && (
+                  {profile?.zone && (
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-2 opacity-70" />
-                      <span>{profile.city}</span>
+                      <span>{profile.zone}</span>
                     </div>
                   )}
                 </div>
@@ -224,6 +194,7 @@ const Profile = () => {
               <TabsList className="mb-4">
                 <TabsTrigger value="profile">Mon Profil</TabsTrigger>
                 <TabsTrigger value="orders">Mes Commandes</TabsTrigger>
+                <TabsTrigger value="ai">Paramètres IA</TabsTrigger>
               </TabsList>
               <TabsContent value="profile">
                 <Card>
@@ -268,19 +239,6 @@ const Profile = () => {
                           />
                           <FormField
                             control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Email" {...field} disabled />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
                             name="phone"
                             render={({ field }) => (
                               <FormItem>
@@ -294,25 +252,12 @@ const Profile = () => {
                           />
                           <FormField
                             control={form.control}
-                            name="city"
+                            name="zone"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Ville</FormLabel>
+                                <FormLabel>Zone/Quartier</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Ville" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="postalCode"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Code Postal</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Code Postal" {...field} />
+                                  <Input placeholder="Zone ou quartier" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -320,106 +265,50 @@ const Profile = () => {
                           />
                         </div>
 
-                        <FormField
-                          control={form.control}
-                          name="address"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Adresse</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Adresse complète" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        {(displayProfile.role === "merchant" || displayProfile.businessName) && (
-                          <div className="space-y-4">
-                            <Separator />
-                            <h3 className="text-lg font-medium">Informations Professionnelles</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <FormField
-                                control={form.control}
-                                name="businessName"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Nom de l'entreprise</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Nom de l'entreprise" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="businessType"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Type d'entreprise</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Type d'entreprise" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="businessCity"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Ville (entreprise)</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Ville de l'entreprise" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name="businessPostalCode"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Code Postal (entreprise)</FormLabel>
-                                    <FormControl>
-                                      <Input placeholder="Code postal entreprise" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name="businessAddress"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Adresse (entreprise)</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Adresse complète de l'entreprise" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name="businessTaxId"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Numéro fiscal</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Numéro d'identification fiscale" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
+                        {/* Business Information */}
+                        <Separator />
+                        <h3 className="text-lg font-medium">Informations Professionnelles</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="businessName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nom de l'entreprise</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Nom de l'entreprise" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="businessType"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type d'entreprise</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Type d'entreprise" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="vehicleType"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type de véhicule (livreurs)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Ex: Moto, Voiture" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
                         <Button type="submit" disabled={isUpdating} className="w-full">
                           {isUpdating ? (
@@ -428,26 +317,20 @@ const Profile = () => {
                               Mise à jour...
                             </>
                           ) : (
-                            <>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Mettre à jour le profil
-                            </>
+                            "Enregistrer les modifications"
                           )}
                         </Button>
                       </form>
                     </Form>
                   </CardContent>
                 </Card>
-                {isPro && (
-                  <MyAiSettingsManager />
-                )}
               </TabsContent>
               <TabsContent value="orders">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Mes Commandes</CardTitle>
+                    <CardTitle>Historique des Commandes</CardTitle>
                     <CardDescription>
-                      Historique de vos commandes
+                      Consultez l'historique de vos commandes
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -455,15 +338,26 @@ const Profile = () => {
                       <div className="flex justify-center py-8">
                         <Loader2 className="h-8 w-8 animate-spin" />
                       </div>
-                    ) : orders.length > 0 ? (
-                      <OrdersList orders={orders} />
+                    ) : orders.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        Aucune commande pour le moment
+                      </div>
                     ) : (
-                      <Alert>
-                        <AlertDescription>
-                          Vous n'avez pas encore passé de commande.
-                        </AlertDescription>
-                      </Alert>
+                      <OrdersList orders={orders} />
                     )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="ai">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Paramètres IA</CardTitle>
+                    <CardDescription>
+                      Gérez vos préférences pour les fonctionnalités IA
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <MyAiSettingsManager />
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Star, Phone, Mail } from 'lucide-react';
@@ -10,9 +11,10 @@ import { useMarketplaceProducts } from '@/hooks/useMarketplaceProducts';
 
 const MerchantStore = () => {
     const { merchantId } = useParams<{ merchantId: string }>();
-    const { products, isLoading } = useMarketplaceProducts({
-        filters: { merchant_id: merchantId }
-    });
+    const { products, isLoading, setSearchTerm } = useMarketplaceProducts();
+    
+    // Filter products by merchant
+    const merchantProducts = products.filter(p => p.merchant_id === merchantId);
 
     if (isLoading) {
         return (
@@ -30,7 +32,7 @@ const MerchantStore = () => {
     }
 
     // Get merchant info from first product
-    const merchantInfo = products[0]?.profiles;
+    const merchantInfo = merchantProducts[0]?.profiles;
     const businessName = merchantInfo?.business_name ||
         `${merchantInfo?.first_name || ''} ${merchantInfo?.last_name || ''}`.trim() ||
         'Marchand Yoombal';
@@ -59,12 +61,6 @@ const MerchantStore = () => {
                                         <span>Dakar, Sénégal</span>
                                     </div>
                                 </div>
-                                {merchantInfo?.email && (
-                                    <div className="flex items-center gap-2 mt-2 text-sm">
-                                        <Mail className="h-4 w-4" />
-                                        <span>{merchantInfo.email}</span>
-                                    </div>
-                                )}
                             </div>
                             <Button variant="outline" className="bg-white text-blue-600 hover:bg-blue-50">
                                 Contacter le marchand
@@ -77,14 +73,14 @@ const MerchantStore = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold text-gray-900">
-                            Produits disponibles ({products.length})
+                            Produits disponibles ({merchantProducts.length})
                         </h2>
                         <p className="text-gray-600 mt-1">
                             Découvrez tous les produits de cette boutique
                         </p>
                     </div>
 
-                    {products.length === 0 ? (
+                    {merchantProducts.length === 0 ? (
                         <Card className="p-12 text-center">
                             <div className="text-6xl mb-4">🛍️</div>
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -99,7 +95,7 @@ const MerchantStore = () => {
                         </Card>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {products.map((product) => (
+                            {merchantProducts.map((product) => (
                                 <ProductCard
                                     key={product.id}
                                     id={product.id}
