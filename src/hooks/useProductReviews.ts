@@ -19,24 +19,26 @@ export function useProductReviews(productId: string | undefined) {
   const [error, setError] = useState<string | null>(null);
   const [myReview, setMyReview] = useState<Review | null>(null);
 
-  // Récupérer tous les avis du produit
+  // Récupérer tous les avis du produit - using 'reviews' table from schema
   const fetchReviews = useCallback(async () => {
     if (!productId) return [];
     setIsLoading(true);
     const { data, error } = await supabase
-      .from("product_reviews")
+      .from("reviews")
       .select("*")
       .eq("product_id", productId)
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error('Error fetching reviews:', error);
       setError("Erreur lors de la récupération des avis.");
       setReviews([]);
     } else {
       setError(null);
-      setReviews(data || []);
+      const typedData = (data || []) as Review[];
+      setReviews(typedData);
       if (user) {
-        const mine = (data || []).find(r => r.user_id === user.id) || null;
+        const mine = typedData.find(r => r.user_id === user.id) || null;
         setMyReview(mine);
       }
     }
@@ -53,7 +55,7 @@ export function useProductReviews(productId: string | undefined) {
       if (!user || !productId) return { error: "Vous devez être connecté." };
 
       // Upsert = ajoute ou modifie si existe 
-      const { error } = await supabase.from("product_reviews").upsert({
+      const { error } = await supabase.from("reviews").upsert({
         user_id: user.id,
         product_id: productId,
         rating,

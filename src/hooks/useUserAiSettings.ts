@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -26,24 +27,37 @@ export interface UserAiFeatureSetting {
   is_enabled: boolean;
 }
 
-// Fetch settings for a user
+// Fetch settings for a user using user_ai_settings table that exists in the schema
 async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting[]> {
   const { data, error } = await supabase
-    .from('user_ai_feature_settings')
+    .from('user_ai_settings')
     .select('*')
     .eq('user_id', userId);
 
-  if (error) throw new Error(error.message);
-  // We cast the result because Supabase types 'feature_key' as string, 
-  // but we use a more specific union type (AiFeatureKey) in our code.
-  return (data as UserAiFeatureSetting[]) || [];
+  if (error) {
+    console.error('Error fetching user AI settings:', error);
+    return [];
+  }
+  
+  // Map from user_ai_settings to our interface
+  return (data || []).map(item => ({
+    id: item.id,
+    user_id: item.user_id,
+    feature_key: item.feature_key as AiFeatureKey,
+    is_enabled: item.is_enabled ?? false,
+  }));
 }
 
 // Upsert a setting for a user
 async function upsertUserAiSetting({ userId, featureKey, isEnabled }: { userId: string, featureKey: AiFeatureKey, isEnabled: boolean }) {
   const { data, error } = await supabase
-    .from('user_ai_feature_settings')
-    .upsert({ user_id: userId, feature_key: featureKey, is_enabled: isEnabled }, { onConflict: 'user_id, feature_key' })
+    .from('user_ai_settings')
+    .upsert({ 
+      user_id: userId, 
+      feature_key: featureKey, 
+      is_enabled: isEnabled,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id,feature_key' })
     .select();
 
   if (error) throw new Error(error.message);

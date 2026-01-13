@@ -22,14 +22,25 @@ import * as XLSX from 'xlsx';
 import { useToast } from '@/hooks/use-toast';
 import { useDeliveries, Delivery } from '@/hooks/useDeliveries';
 
-interface DeliveryTrackingProps {
-  onViewOnMap: (id?: string) => void;
+export interface DeliveryTrackingProps {
+  onViewOnMap?: (id?: string) => void;
 }
 
 const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { deliveries, isLoading, updateDeliveryStatus } = useDeliveries();
   const { toast } = useToast();
+
+  const handleViewOnMap = (id?: string) => {
+    if (onViewOnMap) {
+      onViewOnMap(id);
+    } else {
+      toast({
+        title: "Info",
+        description: "Voir sur la carte: " + (id || "toutes"),
+      });
+    }
+  };
 
   const exportToExcel = () => {
     const dataToExport = filteredDeliveries.map(d => ({
@@ -133,7 +144,7 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
             <Download className="mr-2 h-4 w-4" />
             Exporter Excel
           </Button>
-          <Button variant="outline" onClick={() => onViewOnMap()}>
+          <Button variant="outline" onClick={() => handleViewOnMap()}>
             <MapPin className="mr-2 h-4 w-4" />
             Voir sur la carte
           </Button>
@@ -220,7 +231,7 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
 
               {/* Actions */}
               <div className="flex flex-col gap-3 min-w-[200px]">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => onViewOnMap(delivery.id)}>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleViewOnMap(delivery.id)}>
                   <MapPin className="h-4 w-4 mr-1" />
                   Localiser
                 </Button>
