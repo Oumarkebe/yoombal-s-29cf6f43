@@ -180,6 +180,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           current_debt: profileData.current_debt || 0
         });
         console.log('Profile and roles loaded:', { roles: allRoles, email: authUser.email });
+      } else {
+        console.warn('Profile not found for user:', authUser.id);
+        // Fallback: Set basic user state so the app doesn't hang
+        setUser({
+          id: authUser.id,
+          email: authUser.email || '',
+          firstName: authUser.user_metadata?.first_name || '',
+          lastName: authUser.user_metadata?.last_name || '',
+          phone: authUser.user_metadata?.phone || '',
+          role: 'client', // Default role
+          roles: ['client'],
+        });
       }
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);

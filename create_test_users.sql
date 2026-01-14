@@ -1,96 +1,90 @@
--- Script to create test users. Run this in Supabase SQL Editor.
 
--- 1. Helper function to create user if not exists
-CREATE OR REPLACE FUNCTION create_test_user(
-    p_email text,
-    p_password text,
-    p_role text,
-    p_first_name text,
-    p_last_name text
-) RETURNS void AS $$
+-- 1. Marchand (marchand@gmail.com / Touba28)
+DO $$
 DECLARE
-    v_user_id uuid;
+  v_user_id uuid := gen_random_uuid();
 BEGIN
-    -- Check if user exists in auth.users
-    SELECT id INTO v_user_id FROM auth.users WHERE email = p_email;
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'marchand@gmail.com') THEN
+    -- Insert into auth.users
+    INSERT INTO auth.users (
+        instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, 
+        raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    ) VALUES (
+        '00000000-0000-0000-0000-000000000000',
+        v_user_id,
+        'authenticated', 'authenticated',
+        'marchand@gmail.com',
+        crypt('Touba28', gen_salt('bf')),
+        now(),
+        '{"provider":"email","providers":["email"]}',
+        '{"first_name":"Marchand","last_name":"Yoombal"}',
+        now(), now()
+    );
 
-    IF v_user_id IS NULL THEN
-        -- Insert into auth.users
-        INSERT INTO auth.users (
-            instance_id,
-            id,
-            aud,
-            role,
-            email,
-            encrypted_password,
-            email_confirmed_at,
-            recovery_sent_at,
-            last_sign_in_at,
-            raw_app_meta_data,
-            raw_user_meta_data,
-            created_at,
-            updated_at,
-            confirmation_token,
-            email_change,
-            email_change_token_new,
-            recovery_token
-        ) VALUES (
-            '00000000-0000-0000-0000-000000000000',
-            gen_random_uuid(),
-            'authenticated',
-            'authenticated',
-            p_email,
-            crypt(p_password, gen_salt('bf')),
-            now(),
-            now(),
-            now(),
-            '{"provider":"email","providers":["email"]}',
-            jsonb_build_object('role', p_role, 'first_name', p_first_name, 'last_name', p_last_name),
-            now(),
-            now(),
-            '',
-            '',
-            '',
-            ''
-        ) RETURNING id INTO v_user_id;
+    -- Insert into public.profiles
+    INSERT INTO public.profiles (id, email, first_name, last_name, role, business_name)
+    VALUES (v_user_id, 'marchand@gmail.com', 'Marchand', 'Yoombal', 'merchant', 'Boutique Yoombal Test');
 
-        -- Insert into auth.identities
-        INSERT INTO auth.identities (
-            id,
-            user_id,
-            identity_data,
-            provider,
-            last_sign_in_at,
-            created_at,
-            updated_at
-        ) VALUES (
-            v_user_id,
-            v_user_id,
-            jsonb_build_object('sub', v_user_id, 'email', p_email),
-            'email',
-            now(),
-            now(),
-            now()
-        );
-    END IF;
+    -- Insert into public.user_roles
+    INSERT INTO public.user_roles (user_id, role) VALUES (v_user_id, 'merchant');
+  END IF;
+END $$;
 
-    -- Ensure profile exists (Triggers should handle this, but for safety)
-    INSERT INTO public.profiles (id, email, first_name, last_name, role)
-    VALUES (v_user_id, p_email, p_first_name, p_last_name, p_role)
-    ON CONFLICT (id) DO UPDATE SET role = p_role;
+-- 2. Livreur (livreur@gmail.com / Touba28)
+DO $$
+DECLARE
+  v_user_id uuid := gen_random_uuid();
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'livreur@gmail.com') THEN
+    INSERT INTO auth.users (
+        instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+        raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    ) VALUES (
+        '00000000-0000-0000-0000-000000000000',
+        v_user_id,
+        'authenticated', 'authenticated',
+        'livreur@gmail.com',
+        crypt('Touba28', gen_salt('bf')),
+        now(),
+        '{"provider":"email","providers":["email"]}',
+        '{"first_name":"Livreur","last_name":"Express"}',
+        now(), now()
+    );
 
-    -- Ensure role in user_roles
-    INSERT INTO public.user_roles (user_id, role)
-    VALUES (v_user_id, p_role::public.app_role)
-    ON CONFLICT (user_id, role) DO NOTHING;
+    INSERT INTO public.profiles (id, email, first_name, last_name, role, vehicle_type)
+    VALUES (v_user_id, 'livreur@gmail.com', 'Livreur', 'Express', 'delivery', 'scooter');
 
-END;
-$$ LANGUAGE plpgsql;
+    INSERT INTO public.user_roles (user_id, role) VALUES (v_user_id, 'delivery');
+  END IF;
+END $$;
 
--- 2. Create the requested users
-SELECT create_test_user('admin@yoombal.com', 'Touba28', 'admin', 'Super', 'Admin');
-SELECT create_test_user('client@yoombal.com', 'Touba28', 'client', 'Client', 'Test');
-SELECT create_test_user('livreur@yoombal.com', 'Touba28', 'driver', 'Livreur', 'Express');
+-- 3. Admin (yombal28@gmail.com / Darousalam2828Touba)
+DO $$
+DECLARE
+  v_user_id uuid := gen_random_uuid();
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'yombal28@gmail.com') THEN
+    INSERT INTO auth.users (
+        instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+        raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    ) VALUES (
+        '00000000-0000-0000-0000-000000000000',
+        v_user_id,
+        'authenticated', 'authenticated',
+        'yombal28@gmail.com',
+        crypt('Darousalam2828Touba', gen_salt('bf')),
+        now(),
+        '{"provider":"email","providers":["email"]}',
+        '{"first_name":"Admin","last_name":"Yoombal"}',
+        now(), now()
+    );
 
--- 3. Cleanup function (optional)
-DROP FUNCTION create_test_user;
+    -- Admin profile
+    INSERT INTO public.profiles (id, email, first_name, last_name, role, business_name)
+    VALUES (v_user_id, 'yombal28@gmail.com', 'Admin', 'Yoombal', 'admin', 'Yoombal HQ');
+
+    -- Roles: Admin AND Merchant
+    INSERT INTO public.user_roles (user_id, role) VALUES (v_user_id, 'admin');
+    INSERT INTO public.user_roles (user_id, role) VALUES (v_user_id, 'merchant');
+  END IF;
+END $$;

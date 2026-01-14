@@ -1,9 +1,11 @@
 
-import React, { useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Shield, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { Loader2 } from "lucide-react";
+import { AppRole } from "@/types/auth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,18 +17,18 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-import { UserAiSettingsManager } from "./UserAiSettingsManager";
-import { Database } from '@/integrations/supabase/types';
 
-type AppRole = Database['public']['Enums']['app_role'];
-
-const ROLE_OPTIONS: AppRole[] = ["admin", "user", "merchant", "driver", "moderator"];
-const ADMIN_CONFIRM_PASSWORD = "010101";
+const ROLE_OPTIONS: AppRole[] = ["client", "merchant", "delivery", "admin"];
+const ADMIN_CONFIRM_PASSWORD = "yoombal-admin";
 
 interface RolesModalProps {
-  user: any;
-  onClose: () => void;
+  user: {
+    id: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  onClose?: () => void;
 }
 
 export function RolesModal({ user, onClose }: RolesModalProps) {
@@ -94,38 +96,42 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-        <div className="bg-white shadow-lg rounded-lg p-6 max-w-lg w-full">
-          <h2 className="font-bold text-lg mb-2">Modifier rôles & Accès IA</h2>
-          <p className="mb-4 text-sm text-gray-600">
+      <DialogContent className="max-w-md">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-lg font-bold border-b pb-2">
+            <Shield className="h-5 w-5 text-blue-600" />
+            Modifier rôles & Accès IA
+          </div>
+          <div className="text-sm text-gray-500">
             {user.first_name} {user.last_name} <br />
-            <span className="text-xs text-gray-400">{user.email}</span>
-          </p>
-          <div className="mb-4">
-            <div className="mb-2 text-xs font-semibold text-gray-600">Rôles attribués :</div>
-            <div className="flex gap-2 flex-wrap min-h-[24px]">
-              {isLoading && <Badge className="animate-pulse">Chargement...</Badge>}
+            {user.email}
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Rôles attribués :</h4>
+            <div className="bg-gray-50 p-3 rounded flex flex-wrap gap-2 min-h-[50px] items-center">
+              {isLoading && <span className="text-xs text-gray-400">Chargement...</span>}
               {roles.map(r => (
-                <Badge key={r.id} className="bg-purple-100 text-purple-700 border-purple-300 flex gap-1 items-center">
+                <span key={r.role} className="inline-flex items-center px-2 py-1 bg-white border rounded text-xs font-semibold shadow-sm">
                   {r.role}
                   <button
-                    type="button"
                     onClick={() => handleRemove(r.role)}
                     className="ml-1 text-red-500 hover:text-red-700 text-xs disabled:opacity-50"
                     aria-label="Retirer le rôle"
                     disabled={isPending}
                   >✗</button>
-                </Badge>
+                </span>
               ))}
-              {roles.length === 0 && !isLoading && <span className="text-xs text-gray-400">Aucun rôle attribué.</span>}
+              {roles.length === 0 && !isLoading && <span className="text-xs text-gray-400 italic">Aucun rôle attribué.</span>}
             </div>
           </div>
-          <div className="mb-4">
-            <div className="mb-2 text-xs font-semibold text-gray-600">Ajouter un rôle :</div>
+
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Ajouter un rôle :</h4>
             <div className="flex gap-2">
               <select
                 value={addInput}
-                onChange={e => setAddInput(e.target.value as AppRole | "")}
+                onChange={(e) => setAddInput(e.target.value as AppRole | "")}
                 className="border rounded px-2 py-1 text-sm w-full"
                 disabled={customRoleOptions.length === 0}
               >
@@ -136,23 +142,20 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
               </select>
               <Button
                 size="sm"
-                variant="outline"
                 onClick={() => { if (addInput) handleAdd(addInput); }}
                 disabled={!addInput || isPending}
               >
-                {isPending ? <Loader2 className="w-4 h-4 animate-spin"/> : 'Ajouter'}
+                {isPending ? <span className="animate-spin mr-1">⏳</span> : 'Ajouter'}
               </Button>
             </div>
           </div>
-          <hr className="my-6" />
 
-          <UserAiSettingsManager userId={user.id} />
 
-          <div className="flex justify-end gap-2 mt-6">
-            <Button variant="outline" onClick={onClose} disabled={isPending}>Fermer</Button>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>Fermer</Button>
           </div>
         </div>
-      </div>
+      </DialogContent>
 
       <AlertDialog open={isAlertOpen} onOpenChange={onAlertDialogChange}>
         <AlertDialogContent>
@@ -164,7 +167,7 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
           </AlertDialogHeader>
           <Input
             type="password"
-            placeholder="Mot de passe"
+            placeholder="Mot de passe admin"
             value={passwordInput}
             onChange={(e) => setPasswordInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmAction(); }}

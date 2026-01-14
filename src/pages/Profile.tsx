@@ -1,26 +1,20 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { toast } from "@/hooks/use-toast";
-import { Loader2, User, Phone, Building, MapPin } from "lucide-react";
+
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import MyAiSettingsManager from "@/components/profile/MyAiSettingsManager";
-import { supabase } from "@/integrations/supabase/client";
-import OrdersList from "@/components/OrdersList";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, User, Phone, MapPin, Briefcase, Car } from "lucide-react";
+// Assurez-vous d'avoir ce hook ou une implémentation similaire
+import { useProfile } from "@/hooks/useProfile";
 
 // Schema based on actual profiles table columns
 const profileSchema = z.object({
@@ -40,7 +34,7 @@ const Profile = () => {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const { profile, isLoading: profileLoading, updateProfile, isUpdating } = useProfile(user?.id);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       firstName: "",
@@ -99,7 +93,7 @@ const Profile = () => {
 
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     if (!user?.id) return;
-    
+
     updateProfile({
       firstName: values.firstName,
       lastName: values.lastName,
@@ -127,245 +121,223 @@ const Profile = () => {
 
   if (!user || profileLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-100 flex flex-col">
-      <Navbar />
-      <main className="flex-grow container max-w-5xl mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
-          <div className="w-full md:w-1/3">
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex justify-center">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile?.avatarUrl || ""} alt={profile?.firstName} />
-                    <AvatarFallback className="text-2xl">
-                      {profile?.firstName?.[0]}{profile?.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
+    <div className="min-h-screen bg-gray-50 pt-20 pb-10">
+      <div className="container mx-auto px-4 max-w-4xl">
+
+        {/* Header Profile Card */}
+        <Card className="bg-white p-6 shadow-sm mb-6 border-none">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-bold">
+              {profile?.firstName?.[0]}{profile?.lastName?.[0]}
+            </div>
+
+            <div className="flex-1 text-center md:text-left space-y-2">
+              <h1 className="text-2xl font-bold text-gray-900">
+                {profile?.firstName} {profile?.lastName}
+              </h1>
+              <p className="text-gray-500">{user?.email}</p>
+
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-2">
+                {profile?.businessName && (
+                  <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                    PRO
+                  </span>
+                )}
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize">
+                  {profile?.role || 'Utilisateur'}
+                </span>
+
+                {profile?.phone && (
+                  <div className="flex items-center text-sm text-gray-500 ml-2">
+                    <Phone className="h-3 w-3 mr-1" />
+                    {profile.phone}
+                  </div>
+                )}
+                {profile?.businessName && (
+                  <div className="flex items-center text-sm text-gray-500 ml-2">
+                    <Briefcase className="h-3 w-3 mr-1" />
+                    {profile.businessName}
+                  </div>
+                )}
+                {profile?.zone && (
+                  <div className="flex items-center text-sm text-gray-500 ml-2">
+                    <MapPin className="h-3 w-3 mr-1" />
+                    {profile.zone}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <Button variant="outline" onClick={handleLogout} className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
+              Se déconnecter
+            </Button>
+          </div>
+        </Card>
+
+        {/* Content Tabs/Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content Area */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Personal Info Form */}
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <User className="h-5 w-5 text-blue-600" />
+                <h2 className="text-lg font-bold">Informations Personnelles</h2>
+              </div>
+
+              <p className="text-sm text-gray-500 mb-4">Mettez à jour vos informations personnelles</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">Prénom</Label>
+                  <Input
+                    id="firstName"
+                    {...form.register("firstName")}
+                  />
                 </div>
-                <CardTitle className="text-center mt-4">
-                  {profile?.firstName} {profile?.lastName}
-                </CardTitle>
-                <CardDescription className="text-center">{user?.email}</CardDescription>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="flex justify-center space-x-2 mb-4">
-                  {profile?.businessName && (
-                    <Badge variant="secondary">PRO</Badge>
-                  )}
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Nom</Label>
+                  <Input
+                    id="lastName"
+                    {...form.register("lastName")}
+                  />
                 </div>
-                <Separator className="my-4" />
-                <div className="space-y-2 text-sm">
-                  {profile?.phone && (
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2 opacity-70" />
-                      <span>{profile.phone}</span>
-                    </div>
-                  )}
-                  {profile?.businessName && (
-                    <div className="flex items-center">
-                      <Building className="h-4 w-4 mr-2 opacity-70" />
-                      <span>{profile.businessName}</span>
-                    </div>
-                  )}
-                  {profile?.zone && (
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 opacity-70" />
-                      <span>{profile.zone}</span>
-                    </div>
-                  )}
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Téléphone</Label>
+                  <Input
+                    id="phone"
+                    {...form.register("phone")}
+                  />
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full" onClick={handleLogout}>
-                  Se déconnecter
+                <div className="space-y-2">
+                  <Label htmlFor="zone">Zone/Quartier</Label>
+                  <Input
+                    id="zone"
+                    {...form.register("zone")}
+                  />
+                </div>
+              </div>
+
+              {/* Business Information Section */}
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex items-center gap-2 mb-4">
+                  <Briefcase className="h-5 w-5 text-purple-600" />
+                  <h2 className="text-lg font-bold">Informations Professionnelles</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="businessName">Nom de l'entreprise</Label>
+                    <Input
+                      id="businessName"
+                      {...form.register("businessName")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessType">Type d'entreprise</Label>
+                    <Input
+                      id="businessType"
+                      {...form.register("businessType")}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vehicleType">Type de véhicule (livreurs)</Label>
+                    <Input
+                      id="vehicleType"
+                      {...form.register("vehicleType")}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <Button
+                  onClick={form.handleSubmit(onSubmit)}
+                  disabled={isUpdating}
+                  className="bg-blue-600"
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Mise à jour...
+                    </>
+                  ) : (
+                    "Enregistrer les modifications"
+                  )}
                 </Button>
-              </CardFooter>
+              </div>
+            </Card>
+
+            {/* Orders History */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Historique des Commandes</h2>
+                <Button variant="outline" size="sm" onClick={fetchOrders}>Actualiser</Button>
+              </div>
+
+              <div className="space-y-4">
+                {ordersLoading ? (
+                  <div className="text-center py-8 text-gray-500">Chargement...</div>
+                ) : orders.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+                    Aucune commande pour le moment
+                  </div>
+                ) : (
+                  orders.map(order => (
+                    <div key={order.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-mono text-xs text-gray-500">#{order.id.slice(0, 8)}</span>
+                        <span className="text-sm font-medium px-2 py-1 bg-blue-100 text-blue-700 rounded-full capitalize">
+                          {order.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div className="text-sm text-gray-600">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </div>
+                        <div className="font-bold">
+                          {new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF' }).format(order.total_amount)}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </Card>
           </div>
-          <div className="w-full md:w-2/3">
-            <Tabs defaultValue="profile">
-              <TabsList className="mb-4">
-                <TabsTrigger value="profile">Mon Profil</TabsTrigger>
-                <TabsTrigger value="orders">Mes Commandes</TabsTrigger>
-                <TabsTrigger value="ai">Paramètres IA</TabsTrigger>
-              </TabsList>
-              <TabsContent value="profile">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
-                      Informations Personnelles
-                    </CardTitle>
-                    <CardDescription>
-                      Mettez à jour vos informations personnelles
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="firstName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Prénom</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Prénom" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="lastName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nom</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Nom" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="phone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Téléphone</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Téléphone" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="zone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Zone/Quartier</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Zone ou quartier" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
 
-                        {/* Business Information */}
-                        <Separator />
-                        <h3 className="text-lg font-medium">Informations Professionnelles</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="businessName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nom de l'entreprise</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Nom de l'entreprise" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="businessType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Type d'entreprise</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Type d'entreprise" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="vehicleType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Type de véhicule (livreurs)</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Ex: Moto, Voiture" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <Button type="submit" disabled={isUpdating} className="w-full">
-                          {isUpdating ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Mise à jour...
-                            </>
-                          ) : (
-                            "Enregistrer les modifications"
-                          )}
-                        </Button>
-                      </form>
-                    </Form>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="orders">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Historique des Commandes</CardTitle>
-                    <CardDescription>
-                      Consultez l'historique de vos commandes
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {ordersLoading ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                      </div>
-                    ) : orders.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        Aucune commande pour le moment
-                      </div>
-                    ) : (
-                      <OrdersList orders={orders} />
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="ai">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Paramètres IA</CardTitle>
-                    <CardDescription>
-                      Gérez vos préférences pour les fonctionnalités IA
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <MyAiSettingsManager />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <Card className="p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Paramètres IA</h3>
+              <p className="text-sm text-gray-500 mb-4">Gérez vos préférences pour les fonctionnalités IA</p>
+              <div className="space-y-3">
+                {/* AI Settings placeholders */}
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <span className="text-sm font-medium">Recommandations</span>
+                  <div className="h-5 w-9 bg-green-500 rounded-full relative cursor-pointer">
+                    <div className="h-3 w-3 bg-white rounded-full absolute right-1 top-1"></div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <span className="text-sm font-medium">Notifications analysées</span>
+                  <div className="h-5 w-9 bg-green-500 rounded-full relative cursor-pointer">
+                    <div className="h-3 w-3 bg-white rounded-full absolute right-1 top-1"></div>
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };
