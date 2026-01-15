@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { AppRole } from "@/types/auth";
+import { AppRole, ROLE_LABELS } from "@/types/auth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 
-const ROLE_OPTIONS: AppRole[] = ["client", "merchant", "delivery", "admin"];
+// Use database role names to match the app_role enum
+const ROLE_OPTIONS: AppRole[] = ["user", "merchant", "driver", "admin"];
 const ADMIN_CONFIRM_PASSWORD = "yoombal-admin";
 
 interface RolesModalProps {

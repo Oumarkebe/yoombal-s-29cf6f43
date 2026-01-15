@@ -2,10 +2,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserRoles } from "@/hooks/useUserRoles";
-import { AppRole } from "@/types/auth";
+import { AppRole, ROLE_LABELS } from "@/types/auth";
 import { Plus } from "lucide-react";
 
-const ROLE_OPTIONS: AppRole[] = ["client", "merchant", "delivery", "admin"];
+// Use database role names to match the app_role enum
+const ROLE_OPTIONS: AppRole[] = ["user", "merchant", "driver", "admin"];
 
 interface ProfileRolesManagerProps {
   userId: string;
