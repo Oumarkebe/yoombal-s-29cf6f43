@@ -19,11 +19,13 @@ const Login = () => {
 
   React.useEffect(() => {
     if (user) {
-      // Redirect based on user role
+      // Redirect based on user role (using DB role names)
       if (user.role === 'merchant') {
         navigate('/merchant');
-      } else if (user.role === 'delivery') {
+      } else if (user.role === 'driver') {
         navigate('/delivery');
+      } else if (user.role === 'admin') {
+        navigate('/admin');
       } else {
         navigate('/profile');
       }

@@ -1,26 +1,17 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
+import {
+  UserProfile,
+  AppRole,
+  UserStatus,
+  KycStatus,
+  getHighestRole,
+  ROLE_PRIORITY,
+} from '@/types/auth';
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  role: 'client' | 'merchant' | 'delivery' | 'admin';
-  roles: string[]; // All roles will be stored here
-  businessName?: string;
-  businessType?: string;
-  vehicleType?: string;
-  zone?: string;
-  kyc_status?: 'none' | 'pending' | 'verified' | 'rejected';
-  kyc_id_card_url?: string;
-  kyc_selfie_url?: string;
-  credit_limit?: number;
-  current_debt?: number;
-}
+// Re-export types for backward compatibility
+export type { UserProfile, AppRole, UserStatus, KycStatus };
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -31,6 +22,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -39,7 +31,7 @@ interface RegisterData {
   email: string;
   phone: string;
   password: string;
-  role: 'client' | 'merchant' | 'delivery' | 'admin';
+  role: AppRole;
   businessName?: string;
   businessType?: string;
   vehicleType?: string;
@@ -56,8 +48,14 @@ export const useAuth = () => {
   return context;
 };
 
-const isValidRole = (role: string): role is 'client' | 'merchant' | 'delivery' | 'admin' => {
-  return ['client', 'merchant', 'delivery', 'admin'].includes(role);
+// Validate that a string is a valid AppRole
+const isValidRole = (role: string): role is AppRole => {
+  return ROLE_PRIORITY.includes(role as AppRole);
+};
+
+// Validate that a string is a valid UserStatus
+const isValidStatus = (status: string): status is UserStatus => {
+  return ['active', 'inactive', 'pending', 'suspended', 'blocked'].includes(status);
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -145,8 +143,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           firstName: authUser.user_metadata?.first_name || '',
           lastName: authUser.user_metadata?.last_name || '',
           phone: authUser.user_metadata?.phone || '',
-          role: 'client',
-          roles: ['client'],
+          role: 'user',
+          roles: ['user'],
+          status: 'active',
         });
         return;
       }
@@ -157,9 +156,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profile) {
         const profileData = profile as any;
-        const primaryRole = profileData.role && isValidRole(profileData.role) ? profileData.role : 'client';
-        const allRolesFromHook = userRolesData?.map(r => r.role) || [];
-        const allRoles = [...new Set([primaryRole, ...allRolesFromHook])];
+        
+        // Get all roles from the user_roles table
+        const allRolesFromDB: AppRole[] = (userRolesData?.map(r => r.role) || []).filter(isValidRole);
+        
+        // Determine primary role (highest privilege)
+        const primaryRole = allRolesFromDB.length > 0 
+          ? getHighestRole(allRolesFromDB) 
+          : 'user';
+        
+        // Combine all roles (ensure at least 'user' role)
+        const allRoles: AppRole[] = allRolesFromDB.length > 0 
+          ? [...new Set(allRolesFromDB)] 
+          : ['user'];
+
+        // Parse status with validation
+        const userStatus: UserStatus = profileData.status && isValidStatus(profileData.status) 
+          ? profileData.status 
+          : 'active';
+
+        // Parse KYC status
+        const kycStatus: KycStatus = profileData.kyc_status || 'none';
 
         setUser({
           id: profileData.id,
@@ -169,17 +186,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           phone: profileData.phone || '',
           role: primaryRole,
           roles: allRoles,
+          status: userStatus,
           businessName: profileData.business_name,
           businessType: profileData.business_type,
           vehicleType: profileData.vehicle_type,
           zone: profileData.zone,
-          kyc_status: profileData.kyc_status || 'none',
+          kyc_status: kycStatus,
           kyc_id_card_url: profileData.kyc_id_card_url,
           kyc_selfie_url: profileData.kyc_selfie_url,
           credit_limit: profileData.credit_limit || 0,
-          current_debt: profileData.current_debt || 0
+          current_debt: profileData.current_debt || 0,
+          avatar_url: profileData.avatar_url,
+          created_at: profileData.created_at,
+          updated_at: profileData.updated_at,
         });
-        console.log('Profile and roles loaded:', { roles: allRoles, email: authUser.email });
+        console.log('Profile and roles loaded:', { 
+          roles: allRoles, 
+          primaryRole,
+          status: userStatus,
+          email: authUser.email 
+        });
       } else {
         console.warn('Profile not found for user:', authUser.id);
         // Fallback: Set basic user state so the app doesn't hang
@@ -189,12 +215,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           firstName: authUser.user_metadata?.first_name || '',
           lastName: authUser.user_metadata?.last_name || '',
           phone: authUser.user_metadata?.phone || '',
-          role: 'client', // Default role
-          roles: ['client'],
+          role: 'user',
+          roles: ['user'],
+          status: 'pending',
         });
       }
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (session?.user) {
+      await fetchUserProfile(session.user);
     }
   };
 
@@ -258,16 +291,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error: profileError } = await supabase.from('profiles').insert([
           {
             id: data.user.id,
-            email: userData.email,
             first_name: userData.firstName,
             last_name: userData.lastName,
             phone: userData.phone,
-            role: userData.role,
             business_name: userData.businessName,
             business_type: userData.businessType,
             vehicle_type: userData.vehicleType,
             zone: userData.zone,
-            kyc_status: 'none'
+            status: 'active',
           }
         ]);
 
@@ -278,9 +309,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Also add the role to user_roles
-        const { error: roleError } = await (supabase.from('user_roles').insert([
+        const { error: roleError } = await supabase.from('user_roles').insert([
           { user_id: data.user.id, role: userData.role }
-        ] as any) as any);
+        ]);
 
         if (roleError) {
           console.warn('User role insertion error:', roleError);
@@ -308,14 +339,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value = {
-    user: user, // Keep backward compatibility if needed, though user now contains profile data in our implementation
-    profile: user, // Alias user as profile since we merged them
+    user,
+    profile: user, // Alias for backward compatibility
     session,
     login,
     register,
     logout,
     isAuthenticated: !!session,
-    isLoading
+    isLoading,
+    refreshProfile,
   };
 
   return (
@@ -325,13 +357,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// Hook utilitaire pour vérifier le rôle de l'utilisateur
-export function useRole(requiredRoles: string | string[]) {
+// ============ Utility Hooks ============
+
+/**
+ * Hook to check if the current user has one of the required roles
+ */
+export function useRole(requiredRoles: AppRole | AppRole[]) {
   const { user, isLoading } = useAuth();
+  
   if (isLoading) return false;
   if (!user) return false;
-  if (Array.isArray(requiredRoles)) {
-    return requiredRoles.includes(user.role);
-  }
-  return user.role === requiredRoles;
+  
+  const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+  return user.roles.some(role => roles.includes(role));
+}
+
+/**
+ * Hook to check if the current user has a specific permission
+ */
+export function useHasPermission(resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'manage') {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) return false;
+  if (!user) return false;
+  
+  // Admin has all permissions
+  if (user.roles.includes('admin')) return true;
+  
+  // Import and check ROLE_PERMISSIONS dynamically to avoid circular deps
+  const { ROLE_PERMISSIONS } = require('@/types/auth');
+  
+  return user.roles.some(role => {
+    const permissions = ROLE_PERMISSIONS[role] || [];
+    return permissions.some((p: any) => 
+      (p.resource === '*' || p.resource === resource) && 
+      (p.action === 'manage' || p.action === action)
+    );
+  });
+}
+
+/**
+ * Hook to check if user account is in a valid status
+ */
+export function useIsActiveUser() {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) return false;
+  if (!user) return false;
+  
+  return user.status === 'active';
 }

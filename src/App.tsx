@@ -95,7 +95,7 @@ function App() {
               </Route>
 
               {/* Protected Delivery Routes */}
-              <Route element={<ProtectedRoute roles={['delivery']} />}>
+              <Route element={<ProtectedRoute roles={['driver']} />}>
                 <Route path="/delivery" element={<DeliveryDashboard />} />
               </Route>
 

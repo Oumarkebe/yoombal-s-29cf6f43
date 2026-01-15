@@ -1,12 +1,10 @@
-
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-// useUserRoles is no longer needed here for checking roles
+import { useAuth, AppRole } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
-  roles?: string[];
+  roles?: AppRole[];
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles: requiredRoles }) => {
@@ -25,8 +23,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles: requir
   }
 
   if (!isAuthenticated) {
-    // Sauvegarder la page où l'utilisateur voulait aller
+    // Save the page the user wanted to go to
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check user status - block suspended/blocked users
+  if (user?.status && ['suspended', 'blocked'].includes(user.status)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Compte {user.status === 'suspended' ? 'suspendu' : 'bloqué'}</h1>
+          <p className="text-gray-600">Veuillez contacter le support pour plus d'informations.</p>
+        </div>
+      </div>
+    );
   }
 
   if (requiredRoles && requiredRoles.length > 0) {
