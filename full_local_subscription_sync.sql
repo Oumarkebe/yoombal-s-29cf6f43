@@ -76,12 +76,12 @@ ON CONFLICT (slug) DO UPDATE SET features = EXCLUDED.features;
 
 INSERT INTO public.premium_plans (slug, name, price_monthly, features, display_order)
 VALUES 
-('pro', 'Yoombal Pro', 15000, '["ai_assistant", "ai_pricing", "delivery_dashboard"]'::jsonb, 2)
+('pro', 'Yoombal Pro', 15000, '["ai_assistant", "ai_pricing", "delivery_dashboard", "generation_contenu", "optimisation_seo", "marketplace_access"]'::jsonb, 2)
 ON CONFLICT (slug) DO UPDATE SET features = EXCLUDED.features;
 
 INSERT INTO public.premium_plans (slug, name, price_monthly, features, display_order)
 VALUES 
-('enterprise', 'Yoombal Enterprise', 50000, '["ai_assistant", "ai_pricing", "predictions", "admin_dashboard", "delivery_dashboard", "route_optimization", "sales_analytics", "custom_store"]'::jsonb, 3)
+('enterprise', 'Yoombal Enterprise', 50000, '["ai_assistant", "ai_pricing", "predictions", "admin_dashboard", "delivery_dashboard", "route_optimization", "sales_analytics", "custom_store", "fraud_detection", "wolof_pulaar_nlp", "audit_securite", "gestion_stock_ia"]'::jsonb, 3)
 ON CONFLICT (slug) DO UPDATE SET features = EXCLUDED.features;
 
 -- 3. POLITIQUES DE SÉCURITÉ (RLS)

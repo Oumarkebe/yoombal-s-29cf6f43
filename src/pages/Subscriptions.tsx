@@ -4,10 +4,11 @@ import { useSubscription, PremiumPlan } from '@/hooks/useSubscription';
 import { PlanCard } from '@/components/subscription/PlanCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldCheck, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PaymentDialog } from '@/components/PaymentDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Subscriptions() {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function Subscriptions() {
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
     const [paymentOpen, setPaymentOpen] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<PremiumPlan | null>(null);
-    const [actionType, setActionType] = useState<'subscribe' | 'renew' | 'change'>('subscribe');
+    const [actionType, setActionType] = useState<'subscribe' | 'renew' | 'change' | 'module_purchase'>('subscribe');
 
     const handleSubscribe = async (plan: PremiumPlan & { isExpiringSoon?: boolean }) => {
         // Case 1: Renewal (Same plan + Expiring soon)
@@ -101,6 +102,16 @@ export default function Subscriptions() {
     };
 
     const isLoading = isSubscribing || isChanging || isRenewing;
+    const { globalFeatures, resolvedFeatures } = useSubscription();
+
+    // Filter features that are premium, enabled by admin, and NOT already in user's active features
+    // We only show modules that are not part of the current plan to stay clear.
+    const individualModules = globalFeatures?.filter(f =>
+        f.is_premium &&
+        f.is_enabled &&
+        !resolvedFeatures.includes(f.feature_key) &&
+        f.price_monthly > 0
+    ) || [];
 
     return (
         <div className="min-h-screen bg-gray-50 pt-20 pb-10">
@@ -152,77 +163,78 @@ export default function Subscriptions() {
                     </div>
                 </div>
 
-                {/* Section Modules à la carte */}
-                <div className="mt-16 mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Modules à la carte (Boosters)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* Delivery Dashboard Module */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                            <h3 className="text-xl font-bold mb-2">Pack Livreur Pro</h3>
-                            <p className="text-gray-500 text-sm mb-4">Accédez au tableau de bord livreur et optimisez vos tournées.</p>
-                            <div className="text-2xl font-bold text-primary mb-4">5,000 FCFA <span className="text-sm text-gray-500 font-normal">/ mois</span></div>
-                            <ul className="text-sm space-y-2 mb-6">
-                                <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Tableau de bord dédié</li>
-                                <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Optimisation de tournées</li>
-                                <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Historique illimité</li>
-                            </ul>
-                            <Button className="w-full" onClick={() => {
-                                // Mock plan object for module
-                                setSelectedPlan({
-                                    id: 'module_delivery',
-                                    name: 'Pack Livreur Pro',
-                                    price_monthly: 5000,
-                                    price_yearly: 50000,
-                                    slug: 'module_delivery',
-                                    features: [],
-                                    limits: {}
-                                });
-                                setActionType('module_purchase' as any); // Custom type
-                                setPaymentOpen(true);
-                            }}>
-                                Activer le module
-                            </Button>
+                {/* Section Modules à la carte - DYNAMIC */}
+                {individualModules.length > 0 && (
+                    <div className="mt-16 mb-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Modules IA & Boosters à la carte</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {individualModules.map((feature) => (
+                                <div key={feature.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                        <ShieldCheck className="w-12 h-12 text-primary" />
+                                    </div>
+                                    <h3 className="text-xl font-bold mb-2">{feature.name}</h3>
+                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{feature.description}</p>
+                                    <div className="text-2xl font-bold text-primary mb-4">
+                                        {feature.price_monthly.toLocaleString()} FCFA
+                                        <span className="text-sm text-gray-500 font-normal"> / mois</span>
+                                    </div>
+                                    <ul className="text-sm space-y-2 mb-6">
+                                        <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Activation immédiate</li>
+                                        {feature.trial_days > 0 && (
+                                            <li className="flex gap-2"><Sparkles className="w-4 h-4 text-amber-500" /> {feature.trial_days} jours d'essai</li>
+                                        )}
+                                        <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Annulable à tout moment</li>
+                                    </ul>
+                                    <Button className="w-full" onClick={() => {
+                                        setSelectedPlan({
+                                            id: feature.id,
+                                            name: feature.name,
+                                            price_monthly: feature.price_monthly,
+                                            price_yearly: feature.price_monthly * 10, // Yearly approx
+                                            slug: `module_${feature.feature_key}`,
+                                            features: [feature.feature_key],
+                                            limits: {}
+                                        } as any);
+                                        setActionType('module_purchase');
+                                        setPaymentOpen(true);
+                                    }}>
+                                        Activer le module
+                                    </Button>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                </div>
+                )}
 
                 {selectedPlan && (
                     <PaymentDialog
                         isOpen={paymentOpen}
                         onClose={() => setPaymentOpen(false)}
                         amount={billingPeriod === 'monthly' ? selectedPlan.price_monthly : selectedPlan.price_yearly}
-                        description={actionType === 'module_purchase' as any ? `Module: ${selectedPlan.name}` : `Abonnement ${selectedPlan.name} (${billingPeriod === 'monthly' ? 'Mensuel' : 'Annuel'})`}
+                        description={actionType === 'module_purchase' ? `Module: ${selectedPlan.name}` : `Abonnement ${selectedPlan.name} (${billingPeriod === 'monthly' ? 'Mensuel' : 'Annuel'})`}
                         type="subscription_purchase"
                         metadata={{
                             planId: selectedPlan.id,
                             planName: selectedPlan.name,
-                            isModule: actionType === 'module_purchase' as any,
-                            featureKey: 'delivery_dashboard' // Hardcoded for this test
+                            isModule: actionType === 'module_purchase',
+                            featureKey: selectedPlan.features?.[0] || ''
                         }}
                         onSuccess={async (method, phoneNumber) => {
                             // Custom Module Logic
-                            if ((actionType as any) === 'module_purchase') {
+                            if (actionType === 'module_purchase') {
                                 try {
-                                    const { data: feature } = await supabase
-                                        .from('premium_features')
-                                        .select('id')
-                                        .eq('feature_key', 'delivery_dashboard')
-                                        .single();
-
-                                    if (feature) {
-                                        const { error } = await supabase
-                                            .from('user_premium_subscriptions')
-                                            .insert({
-                                                user_id: (await supabase.auth.getUser()).data.user?.id,
-                                                feature_id: feature.id,
-                                                status: 'active',
-                                                billing_period: 'monthly'
-                                            });
-                                        if (error) throw error;
-                                        toast.success("Module activé avec succès !");
-                                        // Reload page implies refetch
-                                        window.location.reload();
-                                    }
+                                    const { error } = await (supabase as any)
+                                        .from('user_premium_subscriptions')
+                                        .insert({
+                                            user_id: (await supabase.auth.getUser()).data.user?.id,
+                                            feature_id: selectedPlan.id,
+                                            status: 'active',
+                                            billing_period: 'monthly'
+                                        });
+                                    if (error) throw error;
+                                    toast.success("Module activé avec succès !");
+                                    window.location.reload();
                                 } catch (e) {
                                     console.error("Error activating module", e);
                                     toast.error("Erreur lors de l'activation du module");

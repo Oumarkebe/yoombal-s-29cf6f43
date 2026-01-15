@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -138,6 +138,19 @@ export function useSubscription() {
         enabled: !!user,
     });
 
+    // 3b. Fetch ALL premium features status (Global Admin Config)
+    const { data: globalFeatures = [] } = useQuery({
+        queryKey: ['globalPremiumFeatures'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('premium_features')
+                .select('*');
+            if (error) throw error;
+            return data as any[];
+        },
+        staleTime: 5 * 60 * 1000,
+    });
+
     // 4. Fetch purchased modules (active subscriptions to specific premium features)
     const { data: purchasedModules = [] } = useQuery({
         queryKey: ['userPurchasedModules', user?.id],
@@ -167,6 +180,15 @@ export function useSubscription() {
 
     // Resolve effective features matching User Override -> Purchased -> Plan -> Default
     const hasFeature = (featureKey: string): boolean => {
+        // -1. Check GLOBAL Admin Toggle First
+        const globalFeature = globalFeatures.find(f => f.feature_key === featureKey);
+        // If the feature is globally disabled by Admin, it's false unless it's a core/free feature (we could add that logic)
+        // For now, if it's in premium_features and is_enabled is false, it's OFF globally.
+        if (globalFeature && globalFeature.is_enabled === false) {
+            console.log(`Hooks: hasFeature(${featureKey}) -> false (GLOBALLY DISABLED by Admin)`);
+            return false;
+        }
+
         // Mapping for backward compatibility with older DB records
         const keysToCheck = [featureKey];
         if (featureKey === 'ai_assistant') {
@@ -229,19 +251,23 @@ export function useSubscription() {
         // Standardize keys for UI consistency
         const standardizedSet = new Set<string>();
         activeSet.forEach(key => {
-            if (['assistant_intelligent', 'advanced_ai', 'custom_chatbot'].includes(key)) {
+            // Respect Global Admin Toggle in resolved list too
+            const globalF = globalFeatures.find(f => f.feature_key === key);
+            if (globalF && globalF.is_enabled === false) return;
+
+            if (['assistant_intelligent', 'advanced_ai', 'custom_chatbot'].includes(key as string)) {
                 standardizedSet.add('ai_assistant');
-            } else if (['tarification_dynamique', 'ai_pricing'].includes(key)) {
+            } else if (['tarification_dynamique', 'ai_pricing'].includes(key as string)) {
                 standardizedSet.add('ai_pricing');
-            } else if (['analyses_predictives', 'predictions'].includes(key)) {
+            } else if (['analyses_predictives', 'predictions'].includes(key as string)) {
                 standardizedSet.add('predictions');
             } else {
-                standardizedSet.add(key);
+                standardizedSet.add(key as string);
             }
         });
 
         return Array.from(standardizedSet) as string[];
-    }, [subscription, plans, featureSettings, purchasedModules]);
+    }, [subscription, plans, featureSettings, purchasedModules, globalFeatures]);
 
     // Helper to check expiry
     const isExpiringSoon = (expiresAt: string | null | undefined) => {
@@ -395,6 +421,7 @@ export function useSubscription() {
         isLoading,
         error,
         resolvedFeatures,
+        globalFeatures,
 
         // Helpers
         hasFeature,

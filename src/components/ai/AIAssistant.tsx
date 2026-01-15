@@ -52,9 +52,9 @@ export function AIAssistant() {
 
 
 
-    const { hasFeature, isLoading: isCheckingPermission } = useSubscription();
+    const { hasFeature, globalFeatures, isLoading: isCheckingPermission } = useSubscription();
     const isEnabled = hasFeature('ai_assistant');
-    console.log("AIAssistant: isEnabled for 'ai_assistant'?", isEnabled);
+    const assistantConfig = globalFeatures?.find(f => f.feature_key === 'ai_assistant' || f.feature_key === 'assistant_intelligent')?.configuration || {};
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -230,8 +230,17 @@ export function AIAssistant() {
         setIsLoading(true);
 
         try {
+            const systemPrompt = assistantConfig.system_prompt || "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.";
+            const tone = assistantConfig.tone || "professionnel et chaleureux (Teranga)";
+
             const { data, error } = await supabase.functions.invoke('chatbot', {
-                body: { messages: [...messages, { role: 'user', content: userMessage }] }
+                body: {
+                    messages: [
+                        { role: 'system', content: `${systemPrompt} Ton de voix à adopter : ${tone}.` },
+                        ...messages,
+                        { role: 'user', content: userMessage }
+                    ]
+                }
             });
 
             if (error) throw error;
