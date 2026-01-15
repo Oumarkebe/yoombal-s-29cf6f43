@@ -107,9 +107,6 @@ const Navbar = () => {
                 </DropdownMenu>
               </div>
 
-              <Link to="/merchants" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                Marchands
-              </Link>
               <Link to="/contact" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Contact
               </Link>
@@ -248,13 +245,6 @@ const Navbar = () => {
             onClick={closeMenu}
           >
             Premium
-          </Link>
-          <Link
-            to="/merchants"
-            className="text-gray-700 hover:text-amber-600 block px-3 py-2 rounded-md text-base font-medium"
-            onClick={closeMenu}
-          >
-            Marchands
           </Link>
           <Link
             to="/contact"

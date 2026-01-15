@@ -5,7 +5,6 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Register from './pages/Register';
 import Login from './pages/Login';
-import Merchants from './pages/Merchants';
 import Marketplace from './pages/Marketplace';
 import Pricing from './pages/Pricing'; // Pricing Page
 import ProductDetail from './pages/ProductDetail';
@@ -56,7 +55,6 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/merchants" element={<Merchants />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />

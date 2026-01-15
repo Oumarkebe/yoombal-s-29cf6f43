@@ -13,8 +13,10 @@ import {
     ArrowRight,
     Shield,
     Navigation,
-    Banknote
+    Banknote,
+    Loader2
 } from 'lucide-react';
+import RolePricingSection from '@/components/premium/RolePricingSection';
 
 const BecomeDelivery = () => {
     return (
@@ -146,6 +148,15 @@ const BecomeDelivery = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Pricing Section (Unified) */}
+            <div id="pricing" className="bg-slate-100/50">
+                <RolePricingSection
+                    role="delivery"
+                    title="Boostez vos revenus de livreur"
+                    subtitle="Choisissez le modèle qui vous convient. Commencez l'esprit libre avec nos outils pro."
+                />
+            </div>
 
             {/* CTA Section */}
             <section className="py-24 bg-emerald-900 text-white rounded-t-[3rem] mt-[-2rem] relative z-20">

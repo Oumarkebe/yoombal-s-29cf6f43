@@ -12,8 +12,10 @@ import {
     Search,
     ArrowRight,
     Gift,
-    ShieldCheck
+    ShieldCheck,
+    Loader2
 } from 'lucide-react';
+import RolePricingSection from '@/components/premium/RolePricingSection';
 
 const BecomeClient = () => {
     return (
@@ -121,6 +123,15 @@ const BecomeClient = () => {
                     </div>
                 </div>
             </section>
+
+            {/* Pricing Section (Unified) */}
+            <div id="pricing" className="bg-slate-50">
+                <RolePricingSection
+                    role="client"
+                    title="Une expérience Shopping Premium"
+                    subtitle="Profitez d'avantages exclusifs pour vos achats quotidiens. Livraison express et protection garantie."
+                />
+            </div>
 
             {/* CTA Banner */}
             <section className="py-12">

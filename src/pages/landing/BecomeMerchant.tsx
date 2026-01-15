@@ -14,8 +14,15 @@ import {
     ArrowRight,
     CheckCircle2,
     BarChart3,
-    Bot
+    Bot,
+    Star,
+    Users,
+    CreditCard,
+    Truck,
+    Navigation,
+    Loader2
 } from 'lucide-react';
+import RolePricingSection from '@/components/premium/RolePricingSection';
 
 const BecomeMerchant = () => {
     return (
@@ -140,26 +147,92 @@ const BecomeMerchant = () => {
                 </div>
             </section>
 
+            {/* Testimonials (from Merchants.tsx) */}
+            <section className="py-24 bg-white">
+                <div className="container mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-display">
+                            Ce que disent nos marchands
+                        </h2>
+                        <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                            Découvrez les témoignages de nos partenaires qui réussissent avec Yoombal.
+                        </p>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                name: "Aminata Diallo",
+                                business: "Mode & Accessoires",
+                                rating: 5,
+                                comment: "Grâce à Yoombal, j'ai pu doubler mes ventes en 6 mois. Le système BNPL attire beaucoup plus de clients."
+                            },
+                            {
+                                name: "Moussa Ba",
+                                business: "Électronique",
+                                rating: 5,
+                                comment: "La plateforme est facile à utiliser et le support client est excellent. Je recommande vivement."
+                            },
+                            {
+                                name: "Fatou Seck",
+                                business: "Artisanat local",
+                                rating: 5,
+                                comment: "Yoombal m'a permis de vendre mes produits dans tout le Sénégal. C'est révolutionnaire !"
+                            }
+                        ].map((testimonial, index) => (
+                            <Card key={index} className="shadow-lg border-none bg-slate-50/50">
+                                <CardContent className="pt-8">
+                                    <div className="flex items-center space-x-1 mb-4">
+                                        {[...Array(testimonial.rating)].map((_, i) => (
+                                            <Star key={i} className="h-4 w-4 text-amber-500 fill-current" />
+                                        ))}
+                                    </div>
+                                    <p className="text-slate-700 italic mb-6">"{testimonial.comment}"</p>
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">
+                                            {testimonial.name[0]}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900">{testimonial.name}</h4>
+                                            <p className="text-sm text-slate-500">{testimonial.business}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing Section (Unified) */}
+            <div id="pricing" className="bg-slate-50">
+                <RolePricingSection
+                    role="merchant"
+                    title="Des tarifs simples et transparents"
+                    subtitle="Choisissez le plan qui correspond à votre ambition. Commencez gratuitement et évoluez avec nous."
+                />
+            </div>
+
             {/* CTA Section */}
-            <section className="py-24 bg-gradient-to-br from-amber-50 to-orange-50">
-                <div className="container mx-auto px-6 text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-8 font-display">
+            <section className="py-24 bg-slate-900 text-white overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full -mr-48 -mt-48 blur-3xl"></div>
+                <div className="container mx-auto px-6 text-center relative z-10">
+                    <h2 className="text-4xl md:text-5xl font-bold mb-8 font-display">
                         Prêt à lancer votre empire ?
                     </h2>
-                    <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-12">
+                    <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-12">
                         Rejoignez les centaines de marchands qui font confiance à Yoombal.
-                        Commencez gratuitement aujourd'hui.
+                        Ouvrez votre boutique en moins de 2 minutes.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-6 justify-center max-w-md mx-auto">
-                        <Button asChild size="lg" className="w-full h-14 text-lg bg-slate-900 hover:bg-slate-800 text-white shadow-xl rounded-xl">
+                        <Button asChild size="lg" className="w-full h-14 text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-xl rounded-xl border-none">
                             <Link to="/register?role=merchant">
-                                Devenir Marchand
+                                Créer ma boutique
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>
                         </Button>
                     </div>
-                    <p className="mt-6 text-sm text-slate-500">
-                        Pas de carte bancaire requise • Annulation à tout moment
+                    <p className="mt-8 text-sm text-slate-500">
+                        Pas de frais d'inscription • Support 7j/7 • Paiements sécurisés
                     </p>
                 </div>
             </section>
