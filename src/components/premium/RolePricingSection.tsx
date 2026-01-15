@@ -3,6 +3,8 @@ import React from 'react';
 import PricingCard from './PricingCard';
 import { Button } from '@/components/ui/button';
 import { Store, Truck, Users, Sparkles, Shield, Rocket, Check } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 
 interface RolePricingSectionProps {
     role: 'merchant' | 'delivery' | 'client';
@@ -12,6 +14,18 @@ interface RolePricingSectionProps {
 }
 
 const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePricingSectionProps) => {
+    const { user } = useAuth();
+    const { profile } = useProfile(user?.id);
+
+    const getSmartCtaLink = (targetRole: string, defaultLink: string) => {
+        if (!user) return defaultLink;
+        if (profile?.role === targetRole) {
+            if (targetRole === 'merchant') return "/merchant?tab=store";
+            if (targetRole === 'delivery') return "/delivery";
+            return "/profile";
+        }
+        return defaultLink;
+    };
 
     const getPricingData = () => {
         switch (role) {
@@ -31,7 +45,7 @@ const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePric
                             "Visibilité Marketplace standard"
                         ],
                         cta: "Ouvrir ma boutique gratuite",
-                        ctaLink: "/register?role=merchant",
+                        ctaLink: getSmartCtaLink('merchant', "/register?role=merchant"),
                         highlight: false
                     },
                     {
@@ -50,7 +64,7 @@ const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePric
                             "Support prioritaire 24/7"
                         ],
                         cta: "Passer en Pro",
-                        ctaLink: "/register?role=merchant",
+                        ctaLink: getSmartCtaLink('merchant', "/register?role=merchant"),
                         highlight: true
                     }
                 ];
@@ -70,7 +84,7 @@ const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePric
                             "Assurance trajet standard"
                         ],
                         cta: "Devenir livreur",
-                        ctaLink: "/register?role=delivery",
+                        ctaLink: getSmartCtaLink('delivery', "/register?role=delivery"),
                         highlight: false
                     },
                     {
@@ -89,7 +103,7 @@ const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePric
                             "Support VIP dédié"
                         ],
                         cta: "Activer Pack Pro",
-                        ctaLink: "/register?role=delivery",
+                        ctaLink: getSmartCtaLink('delivery', "/register?role=delivery"),
                         highlight: true
                     }
                 ];
@@ -110,7 +124,7 @@ const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePric
                             "Support par chat"
                         ],
                         cta: "Créer mon compte",
-                        ctaLink: "/register?role=client",
+                        ctaLink: getSmartCtaLink('client', "/register?role=client"),
                         highlight: false
                     },
                     {
@@ -128,7 +142,7 @@ const RolePricingSection = ({ role, title, subtitle, compact = false }: RolePric
                             "Cashback fidélité x2"
                         ],
                         cta: "Passer Premium",
-                        ctaLink: "/register?role=client",
+                        ctaLink: getSmartCtaLink('client', "/register?role=client"),
                         highlight: true
                     }
                 ];

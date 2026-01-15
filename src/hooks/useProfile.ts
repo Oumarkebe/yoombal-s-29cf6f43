@@ -24,6 +24,7 @@ export interface UpdateProfileData {
   businessType?: string;
   vehicleType?: string;
   zone?: string;
+  avatarUrl?: string;
 }
 
 const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -63,6 +64,7 @@ const updateUserProfile = async (userId: string, profileData: UpdateProfileData)
       business_type: profileData.businessType,
       vehicle_type: profileData.vehicleType,
       zone: profileData.zone,
+      avatar_url: profileData.avatarUrl,
       updated_at: new Date().toISOString(),
     })
     .eq('id', userId)

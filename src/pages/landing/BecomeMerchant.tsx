@@ -23,8 +23,21 @@ import {
     Loader2
 } from 'lucide-react';
 import RolePricingSection from '@/components/premium/RolePricingSection';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 
 const BecomeMerchant = () => {
+    const { user } = useAuth();
+    const { profile } = useProfile(user?.id);
+
+    const getCtaLink = () => {
+        if (!user) return "/register?role=merchant";
+        if (profile?.role === 'merchant') return "/merchant?tab=store";
+        return "/register?role=merchant"; // Redirect to register with role to potentially change role or show error
+    };
+
+    const ctaLink = getCtaLink();
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             <Navbar />
@@ -55,7 +68,7 @@ const BecomeMerchant = () => {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button asChild size="lg" className="h-14 px-8 text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/25 rounded-full transition-all hover:scale-105">
-                            <Link to="/register?role=merchant">
+                            <Link to={ctaLink}>
                                 Ouvrir ma boutique <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>
                         </Button>
@@ -225,7 +238,7 @@ const BecomeMerchant = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-6 justify-center max-w-md mx-auto">
                         <Button asChild size="lg" className="w-full h-14 text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-xl rounded-xl border-none">
-                            <Link to="/register?role=merchant">
+                            <Link to={ctaLink}>
                                 Créer ma boutique
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>

@@ -17,8 +17,21 @@ import {
     Loader2
 } from 'lucide-react';
 import RolePricingSection from '@/components/premium/RolePricingSection';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 
 const BecomeDelivery = () => {
+    const { user } = useAuth();
+    const { profile } = useProfile(user?.id);
+
+    const getCtaLink = () => {
+        if (!user) return "/register?role=delivery";
+        if (profile?.role === 'delivery') return "/delivery";
+        return "/register?role=delivery";
+    };
+
+    const ctaLink = getCtaLink();
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             <Navbar />
@@ -50,7 +63,7 @@ const BecomeDelivery = () => {
 
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <Button asChild size="lg" className="h-14 px-8 text-lg bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/25 rounded-full transition-all hover:scale-105">
-                                    <Link to="/register?role=delivery">
+                                    <Link to={ctaLink}>
                                         Devenir Livreur <ArrowRight className="ml-2 h-5 w-5" />
                                     </Link>
                                 </Button>
@@ -166,7 +179,7 @@ const BecomeDelivery = () => {
                         Rejoignez la communauté des livreurs Yoombal et commencez à générer des revenus dès aujourd'hui.
                     </p>
                     <Button asChild size="lg" className="h-16 px-10 text-xl bg-white text-emerald-900 hover:bg-emerald-50 rounded-full shadow-2xl">
-                        <Link to="/register?role=delivery">
+                        <Link to={ctaLink}>
                             S'inscrire maintenant
                         </Link>
                     </Button>

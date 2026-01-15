@@ -21,6 +21,7 @@ import MerchantBNPLManager from "@/components/MerchantBNPLManager";
 import { AIInsights } from "@/components/ai/AIInsights";
 import { Sparkles } from "lucide-react";
 import { PremiumFeaturesDisplay } from '@/components/premium/PremiumFeaturesDisplay';
+import StoreConfiguration from "@/components/StoreConfiguration";
 
 const MerchantDashboard = () => {
   const { user } = useAuth();
@@ -126,15 +127,7 @@ const MerchantDashboard = () => {
           </TabsContent>
 
           <TabsContent value="store">
-            <Card>
-              <CardHeader>
-                <CardTitle>Ma Boutique Personnalisée</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-500 mb-4">Fonctionnalité Premium: Configurez votre nom de domaine, couleurs et logo.</p>
-                <Button variant="outline">Configurer ma vitrine</Button>
-              </CardContent>
-            </Card>
+            <StoreConfiguration />
           </TabsContent>
 
           <TabsContent value="settings">

@@ -16,8 +16,20 @@ import {
     Loader2
 } from 'lucide-react';
 import RolePricingSection from '@/components/premium/RolePricingSection';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProfile } from '@/hooks/useProfile';
 
 const BecomeClient = () => {
+    const { user } = useAuth();
+    const { profile } = useProfile(user?.id);
+
+    const getCtaLink = () => {
+        if (!user) return "/register?role=client";
+        return "/profile";
+    };
+
+    const ctaLink = getCtaLink();
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans">
             <Navbar />
@@ -48,7 +60,7 @@ const BecomeClient = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Button asChild size="lg" className="h-14 px-8 text-lg bg-orange-600 hover:bg-orange-700 text-white shadow-xl shadow-orange-500/20 rounded-full transition-all hover:scale-105">
-                                <Link to="/register?role=client">
+                                <Link to={ctaLink}>
                                     Commencer le shopping <ArrowRight className="ml-2 h-5 w-5" />
                                 </Link>
                             </Button>
@@ -142,7 +154,7 @@ const BecomeClient = () => {
 
                         <h2 className="text-3xl md:text-5xl font-bold mb-8 relative z-10">Envie de chiner les meilleures offres ?</h2>
                         <Button asChild size="lg" className="h-16 px-12 text-lg bg-white text-slate-900 hover:bg-slate-100 rounded-full font-bold relative z-10">
-                            <Link to="/register?role=client">
+                            <Link to={ctaLink}>
                                 Créer un compte gratuit
                             </Link>
                         </Button>
