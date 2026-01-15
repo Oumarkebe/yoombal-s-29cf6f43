@@ -172,7 +172,7 @@ const DriverDashboard = () => {
       </div>
 
       <div className="mb-8">
-        <PremiumFeaturesDisplay />
+        <PremiumFeaturesDisplay filterRole="delivery" />
       </div>
 
       <Card className="mb-8 p-6 shadow-sm border-slate-200">

@@ -43,7 +43,7 @@ const MerchantDashboard = () => {
         </header>
 
         <div className="mb-8">
-          <PremiumFeaturesDisplay />
+          <PremiumFeaturesDisplay filterRole="merchant" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

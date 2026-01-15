@@ -305,7 +305,7 @@ const Profile = () => {
             </Card>
 
             <div className="mb-6">
-              <PremiumFeaturesDisplay />
+              <PremiumFeaturesDisplay filterRole={profile?.role as any} />
             </div>
 
             {/* Orders History */}
