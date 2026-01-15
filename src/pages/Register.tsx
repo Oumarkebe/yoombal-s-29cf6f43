@@ -4,12 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth, AppRole } from '@/contexts/AuthContext';
+import { ROLE_MAPPING } from '@/types/auth';
 import { UserPlus, Store, Truck, User } from 'lucide-react';
+
+// Map URL params (UI names) to DB role names
+const getDefaultRole = (urlRole: string | null): AppRole => {
+  if (!urlRole) return 'user';
+  const mapping: Record<string, AppRole> = {
+    client: 'user',
+    merchant: 'merchant',
+    delivery: 'driver',
+    admin: 'admin',
+  };
+  return mapping[urlRole] || 'user';
+};
 
 const Register = () => {
   const [searchParams] = useSearchParams();
-  const defaultRole = searchParams.get('role') || 'client';
+  const defaultRole = getDefaultRole(searchParams.get('role'));
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -18,7 +31,7 @@ const Register = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: defaultRole,
+    role: defaultRole as AppRole,
     businessName: '',
     businessType: '',
     vehicleType: ''
@@ -29,10 +42,11 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Role options with DB role values but user-friendly labels
   const roleOptions = [
-    { value: 'client', label: 'Client', icon: <User className="h-4 w-4" />, description: 'Acheter des produits' },
-    { value: 'merchant', label: 'Marchand', icon: <Store className="h-4 w-4" />, description: 'Vendre des produits' },
-    { value: 'delivery', label: 'Livreur', icon: <Truck className="h-4 w-4" />, description: 'Livrer des commandes' }
+    { value: 'user' as AppRole, label: 'Client', icon: <User className="h-4 w-4" />, description: 'Acheter des produits' },
+    { value: 'merchant' as AppRole, label: 'Marchand', icon: <Store className="h-4 w-4" />, description: 'Vendre des produits' },
+    { value: 'driver' as AppRole, label: 'Livreur', icon: <Truck className="h-4 w-4" />, description: 'Livrer des commandes' }
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +59,7 @@ const Register = () => {
   const handleRoleChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      role: value
+      role: value as AppRole
     }));
   };
 
@@ -73,7 +87,7 @@ const Register = () => {
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
-        role: formData.role as 'client' | 'merchant' | 'delivery' | 'admin',
+        role: formData.role,
         businessName: formData.businessName,
         businessType: formData.businessType,
         vehicleType: formData.vehicleType
@@ -82,9 +96,9 @@ const Register = () => {
       if (result.error) {
         setError(result.error);
       } else {
-        // Rediriger vers le tableau de bord approprié
+        // Redirect based on role (using DB role names)
         if (formData.role === 'merchant') navigate('/merchant');
-        else if (formData.role === 'delivery') navigate('/delivery');
+        else if (formData.role === 'driver') navigate('/delivery');
         else navigate('/profile');
       }
     } catch (err: any) {
@@ -262,7 +276,7 @@ const Register = () => {
               </div>
             )}
 
-            {formData.role === 'delivery' && (
+            {formData.role === 'driver' && (
               <div>
                 <label htmlFor="vehicleType" className="block text-sm font-medium text-gray-700 mb-1">
                   Type de véhicule
