@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Loader2 } from 'lucide-react';
 import { UpgradePrompt } from './UpgradePrompt';
 
@@ -17,7 +17,7 @@ export function PremiumFeatureGate({
     fallback,
     showLoading = true
 }: PremiumFeatureGateProps) {
-    const { checkAccess, isLoading } = useUserPremiumSubscriptions();
+    const { hasFeature, isLoading } = useSubscription();
 
     if (isLoading && showLoading) {
         return (
@@ -27,7 +27,7 @@ export function PremiumFeatureGate({
         );
     }
 
-    const hasAccess = checkAccess(featureKey);
+    const hasAccess = hasFeature(featureKey);
 
     if (!hasAccess) {
         return fallback || <UpgradePrompt featureKey={featureKey} />;

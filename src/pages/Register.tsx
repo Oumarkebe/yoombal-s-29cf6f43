@@ -123,6 +123,7 @@ const Register = () => {
                   value={formData.firstName}
                   onChange={handleChange}
                   required
+                  autoComplete="given-name"
                   placeholder="Votre prénom"
                 />
               </div>
@@ -136,6 +137,7 @@ const Register = () => {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
+                  autoComplete="family-name"
                   placeholder="Votre nom"
                 />
               </div>
@@ -152,6 +154,7 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                autoComplete="email"
                 placeholder="votre@email.com"
               />
             </div>
@@ -163,11 +166,47 @@ const Register = () => {
               <Input
                 id="phone"
                 name="phone"
+                type="tel"
                 value={formData.phone}
                 onChange={handleChange}
-                required
-                placeholder="+221 773817783"
+                autoComplete="tel"
+                placeholder="+221 ..."
               />
+            </div>
+
+
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Mot de passe
+                </label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  autoComplete="new-password"
+                  placeholder="Min. 6 caractères"
+                />
+              </div>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmer
+                </label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  autoComplete="new-password"
+                  placeholder="Confirmation"
+                />
+              </div>
             </div>
 
             <div>
@@ -291,7 +330,7 @@ const Register = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 };
 

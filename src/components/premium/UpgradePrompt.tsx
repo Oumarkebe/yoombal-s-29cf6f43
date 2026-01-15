@@ -12,9 +12,9 @@ interface UpgradePromptProps {
 }
 
 const FEATURE_NAMES: Record<string, string> = {
-    'assistant_intelligent': 'Assistant IA Yoombal',
-    'tarification_dynamique': 'Tarification Dynamique',
-    'analyses_predictives': 'Analyses Prédictives',
+    'ai_assistant': 'Assistant IA Yoombal',
+    'ai_pricing': 'Tarification Dynamique',
+    'predictions': 'Analyses Prédictives',
     // ... more can be added
 };
 

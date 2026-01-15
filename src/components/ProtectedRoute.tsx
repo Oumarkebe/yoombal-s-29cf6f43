@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 // useUserRoles is no longer needed here for checking roles
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   roles?: string[];
 }
 
@@ -32,13 +32,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles: requir
   if (requiredRoles && requiredRoles.length > 0) {
     const userRoles = user?.roles || [];
     const hasAccess = requiredRoles.some(role => userRoles.includes(role));
-    
+
     if (!hasAccess) {
       return <Navigate to="/" replace />;
     }
   }
 
-  return <>{children}</>;
+  return children ? <>{children}</> : <Outlet />;
 };
 
 export default ProtectedRoute;

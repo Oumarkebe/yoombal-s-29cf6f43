@@ -27,10 +27,10 @@ export interface UserAiFeatureSetting {
   is_enabled: boolean;
 }
 
-// Fetch settings for a user using user_ai_settings table that exists in the schema
+// Fetch settings for a user using user_ai_feature_settings table that exists in the schema
 async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting[]> {
   const { data, error } = await supabase
-    .from('user_ai_settings')
+    .from('user_ai_feature_settings')
     .select('*')
     .eq('user_id', userId);
 
@@ -38,8 +38,8 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
     console.error('Error fetching user AI settings:', error);
     return [];
   }
-  
-  // Map from user_ai_settings to our interface
+
+  // Map from user_ai_feature_settings to our interface
   return (data || []).map(item => ({
     id: item.id,
     user_id: item.user_id,
@@ -51,10 +51,10 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
 // Upsert a setting for a user
 async function upsertUserAiSetting({ userId, featureKey, isEnabled }: { userId: string, featureKey: AiFeatureKey, isEnabled: boolean }) {
   const { data, error } = await supabase
-    .from('user_ai_settings')
-    .upsert({ 
-      user_id: userId, 
-      feature_key: featureKey, 
+    .from('user_ai_feature_settings')
+    .upsert({
+      user_id: userId,
+      feature_key: featureKey,
       is_enabled: isEnabled,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id,feature_key' })

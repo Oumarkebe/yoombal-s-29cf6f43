@@ -26,7 +26,7 @@ import AdminAICenter from './pages/admin/AdminAICenter';
 import AdminDashboard from './pages/AdminDashboard';
 import MerchantDashboard from './pages/MerchantDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
-import SubscriptionShop from './pages/premium/SubscriptionShop';
+import Subscriptions from './pages/Subscriptions';
 import MySubscriptions from './pages/premium/MySubscriptions';
 import UserCredits from './pages/premium/UserCredits';
 import BecomeMerchant from './pages/landing/BecomeMerchant';
@@ -41,6 +41,7 @@ import NotFound from './pages/NotFound';
 import { AIAssistant } from './components/ai/AIAssistant';
 import { Toaster } from "@/components/ui/sonner";
 import { AdminRoute } from './components/admin/AdminRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 import AIErrorBoundary from './components/ai/AIErrorBoundary';
 
 function App() {
@@ -73,7 +74,7 @@ function App() {
               <Route path="/admin/kyc" element={<AdminKYCRequests />} />
 
               {/* Premium Routes */}
-              <Route path="/premium/subscriptions" element={<SubscriptionShop />} />
+              <Route path="/premium/subscriptions" element={<Subscriptions />} />
               <Route path="/premium/my-subscriptions" element={<MySubscriptions />} />
               <Route path="/premium/credits" element={<UserCredits />} />
 
@@ -90,8 +91,16 @@ function App() {
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
               </Route>
 
-              <Route path="/merchant" element={<MerchantDashboard />} />
-              <Route path="/delivery" element={<DeliveryDashboard />} />
+              {/* Protected Merchant Routes */}
+              <Route element={<ProtectedRoute roles={['merchant']} />}>
+                <Route path="/merchant" element={<MerchantDashboard />} />
+              </Route>
+
+              {/* Protected Delivery Routes */}
+              <Route element={<ProtectedRoute roles={['delivery']} />}>
+                <Route path="/delivery" element={<DeliveryDashboard />} />
+              </Route>
+
               <Route path="/economic-model" element={<EconomicModel />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

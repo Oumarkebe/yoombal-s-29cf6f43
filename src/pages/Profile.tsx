@@ -12,7 +12,10 @@ import { toast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, User, Phone, MapPin, Briefcase, Car } from "lucide-react";
+import { Loader2, User, Phone, MapPin, Briefcase, Car, ArrowLeft } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { PremiumFeaturesDisplay } from '@/components/premium/PremiumFeaturesDisplay';
+import { useSubscription } from "@/hooks/useSubscription";
 // Assurez-vous d'avoir ce hook ou une implémentation similaire
 import { useProfile } from "@/hooks/useProfile";
 
@@ -27,13 +30,32 @@ const profileSchema = z.object({
   zone: z.string().optional(),
 });
 
+function getBackPath(role) {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "merchant":
+      return "/merchant";
+    case "delivery":
+      return "/delivery";
+    default:
+      return "/";
+  }
+}
+
 const Profile = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<any[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(false);
+  const { subscription, isLoading: subLoading } = useSubscription();
   const { profile, isLoading: profileLoading, updateProfile, isUpdating } = useProfile(user?.id);
 
+  const handleBack = () => {
+    const path = getBackPath(profile?.role);
+    navigate(path);
+  };
+
+  const [orders, setOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -130,6 +152,12 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-10">
       <div className="container mx-auto px-4 max-w-4xl">
+        <div className="flex items-center mb-4">
+          <Button variant="ghost" onClick={handleBack} className="flex items-center text-gray-600 hover:text-gray-800">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour
+          </Button>
+        </div>
 
         {/* Header Profile Card */}
         <Card className="bg-white p-6 shadow-sm mb-6 border-none">
@@ -276,6 +304,10 @@ const Profile = () => {
               </div>
             </Card>
 
+            <div className="mb-6">
+              <PremiumFeaturesDisplay />
+            </div>
+
             {/* Orders History */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -334,6 +366,32 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
+            </Card>
+            <Card className="p-6 mt-6">
+              <h3 className="font-bold text-gray-900 mb-4">Mon Abonnement</h3>
+              {subLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : subscription ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{subscription.plan?.name}</span>
+                    <Badge variant="secondary">{subscription.status}</Badge>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Expire le {subscription.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : 'Illimité'}
+                  </p>
+                  <Button onClick={() => navigate('/premium/subscriptions')} className="w-full">
+                    Gérer mon abonnement
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <p className="text-sm text-gray-500 mb-2">Aucun abonnement actif</p>
+                  <Button onClick={() => navigate('/premium/subscriptions')} className="w-full">
+                    Découvrir les formules
+                  </Button>
+                </div>
+              )}
             </Card>
           </div>
         </div>

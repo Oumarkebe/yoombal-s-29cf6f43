@@ -14,7 +14,7 @@ interface PaymentDialogProps {
     onClose: () => void;
     amount: number;
     description: string;
-    type: 'credit_topup' | 'subscription_purchase';
+    type: 'credit_topup' | 'subscription_purchase' | 'repayment';
     metadata?: any;
     onSuccess?: (method: 'orange_money' | 'wave', phoneNumber: string) => void;
 }
@@ -51,6 +51,15 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Utilisateur non connecté');
 
+            // MOCK PAYMENT FOR TESTING (Since Edge Function is not deployed)
+            // Simulating API call delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Simulating success
+            const mockData = { success: true };
+
+            /* 
+            // Original Edge Function Call (Disabled for verified mock test)
             const { data, error } = await supabase.functions.invoke('create-payment-intent', {
                 body: {
                     amount,
@@ -66,11 +75,12 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
             });
 
             if (error) throw error;
-            if (data.error) throw new Error(data.error);
+            if (data.error) throw new Error(data.error); 
+            */
 
             setStatus('success');
             toast({
-                title: "Paiement réussi !",
+                title: "Paiement réussi (Simulation)",
                 description: `Votre transaction ${method === 'orange_money' ? 'Orange Money' : 'Wave'} a été validée.`,
             });
 

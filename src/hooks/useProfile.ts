@@ -13,6 +13,7 @@ export interface UserProfile {
   avatarUrl?: string;
   vehicleType?: string;
   zone?: string;
+  role?: string;
 }
 
 export interface UpdateProfileData {
@@ -47,6 +48,7 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
     avatarUrl: data.avatar_url || undefined,
     vehicleType: data.vehicle_type || undefined,
     zone: data.zone || undefined,
+    role: (data as any).role || undefined,
   } : null;
 };
 

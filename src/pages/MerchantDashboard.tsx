@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,40 +20,18 @@ import StockManagement from "@/components/StockManagement";
 import MerchantBNPLManager from "@/components/MerchantBNPLManager";
 import { AIInsights } from "@/components/ai/AIInsights";
 import { Sparkles } from "lucide-react";
+import { PremiumFeaturesDisplay } from '@/components/premium/PremiumFeaturesDisplay';
 
 const MerchantDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    if (!user || user.role !== 'merchant') {
-      toast({
-        title: "Accès refusé",
-        description: "Vous devez être connecté en tant que marchand pour accéder à cette page.",
-        variant: "destructive",
-      });
-    }
-  }, [user, toast]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'products';
 
-  if (!user || user.role !== 'merchant') {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="text-center p-8">
-            <CardTitle className="text-2xl font-bold">Accès refusé</CardTitle>
-            <CardContent>
-              Vous devez être connecté en tant que marchand pour accéder à cette page.
-            </CardContent>
-            <Button asChild>
-              <Link to="/login">Se connecter</Link>
-            </Button>
-          </Card>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -63,6 +41,10 @@ const MerchantDashboard = () => {
           <h1 className="text-3xl font-bold text-gray-900">Tableau de bord Marchand</h1>
           <p className="text-gray-600">Suivez l'activité de votre boutique en ligne.</p>
         </header>
+
+        <div className="mb-8">
+          <PremiumFeaturesDisplay />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
@@ -97,17 +79,19 @@ const MerchantDashboard = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="products">Produits</TabsTrigger>
-            <TabsTrigger value="orders">Commandes</TabsTrigger>
-            <TabsTrigger value="bnpl">BNPL</TabsTrigger>
-            <TabsTrigger value="stock">Stock</TabsTrigger>
-            <TabsTrigger value="stats">Statistiques</TabsTrigger>
-            <TabsTrigger value="ai" className="flex items-center gap-1">
+        <Tabs value={currentTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-0 border-b rounded-none w-full justify-start mb-4">
+            <TabsTrigger value="products" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Produits</TabsTrigger>
+            <TabsTrigger value="orders" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Commandes</TabsTrigger>
+            <TabsTrigger value="bnpl" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">BNPL</TabsTrigger>
+            <TabsTrigger value="stock" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Stock</TabsTrigger>
+            <TabsTrigger value="stats" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Statistiques</TabsTrigger>
+            <TabsTrigger value="store" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Ma Boutique</TabsTrigger>
+            <TabsTrigger value="ai" className="flex items-center gap-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
               <Sparkles className="h-4 w-4 text-amber-500" />
               IA Insights
             </TabsTrigger>
+            <TabsTrigger value="settings" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Paramètres</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -139,6 +123,30 @@ const MerchantDashboard = () => {
 
           <TabsContent value="ai">
             <AIInsights />
+          </TabsContent>
+
+          <TabsContent value="store">
+            <Card>
+              <CardHeader>
+                <CardTitle>Ma Boutique Personnalisée</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500 mb-4">Fonctionnalité Premium: Configurez votre nom de domaine, couleurs et logo.</p>
+                <Button variant="outline">Configurer ma vitrine</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Paramètres & Notifications</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500 mb-4">Gérez vos notifications clients (SMS/Email) et préférences de boutique.</p>
+                <Button variant="outline">Gérer les notifications</Button>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -7,11 +7,11 @@ const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 const supabase = createClient(url, key)
 
 async function testLogin() {
-    console.log('🔐 Tentative de connexion avec : marchand@gmail.com / Touba28')
+    console.log('🔐 Tentative de connexion (SignIn) avec : yoombal28@gmail.com')
 
     const { data, error } = await supabase.auth.signInWithPassword({
-        email: 'marchand@gmail.com',
-        password: 'Touba28'
+        email: 'yoombal28@gmail.com',
+        password: 'Darousalam2828Touba'
     })
 
     if (error) {

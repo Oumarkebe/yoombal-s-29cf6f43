@@ -24,7 +24,7 @@ import {
 
 
 import { supabase } from '@/integrations/supabase/client';
-import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
+import { useSubscription } from '@/hooks/useSubscription';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -52,8 +52,9 @@ export function AIAssistant() {
 
 
 
-    const { checkAccess, isLoading: isCheckingPermission } = useUserPremiumSubscriptions();
-    const isEnabled = checkAccess('assistant_intelligent');
+    const { hasFeature, isLoading: isCheckingPermission } = useSubscription();
+    const isEnabled = hasFeature('ai_assistant');
+    console.log("AIAssistant: isEnabled for 'ai_assistant'?", isEnabled);
 
     useEffect(() => {
         if (scrollRef.current) {

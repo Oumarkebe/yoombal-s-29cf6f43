@@ -10,12 +10,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { usePlatformSettings } from '@/hooks/usePlatformSettings';
-import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const Pricing = () => {
     const { user } = useAuth();
     const { settings, isLoading: settingsLoading } = usePlatformSettings();
     const [loading, setLoading] = useState<string | null>(null);
+    const { hasFeature } = useSubscription();
 
     const handleSubscribe = async (plan: string) => {
         if (!user) {
@@ -125,9 +126,8 @@ const Pricing = () => {
         );
     }
 
-    // Check if user has Premium access (proxy via ai_assistant or pricing_optimization which are in the pack)
-    const { checkAccess } = useUserPremiumSubscriptions();
-    const hasPremiumAccess = checkAccess('ai_assistant') || checkAccess('pricing_optimization');
+    // Check if user has Premium access (proxy via ai_assistant or ai_pricing which are in the pack)
+    const hasPremiumAccess = hasFeature('ai_assistant') || hasFeature('ai_pricing');
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-amber-50 to-indigo-50">

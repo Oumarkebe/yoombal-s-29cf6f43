@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import { PremiumFeaturesDisplay } from '@/components/premium/PremiumFeaturesDisplay';
 
 // Leaflet icon fix
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
@@ -168,6 +169,10 @@ const DriverDashboard = () => {
         <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
           En ligne
         </Badge>
+      </div>
+
+      <div className="mb-8">
+        <PremiumFeaturesDisplay />
       </div>
 
       <Card className="mb-8 p-6 shadow-sm border-slate-200">

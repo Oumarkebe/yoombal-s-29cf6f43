@@ -126,7 +126,7 @@ export default function AdminAICenter() {
     const initializeDefaultFeatures = async () => {
         const defaultFeatures = [
             // ANALYTICS (4)
-            { feature_key: 'analyses_predictives', name: 'Analyses Prédictives', description: 'Prévisions de ventes et tendances du marché', category: 'analytics', price_monthly: 4900, trial_days: 14 },
+            { feature_key: 'predictions', name: 'Analyses Prédictives', description: 'Prévisions de ventes et tendances du marché', category: 'analytics', price_monthly: 4900, trial_days: 14 },
             { feature_key: 'tableau_bord_avance', name: 'Tableau de Bord Avancé', description: 'Métriques temps réel et KPI personnalisés', category: 'analytics', price_monthly: 2900, trial_days: 7 },
             { feature_key: 'rapports_personnalises', name: 'Rapports Personnalisés', description: 'Génération automatique de rapports sur mesure', category: 'analytics', price_monthly: 1900, trial_days: 7 },
             { feature_key: 'analyse_comportement', name: 'Analyse Comportementale', description: 'Tracking utilisateur et parcours client détaillé', category: 'analytics', price_monthly: 3900, trial_days: 14 },
@@ -138,14 +138,14 @@ export default function AdminAICenter() {
             { feature_key: 'suggestions_images', name: 'Suggestions d\'Images IA', description: 'Recommandations visuelles intelligentes', category: 'content', price_monthly: 1900, trial_days: 7 },
 
             // COMMERCE (5)
-            { feature_key: 'tarification_dynamique', name: 'Tarification Dynamique', description: 'Prix adaptatifs selon demande et concurrence', category: 'commerce', price_monthly: 7900, trial_days: 30 },
+            { feature_key: 'ai_pricing', name: 'Tarification Dynamique', description: 'Prix adaptatifs selon demande et concurrence', category: 'commerce', price_monthly: 7900, trial_days: 30 },
             { feature_key: 'recommandations_produits', name: 'Recommandations Produits', description: 'Suggestions personnalisées par IA', category: 'commerce', price_monthly: 4900, trial_days: 14 },
             { feature_key: 'gestion_stock_ia', name: 'Gestion Stock Intelligente', description: 'Prévisions et alertes automatiques de rupture', category: 'commerce', price_monthly: 5900, trial_days: 14 },
             { feature_key: 'detection_fraude', name: 'Détection de Fraude', description: 'Protection transactions avec machine learning', category: 'commerce', price_monthly: 6900, trial_days: 30 },
             { feature_key: 'panier_abandonne', name: 'Récupération Panier', description: 'Relances automatisées intelligentes', category: 'commerce', price_monthly: 3900, trial_days: 14 },
 
             // SUPPORT (4)
-            { feature_key: 'assistant_intelligent', name: 'Yoombal Bot (Chatbot IA)', description: 'Support client 24/7 automatisé et intelligent', category: 'support', price_monthly: 8900, trial_days: 30 },
+            { feature_key: 'ai_assistant', name: 'Yoombal Bot (Chatbot IA)', description: 'Support client 24/7 automatisé et intelligent', category: 'support', price_monthly: 8900, trial_days: 30 },
             { feature_key: 'faq_auto', name: 'FAQ Automatique', description: 'Réponses générées et mises à jour par IA', category: 'support', price_monthly: 2900, trial_days: 7 },
             { feature_key: 'tickets_priorite', name: 'Priorisation Tickets', description: 'Tri automatique par urgence et type', category: 'support', price_monthly: 3900, trial_days: 14 },
             { feature_key: 'sentiment_analysis', name: 'Analyse de Sentiment', description: 'Détection satisfaction client en temps réel', category: 'support', price_monthly: 4900, trial_days: 14 },
@@ -329,7 +329,7 @@ export default function AdminAICenter() {
     const saveSettings = async () => {
         setIsSaving(true);
         try {
-            const assistantFeature = features.find(f => f.feature_key === 'assistant_intelligent');
+            const assistantFeature = features.find(f => f.feature_key === 'ai_assistant');
             if (assistantFeature) {
                 const { error } = await supabase
                     .from('premium_features')

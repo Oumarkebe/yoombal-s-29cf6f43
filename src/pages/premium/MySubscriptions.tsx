@@ -1,111 +1,146 @@
-
 import React from 'react';
-import { useUserPremiumSubscriptions } from '@/hooks/useUserPremiumSubscriptions';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate } from 'react-router-dom';
+import { useSubscription } from '@/hooks/useSubscription';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar, Clock, AlertCircle, Zap, Shield, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
+import { Calendar, CreditCard, RotateCw, Shield, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import DebtRepaymentDashboard from '@/components/premium/DebtRepaymentDashboard';
+import { translateFeature } from '@/lib/subscription-features';
 
 export default function MySubscriptions() {
-    const { subscriptions, isLoading } = useUserPremiumSubscriptions();
+    const { subscription, currentPlan, isLoading, cancel, isCancelling } = useSubscription();
     const navigate = useNavigate();
 
     if (isLoading) {
-        return <div className="container p-8 text-center text-muted-foreground">Chargement de vos abonnements...</div>;
+        return <div className="container p-8 text-center text-muted-foreground">Chargement...</div>;
     }
+
+    const isPaidPlan = subscription && subscription.status === 'active';
+    const planName = currentPlan?.name || 'Starter (Gratuit)';
+
     return (
         <div className="container mx-auto p-6 space-y-8">
             <DebtRepaymentDashboard />
 
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Mes Abonnements</h1>
-                <p className="text-muted-foreground">Gérez vos modules premium et vos accès.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Mon Abonnement</h1>
+                <p className="text-muted-foreground">Gérez votre formule et votre facturation.</p>
             </div>
 
-            {subscriptions.length === 0 ? (
-                <Card className="border-dashed py-12">
-                    <CardContent className="flex flex-col items-center justify-center gap-4">
-                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                            <Zap className="h-8 w-8 text-muted-foreground" />
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Current Plan Card */}
+                <Card className="md:col-span-2">
+                    <CardHeader className="pb-4">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle className="text-xl">Plan Actuel</CardTitle>
+                                <CardDescription>Vous êtes actuellement abonné à</CardDescription>
+                            </div>
+                            <Badge variant={isPaidPlan ? 'default' : 'secondary'} className="text-sm px-3 py-1">
+                                {isPaidPlan ? 'PREMIUM' : 'GRATUIT'}
+                            </Badge>
                         </div>
-                        <div className="text-center space-y-2">
-                            <h3 className="font-bold">Aucun abonnement actif</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Découvrez nos modules premium pour booster votre productivité.
-                            </p>
-                        </div>
-                        <Button onClick={() => navigate('/premium/subscriptions')}>
-                            Parcourir le catalogue
-                        </Button>
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {subscriptions.map(sub => (
-                        <Card key={sub.id} className="relative overflow-hidden group">
-                            <div className={`absolute top-0 left-0 w-full h-1 ${sub.status === 'active' ? 'bg-green-500' :
-                                sub.status === 'trial' ? 'bg-blue-500' : 'bg-red-500'
-                                }`} />
-
-                            <CardHeader>
-                                <div className="flex justify-between items-start">
-                                    <CardTitle className="text-lg">{sub.feature?.name}</CardTitle>
-                                    <Badge variant={
-                                        sub.status === 'active' ? 'default' :
-                                            sub.status === 'trial' ? 'secondary' : 'destructive'
-                                    }>
-                                        {sub.status.toUpperCase()}
-                                    </Badge>
+                    </CardHeader>
+                    <CardContent className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-xl ${isPaidPlan ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                                    <Shield className="h-8 w-8" />
                                 </div>
-                                <CardDescription className="line-clamp-1">
-                                    {sub.feature?.description}
-                                </CardDescription>
-                            </CardHeader>
-
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Calendar className="h-4 w-4" />
-                                        <span>Activé le {format(new Date(sub.activated_at || sub.created_at), 'dd MMMM yyyy', { locale: fr })}</span>
-                                    </div>
-                                    {sub.expires_at && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Clock className="h-4 w-4" />
-                                            <span>Expire le {format(new Date(sub.expires_at), 'dd MMMM yyyy', { locale: fr })}</span>
-                                        </div>
+                                <div>
+                                    <h3 className="font-bold text-lg">{planName}</h3>
+                                    {isPaidPlan ? (
+                                        <p className="text-sm text-muted-foreground">
+                                            {subscription?.billing_period === 'yearly' ? 'Facturation annuelle' : 'Facturation mensuelle'}
+                                        </p>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">Accès limité aux fonctionnalités de base</p>
                                     )}
                                 </div>
+                            </div>
 
-                                {sub.status === 'trial' && (
-                                    <div className="bg-blue-50 p-2 rounded text-xs text-blue-700 font-medium flex items-center gap-2">
-                                        <Sparkles className="h-3 w-3" />
-                                        Période d'essai gratuite
+                            {isPaidPlan && (
+                                <div className="space-y-2 pt-2">
+                                    <div className="flex justify-between text-sm py-2 border-b">
+                                        <span className="text-muted-foreground flex items-center gap-2">
+                                            <CreditCard className="h-4 w-4" /> Montant
+                                        </span>
+                                        <span className="font-medium">
+                                            {new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF' }).format(subscription?.amount_paid || 0)}
+                                        </span>
                                     </div>
-                                )}
-
-                                {sub.status === 'expired' && (
-                                    <div className="bg-red-50 p-2 rounded text-xs text-red-700 font-medium flex items-center gap-2">
-                                        <AlertCircle className="h-3 w-3" />
-                                        Veuillez renouveler votre accès
+                                    <div className="flex justify-between text-sm py-2 border-b">
+                                        <span className="text-muted-foreground flex items-center gap-2">
+                                            <Calendar className="h-4 w-4" /> Prochaine échéance
+                                        </span>
+                                        <span className="font-medium">
+                                            {subscription?.expires_at ? format(new Date(subscription.expires_at), 'dd MMMM yyyy', { locale: fr }) : '-'}
+                                        </span>
                                     </div>
-                                )}
-                            </CardContent>
+                                    <div className="flex justify-between text-sm py-2">
+                                        <span className="text-muted-foreground flex items-center gap-2">
+                                            <RotateCw className="h-4 w-4" /> Renouvellement auto
+                                        </span>
+                                        <Badge variant={subscription?.auto_renew ? "outline" : "destructive"}>
+                                            {subscription?.auto_renew ? 'ACTIVÉ' : 'DÉSACTIVÉ'}
+                                        </Badge>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-                            <CardContent className="pt-0 border-t mt-4 flex justify-end gap-2 p-4">
-                                <Button variant="outline" size="sm">Gérer</Button>
-                                {(sub.status === 'trial' || sub.status === 'expired') && (
-                                    <Button size="sm" onClick={() => navigate('/premium/subscriptions')}>S'abonner</Button>
+                        <div className="bg-slate-50 rounded-lg p-6 space-y-4">
+                            <h4 className="font-semibold text-sm uppercase text-muted-foreground">Fonctionnalités incluses</h4>
+                            <ul className="space-y-2">
+                                {currentPlan?.features?.slice(0, 5).map((feature, i) => (
+                                    <li key={i} className="flex items-start gap-2 text-sm">
+                                        <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                                        <span>{translateFeature(feature)}</span>
+                                    </li>
+                                ))}
+                                {(currentPlan?.features?.length || 0) > 5 && (
+                                    <li className="text-sm text-muted-foreground pl-6">
+                                        + {(currentPlan?.features?.length || 0) - 5} autres avantages
+                                    </li>
                                 )}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            )}
+                            </ul>
+                        </div>
+                    </CardContent>
+
+                    <CardFooter className="flex justify-between border-t pt-6">
+                        {isPaidPlan ? (
+                            <>
+                                <Button variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    onClick={() => {
+                                        if (window.confirm('Voulez-vous vraiment annuler le renouvellement ?')) {
+                                            cancel({ reason: 'User choice' });
+                                        }
+                                    }}
+                                    disabled={isCancelling}
+                                >
+                                    {isCancelling ? 'Annulation...' : 'Annuler l\'abonnement'}
+                                </Button>
+                                <Button onClick={() => navigate('/premium/subscriptions')}>
+                                    Changer de plan
+                                </Button>
+                            </>
+                        ) : (
+                            <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                                    Passez Pro pour débloquer plus de puissance
+                                </p>
+                                <Button onClick={() => navigate('/premium/subscriptions')} className="w-full sm:w-auto">
+                                    Voir les offres Premium
+                                </Button>
+                            </div>
+                        )}
+                    </CardFooter>
+                </Card>
+            </div>
         </div>
     );
 }
