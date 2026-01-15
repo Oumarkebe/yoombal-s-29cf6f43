@@ -1,0 +1,11 @@
+git add src/App.tsx
+git add src/components/Navbar.tsx
+git add src/components/premium/RolePricingSection.tsx
+git add src/hooks/useProfile.ts
+git add src/pages/MerchantDashboard.tsx
+git add src/pages/landing/BecomeClient.tsx
+git add src/pages/landing/BecomeDelivery.tsx
+git add src/pages/landing/BecomeMerchant.tsx
+git add final_rls_policies.sql
+git add security_lint_fixes.sql
+git add security_search_path_fixes.sql
