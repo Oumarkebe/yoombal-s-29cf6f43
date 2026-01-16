@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npm run db:sync && vite",
     "db:sync": "node scripts/auto-migrate.mjs",
+    "db:sync-remote": "node scripts/remote-sync.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",

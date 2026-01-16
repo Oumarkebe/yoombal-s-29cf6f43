@@ -1,0 +1,29 @@
+name: Remote Database Sync
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run Remote Sync
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # On suppose que pour le sync, on n'a pas besoin de la base locale car c'est un push de schéma
+          # Mais le script actuel se connecte à la locale. 
+          # Pour GitHub Actions, on devrait plutôt utiliser les fichiers .sql directement.
+        run: node scripts/remote-sync.mjs
