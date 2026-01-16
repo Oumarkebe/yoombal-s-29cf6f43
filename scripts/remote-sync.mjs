@@ -34,7 +34,8 @@ const DATA_TABLES = [
     { name: 'products', pk: 'id' },
     { name: 'user_roles', pk: 'user_id,role' },
     { name: 'ai_module_settings', pk: 'id' },
-    { name: 'user_ai_settings', pk: 'id' }
+    { name: 'user_ai_settings', pk: 'id' },
+    { name: 'notifications', pk: 'id' }
 ];
 
 async function runSync() {

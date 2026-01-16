@@ -51,13 +51,15 @@ const CheckoutPage = () => {
 
   // Payment Success Handler - Actually creates the order
   const handlePaymentSuccess = async (method: 'orange_money' | 'wave', phoneNumber: string) => {
-    setPaymentMethod(method === 'orange_money' ? 'mobile_money' : 'card'); // Map to simple types if simpler
-    await processOrderCreation();
+    // Keep the specific method for order creation
+    await processOrderCreation(method);
     setIsPaymentOpen(false);
   };
 
-  const processOrderCreation = async () => {
+  const processOrderCreation = async (specificPaymentMethod?: string) => {
     setIsProcessing(true);
+    const finalPaymentMethod = specificPaymentMethod || paymentMethod;
+
     try {
       if (user) {
         // Utilisateur connecté
@@ -68,7 +70,7 @@ const CheckoutPage = () => {
           merchant_id: item.products?.merchant_id || ''
         }));
 
-        const result = await createOrder(orderItems, deliveryInfo, paymentMethod);
+        const result = await createOrder(orderItems, deliveryInfo, finalPaymentMethod);
 
         if (result.data) {
           clearCart();
@@ -83,7 +85,7 @@ const CheckoutPage = () => {
           merchant_id: item.products?.merchant_id || ''
         }));
 
-        const result = await createGuestOrder(guestInfo, orderItems, paymentMethod);
+        const result = await createGuestOrder(guestInfo, orderItems, finalPaymentMethod);
 
         if (result.data) {
           // Vider le panier local

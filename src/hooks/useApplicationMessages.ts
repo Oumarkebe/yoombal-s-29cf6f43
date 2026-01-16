@@ -92,9 +92,8 @@ export function useApplicationMessages(applicationId: string) {
     const sendMessage = async (content: string, type: 'text' | 'image' = 'text', attachmentUrl?: string) => {
         if (!user) return;
 
-        // Optimistic Update (Optional, skipping for robustness first)
-
-        const { error } = await supabase
+        // 1. Send the message
+        const { data: messageData, error: sendError } = await supabase
             .from('application_messages' as any)
             .insert({
                 application_id: applicationId,
@@ -103,10 +102,12 @@ export function useApplicationMessages(applicationId: string) {
                 message_type: type,
                 attachment_url: attachmentUrl,
                 is_read: false
-            });
+            })
+            .select()
+            .single();
 
-        if (error) {
-            console.error("Error sending message:", error);
+        if (sendError) {
+            console.error("Error sending message:", sendError);
             toast({
                 title: "Erreur",
                 description: "Message non envoyé",
@@ -115,11 +116,30 @@ export function useApplicationMessages(applicationId: string) {
             return false;
         }
 
-        // Trigger Notification for the OTHER party is handled by a separate Logic or SQL Trigger
-        // For now, we will handle it in the hook manually to be safe if no Edge Function
-        // But we need the recipient ID. 
-        // Optimization: The trigger should be on DB or generic notification logic.
-        // We'll leave the notification part to the caller or DB trigger for V2 robustness.
+        // 2. Trigger notification for recipient
+        try {
+            // Fetch application to find recipient
+            const { data: appData } = await supabase
+                .from('bnpl_plans' as any)
+                .select('client_id, merchant_id, products(name)')
+                .eq('id', applicationId)
+                .single();
+
+            if (appData) {
+                const recipientId = user.id === appData.client_id ? appData.merchant_id : appData.client_id;
+                const senderName = user.id === appData.client_id ? "Client" : "Marchand";
+
+                await (supabase.from('notifications' as any) as any).insert({
+                    user_id: recipientId,
+                    type: 'chat',
+                    title: `Nouveau message de ${senderName} 💬`,
+                    message: content.length > 50 ? content.substring(0, 47) + "..." : content,
+                    data: { application_id: applicationId, message_id: messageData.id }
+                });
+            }
+        } catch (notifErr) {
+            console.warn("Notification trigger failed (non-critical):", notifErr);
+        }
 
         return true;
     };
