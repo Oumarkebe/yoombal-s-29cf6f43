@@ -50,26 +50,34 @@ export function useBNPLPlans() {
     fetchPlans();
 
     // Realtime subscription with unique channel name to prevent conflicts
+    // Debounce subscription to avoid rapid connect/disconnect on mounting
     const channelName = `bnpl_plans:${user.id}`;
-    const channel = supabase
-      .channel(channelName)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bnpl_plans',
-        filter: `user_id=eq.${user.id}`
-      }, (payload) => {
-        // Refresh full list
-        fetchPlans();
-      })
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          // console.log(`Subscribed to ${channelName}`);
-        }
-      });
+    let channel: any = null;
+
+    const timeoutId = setTimeout(() => {
+      channel = supabase
+        .channel(channelName)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'bnpl_plans',
+          filter: `user_id=eq.${user.id}`
+        }, (payload) => {
+          // Refresh full list
+          fetchPlans();
+        })
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR') {
+            console.warn(`Realtime connection failed for ${channelName}. Server might be unreachable.`);
+          }
+        });
+    }, 500);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearTimeout(timeoutId);
+      if (channel) {
+        supabase.removeChannel(channel).catch(err => console.debug("Error cleaning up channel:", err));
+      }
     };
   }, [user]);
 
