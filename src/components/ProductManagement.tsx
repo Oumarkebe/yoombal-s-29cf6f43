@@ -6,7 +6,9 @@ import { Plus, Edit, Trash2, Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import ProductBNPLToggle from "./ProductBNPLToggle";
-import ProductForm from './ProductForm';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { ProductFormUltimate } from './admin/ProductFormUltimate';
+import { ProductFormData } from '@/types/product';
 import { useProducts, Product, Category } from '@/hooks/useProducts';
 import {
   AlertDialog,
@@ -64,22 +66,24 @@ const ProductManagement = () => {
     }
   };
 
-  const handleFormSubmit = async (productData: any) => {
+  const handleFormSubmit = async (productData: ProductFormData) => {
     try {
       if (selectedProduct) {
         // En mode modification
-        await updateProduct(selectedProduct.id, productData);
+        // Filtrage des champs non-Product
+        const { new_tags, gallery_files, ...dbData } = productData as any;
+        await updateProduct(selectedProduct.id, dbData);
         toast({
           title: "Succès",
           description: "Le produit a été mis à jour avec succès",
         });
       } else {
         // En mode création
-        // S'assurer que le merchant_id est bien défini
         if (!user) throw new Error("Utilisateur non connecté");
 
+        const { new_tags, gallery_files, ...dbData } = productData as any;
         await createProduct({
-          ...productData,
+          ...dbData,
           merchant_id: user.id
         });
         toast({
@@ -89,7 +93,6 @@ const ProductManagement = () => {
       }
       setIsFormOpen(false);
       refreshProducts(); // Rafraîchir la liste
-      return { data: true, error: null };
     } catch (error: any) {
       console.error("Error submitting product:", error);
       toast({
@@ -97,7 +100,6 @@ const ProductManagement = () => {
         description: error.message || "Une erreur est survenue",
         variant: "destructive"
       });
-      return { data: null, error };
     }
   };
 
@@ -279,13 +281,26 @@ const ProductManagement = () => {
         )}
       </div>
 
-      <ProductForm
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        onSubmit={handleFormSubmit}
-        categories={categories}
-        product={selectedProduct}
-      />
+      <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <SheetContent className="w-full sm:max-w-4xl overflow-y-auto p-0" side="right">
+          <div className="h-full flex flex-col">
+            <SheetHeader className="px-6 py-4 border-b">
+              <SheetTitle>{selectedProduct ? "Modifier le produit" : "Ajouter un produit"}</SheetTitle>
+              <SheetDescription>
+                {selectedProduct ? "Modifiez les informations ci-dessous." : "Remplissez le formulaire pour créer un nouveau produit."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-hidden">
+              <ProductFormUltimate
+                initialData={selectedProduct || undefined}
+                onSubmit={handleFormSubmit}
+                isLoading={isLoading}
+                onClose={() => setIsFormOpen(false)}
+              />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>

@@ -40,8 +40,8 @@ const CartPage = () => {
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
                 <Card key={item.id} className="p-4 flex items-center gap-4 bg-white/90 border-0 shadow-md rounded-xl">
-                  <img 
-                    src={item.products?.image_url || '/placeholder.svg'} 
+                  <img
+                    src={item.products?.image_url || '/placeholder.svg'}
                     alt={item.products?.name || 'Image produit'}
                     className="w-20 h-20 object-cover rounded-lg border border-gray-200"
                   />
@@ -50,8 +50,8 @@ const CartPage = () => {
                     <p className="text-lg font-bold text-blue-600">{(item.products?.price ?? 0).toLocaleString()} CFA</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button 
-                      size="icon" 
+                    <Button
+                      size="icon"
                       variant="outline"
                       onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                       aria-label="Diminuer la quantité"
@@ -59,8 +59,8 @@ const CartPage = () => {
                       <Minus className="h-4 w-4" />
                     </Button>
                     <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                    <Button 
-                      size="icon" 
+                    <Button
+                      size="icon"
                       variant="outline"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       aria-label="Augmenter la quantité"
@@ -68,9 +68,9 @@ const CartPage = () => {
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     onClick={() => removeItem(item.id)}
                     className="text-red-500 hover:text-red-700"
                     aria-label="Supprimer l'article"
@@ -125,7 +125,12 @@ const CartPage = () => {
                     <Link to="/checkout">Commander maintenant</Link>
                   </Button>
                   <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600" asChild>
-                    <Link to="/bnpl">Paiement échelonné BNPL</Link>
+                    <Link to="/bnpl" state={{
+                      cartTotal: getTotalPrice(),
+                      cartItems: items
+                    }}>
+                      Paiement échelonné BNPL
+                    </Link>
                   </Button>
                   <Button variant="outline" className="w-full" onClick={clearCart}>
                     Vider le panier

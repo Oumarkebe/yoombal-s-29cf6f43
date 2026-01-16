@@ -96,7 +96,7 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
   }
 
   return (
-    <>
+    <Dialog open={true} onOpenChange={(open) => { if (!open && onClose) onClose(); }}>
       <DialogContent className="max-w-md">
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-lg font-bold border-b pb-2">
@@ -169,6 +169,7 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
           <Input
             type="password"
             placeholder="Mot de passe admin"
+            autoComplete="current-password"
             value={passwordInput}
             onChange={(e) => setPasswordInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmAction(); }}
@@ -179,6 +180,6 @@ export function RolesModal({ user, onClose }: RolesModalProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </Dialog>
   );
 }

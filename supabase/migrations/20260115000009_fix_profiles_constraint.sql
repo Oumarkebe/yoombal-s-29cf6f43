@@ -22,6 +22,7 @@ DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable insert for service role" ON profiles;
 DROP POLICY IF EXISTS "Enable read access for all users" ON profiles;
+DROP POLICY IF EXISTS "Enable all for service role" ON profiles;
 
 -- 6. Create new policies that work for our use case
 -- Allow authenticated users to insert their own profile (for registration)

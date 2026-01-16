@@ -18,13 +18,17 @@ import {
     VolumeX,
     Settings,
     UserCircle,
-    Check
+    Check,
+    ShoppingCart,
+    Scale,
+    ArrowRight
 } from 'lucide-react';
 // import { TtsSession } from '@mintplex-labs/piper-tts-web'; // Converted to dynamic import
 
 
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -35,6 +39,7 @@ interface Message {
 
 export function AIAssistant() {
     const [isOpen, setIsOpen] = useState(false);
+    const { addItem, triggerAnimation } = useCart();
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'assistant',
@@ -43,6 +48,8 @@ export function AIAssistant() {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [thoughtStep, setThoughtStep] = useState("Réflexion...");
+    const [lastAnalyticTags, setLastAnalyticTags] = useState<any>(null);
     const [isListening, setIsListening] = useState(false);
     const [voiceEnabled, setVoiceEnabled] = useState(true);
     const [voiceType, setVoiceType] = useState<'standard' | 'premium'>('standard');
@@ -147,8 +154,25 @@ export function AIAssistant() {
     const speakText = (text: string) => {
         if (!voiceEnabled) return;
 
-        // Remove emojis and certain special characters for cleaner speech
+        // Extract and Remove Analytic Tags (for logging)
+        const analyticTags = {
+            action_detected: text.match(/action_detected\s*:\s*([\w|.-]+)/)?.[1],
+            commercial_success: text.match(/commercial_success\s*:\s*(\w+)/)?.[1],
+            tone_consistency: text.match(/tone_consistency\s*:\s*(\w+)/)?.[1],
+        };
+
+        if (analyticTags.action_detected) {
+            console.log("AI Analytics Detected:", analyticTags);
+            // Here we could sync with DB if needed
+        }
+
+        // Remove emojis, analytic tags and silences for cleaner speech
         const cleanText = text
+            .replace(/action_detected\s*:\s*[\w|.-]+/g, '')
+            .replace(/commercial_success\s*:\s*\w+/g, '')
+            .replace(/tone_consistency\s*:\s*\w+/g, '')
+            .replace(/\[SILENCE_LONG\]/g, ' . ') // Replace with a full stop for a natural pause in TTS
+            .replace(/\[SILENCE_COURT\]/g, ' , ') // Replace with a comma for a short pause
             .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '')
             .replace(/\*\*/g, '')
             .trim();
@@ -228,6 +252,20 @@ export function AIAssistant() {
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
+        setThoughtStep("Analyse de la demande...");
+
+        const thoughtSteps = [
+            "Consultation du catalogue...",
+            "Vérification des disponibilités...",
+            "Calcul du meilleur budget...",
+            "Préparation des conseils..."
+        ];
+
+        let stepIndex = 0;
+        const interval = setInterval(() => {
+            stepIndex = (stepIndex + 1) % thoughtSteps.length;
+            setThoughtStep(thoughtSteps[stepIndex]);
+        }, 1500);
 
         try {
             const systemPrompt = assistantConfig.system_prompt || "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.";
@@ -243,19 +281,33 @@ export function AIAssistant() {
                 }
             });
 
+            clearInterval(interval);
             if (error) throw error;
 
             if (data?.response) {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+
+                // Parse analytic tags for UI
+                const actionDetected = data.response.match(/action_detected\s*:\s*([\w|.-]+)/)?.[1];
+                const actionParts = actionDetected?.split('|') || [];
+
+                const analyticTags = {
+                    action_detected: actionParts[0],
+                    target_id: actionParts[1],
+                    commercial_success: data.response.match(/commercial_success\s*:\s*(\w+)/)?.[1],
+                    tone_consistency: data.response.match(/tone_consistency\s*:\s*(\w+)/)?.[1],
+                };
+                setLastAnalyticTags(analyticTags);
+
                 if (voiceEnabled) {
                     speakText(data.response);
                 }
             } else if (data?.error) {
-
                 toast.error(data.error);
                 setMessages(prev => [...prev, { role: 'assistant', content: "Désolé, j'ai rencontré une erreur technique." }]);
             }
         } catch (err: any) {
+            clearInterval(interval);
             console.error('Chatbot error:', err);
             toast.error("Impossible de contacter l'IA.");
         } finally {
@@ -362,7 +414,19 @@ export function AIAssistant() {
                                                 ? "bg-white border rounded-tl-none text-slate-800"
                                                 : "bg-amber-600 text-white rounded-tr-none"
                                         )}>
-                                            {m.content}
+                                            {m.role === 'assistant' ? (
+                                                <div className="whitespace-pre-wrap">
+                                                    {m.content
+                                                        .replace(/action_detected\s*:\s*[\w|.-]+/gi, '')
+                                                        .replace(/commercial_success\s*:\s*[\w|.-]+/gi, '')
+                                                        .replace(/tone_consistency\s*:\s*[\w|.-]+/gi, '')
+                                                        .replace(/\[SILENCE_LONG\]/g, '')
+                                                        .replace(/\[SILENCE_COURT\]/g, '')
+                                                        .trim()}
+                                                </div>
+                                            ) : (
+                                                m.content
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -371,10 +435,57 @@ export function AIAssistant() {
                                         <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
                                             <Bot className="w-4 h-4" />
                                         </div>
-                                        <div className="bg-white border p-3 rounded-2xl rounded-tl-none text-sm shadow-sm flex items-center gap-2 text-slate-500">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Assistant réfléchit...
+                                        <div className="bg-white border p-3 rounded-2xl rounded-tl-none text-sm shadow-sm flex items-center gap-2 text-slate-500 italic">
+                                            <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                                            {thoughtStep}
                                         </div>
+                                    </div>
+                                )}
+
+                                {!isLoading && lastAnalyticTags?.action_detected && (
+                                    <div className="flex gap-2 flex-wrap ml-10 mt-2 mb-4 animate-in fade-in slide-in-from-left-2 duration-500">
+                                        {lastAnalyticTags.action_detected === 'add_cart' && (
+                                            <Button
+                                                size="sm"
+                                                className="bg-green-600 hover:bg-green-700 text-white gap-1.5 h-8 rounded-full shadow-sm"
+                                                onClick={(e) => {
+                                                    if (lastAnalyticTags.target_id) {
+                                                        addItem(lastAnalyticTags.target_id);
+                                                        triggerAnimation({ x: e.clientX, y: e.clientY });
+                                                        setInput("C'est fait, quoi d'autre ?");
+                                                        setLastAnalyticTags(null);
+                                                    } else {
+                                                        toast.error("Format produit invalide.");
+                                                    }
+                                                }}
+                                            >
+                                                <ShoppingCart className="w-3.5 h-3.5" />
+                                                Ajouter au panier
+                                            </Button>
+                                        )}
+                                        {lastAnalyticTags.action_detected === 'compare' && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-1.5 h-8 rounded-full"
+                                                onClick={() => {
+                                                    setInput("Peux-tu me montrer un comparatif ?");
+                                                    handleSendMessage();
+                                                }}
+                                            >
+                                                <Scale className="w-3.5 h-3.5" />
+                                                Comparer les prix
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-slate-400 hover:text-slate-600 gap-1 h-8 rounded-full"
+                                            onClick={() => setLastAnalyticTags(null)}
+                                        >
+                                            Plus tard
+                                            <X className="w-3 h-3" />
+                                        </Button>
                                     </div>
                                 )}
                             </div>

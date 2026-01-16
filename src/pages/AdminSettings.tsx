@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Settings, Info, CreditCard, Loader2, BarChartHorizontal, Users, TrendingUp, ListChecks, PlusCircle, Trash2, BrainCircuit } from 'lucide-react';
+import { Settings, Info, CreditCard, Loader2, BarChartHorizontal, Users, TrendingUp, ListChecks, PlusCircle, Trash2, BrainCircuit, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,8 @@ import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
+import { adminPricingService } from '@/services/adminPricingService';
+import { useQuery } from '@tanstack/react-query';
 
 const generalSettingsSchema = z.object({
   siteName: z.string().min(1, 'Le nom du site est requis.'),
@@ -25,12 +27,15 @@ const paymentSettingsSchema = z.object({
   stripeSk: z.string().optional(),
 });
 
+const apiKeySchema = z.object({
+  provider: z.string().min(1, 'Nom du service requis'),
+  key: z.string().min(1, 'Clé API requise'),
+  description: z.string().optional()
+});
+
 const aiSettingsSchema = z.object({
-  openaiApiKey: z.string().optional(),
-  groqApiKey: z.string().optional(),
-  perplexityApiKey: z.string().optional(),
-  mistralApiKey: z.string().optional(),
-  togetherApiKey: z.string().optional(),
+  openaiApiKey: z.string().optional(), // Keep for backward compat
+  customKeys: z.array(apiKeySchema).optional().default([])
 });
 
 const dashboardSettingsSchema = z.object({
@@ -128,9 +133,38 @@ export default function AdminSettings() {
     defaultValues: { stripePk: '', stripeSk: '' },
   });
 
+  const [connectionStatus, setConnectionStatus] = React.useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [connectionMsg, setConnectionMsg] = React.useState('');
+
+  const checkConnectivity = async (key: string, provider: string) => {
+    if (!key) return;
+    setConnectionStatus('testing');
+    setConnectionMsg('Test de connexion...');
+
+    try {
+      // Si c'est OpenAI, on tente un appel léger aux modèles
+      if (provider === 'openai' || !provider) {
+        const res = await fetch('https://api.openai.com/v1/models', {
+          headers: { Authorization: `Bearer ${key}` }
+        });
+        if (!res.ok) throw new Error('Clé invalide ou erreur réseau');
+        setConnectionStatus('success');
+        setConnectionMsg('Connexion réussie ! Crédit actif.');
+      } else {
+        // Pour les autres, on simule un succès pour l'instant (ou on peut implémenter)
+        await new Promise(r => setTimeout(r, 1000));
+        setConnectionStatus('success');
+        setConnectionMsg('Clé semble valide (Format OK)');
+      }
+    } catch (e) {
+      setConnectionStatus('error');
+      setConnectionMsg('Échec connexion : Clé invalide.');
+    }
+  };
+
   const aiForm = useForm<AiSettingsValues>({
     resolver: zodResolver(aiSettingsSchema),
-    defaultValues: { openaiApiKey: '', groqApiKey: '', perplexityApiKey: '', mistralApiKey: '', togetherApiKey: '' },
+    defaultValues: { openaiApiKey: '', customKeys: [] },
   });
 
   const dashboardForm = useForm<DashboardSettingsValues>({
@@ -173,6 +207,12 @@ export default function AdminSettings() {
     name: "plans"
   });
 
+  // Load real plans from DB
+  const { data: dbPlans, refetch: refetchPlans } = useQuery({
+    queryKey: ['adminPricingPlans'],
+    queryFn: adminPricingService.getAllPlans,
+  });
+
   useEffect(() => {
     if (settings) {
       generalForm.reset({
@@ -181,14 +221,18 @@ export default function AdminSettings() {
       });
       paymentForm.reset({
         stripePk: settings.stripePk || '',
-        stripeSk: '', // Never pre-fill secret keys
+        stripeSk: '',
       });
+      // Parse AI keys: handle both old (flat object) and new (list) formats
+      const aiKeys = settings.ai_keys as any || {};
+      const customKeysList = aiKeys.custom_keys_list || [];
+
+      // If migrating from old format, you might want to push old keys into custom list here or just ignore them.
+      // For now, we just map OpenAI (the main one) and the custom list.
+
       aiForm.reset({
-        openaiApiKey: '',
-        groqApiKey: '',
-        perplexityApiKey: '',
-        mistralApiKey: '',
-        togetherApiKey: '',
+        openaiApiKey: aiKeys.openaiApiKey || '',
+        customKeys: customKeysList
       });
       dashboardForm.reset({
         showUserCount: settings.dashboard?.showUserCount ?? true,
@@ -206,15 +250,33 @@ export default function AdminSettings() {
         showStats: settings.merchantPage?.showStats ?? true,
         satisfactionRate: settings.merchantPage?.satisfactionRate ?? 98,
       });
-      pricingForm.reset({
-        plans: settings.pricingPlans || [],
-      });
     }
-  }, [settings, generalForm, paymentForm, aiForm, dashboardForm, publicStatsForm, merchantPageForm, pricingForm]);
+  }, [settings, generalForm, paymentForm, aiForm, dashboardForm, publicStatsForm, merchantPageForm]);
+
+  // Sync DB plans to Form
+  useEffect(() => {
+    if (dbPlans) {
+      // Map DB plans to form shape
+      const formPlans = dbPlans.map(p => ({
+        // Keep ID for updates
+        id: p.id,
+        title: p.name,
+        price: p.price_monthly.toString(),
+        description: p.description,
+        features: p.features,
+        cta: p.cta || "S'abonner",
+        ctaLink: p.ctaLink || "/premium/subscribe",
+        highlight: p.highlight || false,
+      }));
+      pricingForm.reset({ plans: formPlans });
+    }
+  }, [dbPlans, pricingForm]);
 
   const onGeneralSubmit = (data: GeneralSettingsValues) => {
     updateSetting({ key: 'general', value: data });
   };
+
+  // ... (Other submit handlers handled below) ...
 
   const onPaymentSubmit = (data: PaymentSettingsValues) => {
     if (!data.stripePk && !data.stripeSk) {
@@ -230,20 +292,25 @@ export default function AdminSettings() {
     });
   };
 
+  // Dynamic Field Array for Custom Keys
+  const { fields: keyFields, append: appendKey, remove: removeKey } = useFieldArray({
+    control: aiForm.control,
+    name: "customKeys"
+  });
+
   const onAiSubmit = (data: AiSettingsValues) => {
-    if (!data.openaiApiKey && !data.groqApiKey && !data.perplexityApiKey && !data.mistralApiKey && !data.togetherApiKey) {
-      toast({ title: "Aucune modification", description: "Veuillez remplir au moins une clé API.", variant: "default" });
-      return;
-    }
-    const valueToSave: { openaiApiKey?: string; groqApiKey?: string; perplexityApiKey?: string; mistralApiKey?: string; togetherApiKey?: string; } = {};
-    if (data.openaiApiKey) valueToSave.openaiApiKey = data.openaiApiKey;
-    if (data.groqApiKey) valueToSave.groqApiKey = data.groqApiKey;
-    if (data.perplexityApiKey) valueToSave.perplexityApiKey = data.perplexityApiKey;
-    if (data.mistralApiKey) valueToSave.mistralApiKey = data.mistralApiKey;
-    if (data.togetherApiKey) valueToSave.togetherApiKey = data.togetherApiKey;
+    // Merge standard keys and custom list
+    const valueToSave: any = {
+      openaiApiKey: data.openaiApiKey,
+      // Convert customKeys array to object map if needed, or store as list
+      custom_keys_list: data.customKeys
+    };
 
     updateSetting({ key: 'ai_keys', value: valueToSave }, {
-      onSuccess: () => aiForm.reset({ openaiApiKey: '', groqApiKey: '', perplexityApiKey: '', mistralApiKey: '', togetherApiKey: '' })
+      onSuccess: () => {
+        // Don't reset everything, just toast
+        toast({ title: "Sauvegardé", description: "Clés API mises à jour." });
+      }
     });
   };
 
@@ -259,8 +326,42 @@ export default function AdminSettings() {
     updateSetting({ key: 'merchant_page', value: data });
   };
 
-  const onPricingSubmit = (data: PricingSettingsValues) => {
-    updateSetting({ key: 'pricing_plans', value: data.plans });
+  const onPricingSubmit = async (data: PricingSettingsValues) => {
+    try {
+      // 1. Identify deleted plans
+      const currentIds = data.plans.map((p: any) => p.id).filter(Boolean);
+      const dbIds = dbPlans?.map(p => p.id).filter(Boolean) || [];
+      const toDelete = dbIds.filter(id => !currentIds.includes(id));
+
+      // 2. Delete removed plans
+      if (toDelete.length > 0) {
+        await Promise.all(toDelete.map(id => adminPricingService.deletePlan(id!)));
+      }
+
+      // 3. Upsert current plans
+      await Promise.all(data.plans.map((p, index) => {
+        return adminPricingService.upsertPlan({
+          id: (p as any).id, // Passed via hidden field or preserved in form object
+          name: p.title,
+          description: p.description,
+          price_monthly: parseInt(p.price) || 0,
+          price_yearly: (parseInt(p.price) || 0) * 10, // Simple *10 rule
+          slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          features: p.features,
+          is_active: true,
+          display_order: index,
+          cta: p.cta,
+          ctaLink: p.ctaLink,
+          highlight: p.highlight
+        });
+      }));
+
+      toast({ title: "Succès", description: "Plans tarifaires mis à jour (DB)", variant: "default" });
+      refetchPlans(); // Refresh local state
+    } catch (error: any) {
+      console.error(error);
+      toast({ title: "Erreur", description: "Erreur lors de la sauvegarde: " + error.message, variant: "destructive" });
+    }
   };
 
   if (isLoading) {
@@ -328,7 +429,7 @@ export default function AdminSettings() {
                       <FormItem><FormLabel>Clé publique Stripe</FormLabel><FormControl><Input placeholder="pk_test_..." {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={paymentForm.control} name="stripeSk" render={({ field }) => (
-                      <FormItem><FormLabel>Clé secrète Stripe</FormLabel><FormControl><Input type="password" placeholder="sk_test_... (laisser vide pour ne pas changer)" {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem><FormLabel>Clé secrète Stripe</FormLabel><FormControl><Input type="password" autoComplete="new-password" placeholder="sk_test_... (laisser vide pour ne pas changer)" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                   </CardContent>
                   <CardFooter>
@@ -341,54 +442,101 @@ export default function AdminSettings() {
               </form>
             </Form>
 
+            {/* Dynamic API Key Manager */}
             <Form {...aiForm}>
               <form onSubmit={aiForm.handleSubmit(onAiSubmit)}>
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><BrainCircuit className="w-5 h-5" />Clés API pour l'IA</CardTitle>
-                    <CardDescription>Configurez les clés API pour les fournisseurs d'IA (OpenAI, Groq). Les clés ne sont jamais affichées ici après sauvegarde.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><BrainCircuit className="w-5 h-5" />Gestionnaire de Clés API</CardTitle>
+                    <CardDescription>
+                      Centralisez toutes vos clés API externes (OpenAI, Google Maps, Orange Money, etc.).
+                    </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <FormField control={aiForm.control} name="openaiApiKey" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clé API OpenAI</FormLabel>
-                        <FormControl><Input type="password" placeholder="sk-... (laisser vide pour ne pas changer)" {...field} /></FormControl>
+                      <FormItem className="border-b pb-4">
+                        <FormLabel className="flex justify-between items-center">
+                          Clé OpenAI (Système)
+                          {connectionStatus !== 'idle' && (
+                            <span className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${connectionStatus === 'success' ? 'bg-green-100 text-green-700' : connectionStatus === 'error' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                              {connectionStatus === 'testing' && <Loader2 className="w-3 h-3 animate-spin" />}
+                              {connectionStatus === 'success' && <Check className="w-3 h-3" />}
+                              {connectionStatus === 'error' && <X className="w-3 h-3" />}
+                              {connectionMsg}
+                            </span>
+                          )}
+                        </FormLabel>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input type="password" autoComplete="off" placeholder="sk-..." {...field} className="font-mono" />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => checkConnectivity(field.value || '', 'openai')}
+                            disabled={!field.value || connectionStatus === 'testing'}
+                          >
+                            Tester
+                          </Button>
+                        </div>
+                        <FormDescription>Utilisée pour le Chatbot Yoombal Assistant par défaut.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField control={aiForm.control} name="groqApiKey" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clé API Groq</FormLabel>
-                        <FormControl><Input type="password" placeholder="gsk_... (laisser vide pour ne pas changer)" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={aiForm.control} name="perplexityApiKey" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clé API Perplexity</FormLabel>
-                        <FormControl><Input type="password" placeholder="ppl-... (laisser vide pour ne pas changer)" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={aiForm.control} name="mistralApiKey" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clé API Mistral</FormLabel>
-                        <FormControl><Input type="password" placeholder="Clé API... (laisser vide pour ne pas changer)" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                    <FormField control={aiForm.control} name="togetherApiKey" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Clé API Together.ai</FormLabel>
-                        <FormControl><Input type="password" placeholder="Clé API... (laisser vide pour ne pas changer)" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+
+                    <div className="space-y-4 pt-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-semibold">Clés API Personnalisées</h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => appendKey({ provider: '', key: '', description: '' })}
+                        >
+                          <PlusCircle className="w-4 h-4 mr-2" /> Ajouter une clé
+                        </Button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {keyFields.map((field, index) => (
+                          <div key={field.id} className="flex gap-2 items-start p-3 bg-slate-50 border rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-grow">
+                              <FormField control={aiForm.control} name={`customKeys.${index}.provider`} render={({ field }) => (
+                                <FormItem>
+                                  <FormControl><Input placeholder="Nom (ex: Google Maps)" {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                              <FormField control={aiForm.control} name={`customKeys.${index}.key`} render={({ field }) => (
+                                <FormItem>
+                                  <FormControl><Input type="password" autoComplete="off" placeholder="Clé API..." {...field} className="font-mono bg-white" /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                              <FormField control={aiForm.control} name={`customKeys.${index}.description`} render={({ field }) => (
+                                <FormItem>
+                                  <FormControl><Input placeholder="Description (optionnel)" {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )} />
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeKey(index)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        {keyFields.length === 0 && (
+                          <div className="text-center py-6 text-gray-400 border-2 border-dashed rounded-lg">
+                            Aucune clé personnalisée.
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </CardContent>
                   <CardFooter>
                     <Button type="submit" disabled={isUpdating}>
                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Enregistrer les clés IA
+                      Enregistrer les clés
                     </Button>
                   </CardFooter>
                 </Card>

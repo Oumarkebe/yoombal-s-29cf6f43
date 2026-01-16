@@ -10,15 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Heart, Share2, ShoppingCart, Truck, Shield, ArrowLeft, MapPin, UserPlus } from 'lucide-react';
+import { Star, Heart, Share2, ShoppingCart, Truck, Shield, ArrowLeft, MapPin, UserPlus, Loader2 } from 'lucide-react';
 import { useMarketplaceProducts } from '@/hooks/useMarketplaceProducts';
+import { useMarketplaceProduct } from '@/hooks/useMarketplaceProduct';
 import ProductReviews from "@/components/ProductReviews";
 import BNPLApplicationForm from "@/components/BNPLApplicationForm";
 import { AIRecommendations } from "@/components/ai/AIRecommendations";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { addItem } = useCart();
+  const { addItem, triggerAnimation } = useCart();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const [selectedImage, setSelectedImage] = useState(0);
@@ -27,17 +28,41 @@ const ProductDetail = () => {
   const [showBNPLForm, setShowBNPLForm] = useState(false);
   const [activeTab, setActiveTab] = useState("specs");
 
-  // Récupération des produits du marketplace
-  const { products, isLoading } = useMarketplaceProducts();
-  // Recherche du produit courant par id
-  const product = products.find((p) => p.id === id);
+  // Récupération directe du produit par id
+  const { product, isLoading, error } = useMarketplaceProduct(id);
 
   if (isLoading) {
-    return <div>Chargement...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+          <p className="text-gray-600 font-medium">Chargement des détails du produit...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!product) {
-    return <div>Erreur lors du chargement du produit.</div>;
+  if (error || !product) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 inline-block">
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">Oups ! Produit introuvable</h2>
+            <p className="text-slate-600 mb-8 max-w-md mx-auto">
+              Désolé, nous ne parvenons pas à charger les détails de ce produit. Il a peut-être été retiré ou n'est plus disponible.
+            </p>
+            <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Link to="/marketplace">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Retour au Marketplace
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   // Adaptation des champs pour compatibilité avec l'ancien mock
@@ -60,15 +85,9 @@ const ProductDetail = () => {
     bnpl_enabled: product.bnpl_enabled || false,
   };
 
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem(productData.id);
-    }
-
-    toast({
-      title: "Produit ajouté au panier",
-      description: `${quantity} x ${productData.name}`,
-    });
+  const handleAddToCart = (e: React.MouseEvent) => {
+    addItem(productData.id, quantity);
+    triggerAnimation({ x: e.clientX, y: e.clientY }, productData.images[0]);
   };
 
   const formatCurrency = (value: number) => {
@@ -243,7 +262,7 @@ const ProductDetail = () => {
                   </div>
                   <Button
                     className="flex-1 bg-gradient-to-r from-blue-600 to-violet-600"
-                    onClick={handleAddToCart}
+                    onClick={(e) => handleAddToCart(e)}
                     disabled={!productData.inStock}
                   >
                     <ShoppingCart className="mr-2 h-4 w-4" />

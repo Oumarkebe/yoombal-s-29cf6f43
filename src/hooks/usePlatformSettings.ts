@@ -41,6 +41,7 @@ export type SettingsData = {
   publicStats?: PublicStatsSettings;
   merchantPage?: MerchantPageSettings;
   pricingPlans?: PricingPlan[];
+  ai_keys?: any; // Added ai_keys
 };
 
 // Fetch all settings
@@ -64,6 +65,12 @@ async function fetchSettings(): Promise<SettingsData> {
   if (paymentData && paymentData.value && typeof paymentData.value === 'object' && !Array.isArray(paymentData.value)) {
     const value = paymentData.value as { stripePk?: string; };
     settings.stripePk = value.stripePk;
+  }
+
+  // Fetch AI Keys
+  const aiKeysData = typedData.find(item => item.key === 'ai_keys');
+  if (aiKeysData && aiKeysData.value) {
+    settings.ai_keys = aiKeysData.value;
   }
 
   const dashboardData = typedData.find(item => item.key === 'dashboard');

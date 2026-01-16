@@ -14,7 +14,7 @@ interface PaymentDialogProps {
     onClose: () => void;
     amount: number;
     description: string;
-    type: 'credit_topup' | 'subscription_purchase' | 'repayment';
+    type: 'credit_topup' | 'subscription_purchase' | 'repayment' | 'product_purchase';
     metadata?: any;
     onSuccess?: (method: 'orange_money' | 'wave', phoneNumber: string) => void;
 }

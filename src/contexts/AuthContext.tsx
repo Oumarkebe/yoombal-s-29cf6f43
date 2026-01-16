@@ -156,23 +156,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (profile) {
         const profileData = profile as any;
-        
+
         // Get all roles from the user_roles table
         const allRolesFromDB: AppRole[] = (userRolesData?.map(r => r.role) || []).filter(isValidRole);
-        
+
         // Determine primary role (highest privilege)
-        const primaryRole = allRolesFromDB.length > 0 
-          ? getHighestRole(allRolesFromDB) 
+        const primaryRole = allRolesFromDB.length > 0
+          ? getHighestRole(allRolesFromDB)
           : 'user';
-        
+
         // Combine all roles (ensure at least 'user' role)
-        const allRoles: AppRole[] = allRolesFromDB.length > 0 
-          ? [...new Set(allRolesFromDB)] 
+        const allRoles: AppRole[] = allRolesFromDB.length > 0
+          ? [...new Set(allRolesFromDB)]
           : ['user'];
 
         // Parse status with validation
-        const userStatus: UserStatus = profileData.status && isValidStatus(profileData.status) 
-          ? profileData.status 
+        const userStatus: UserStatus = profileData.status && isValidStatus(profileData.status)
+          ? profileData.status
           : 'active';
 
         // Parse KYC status
@@ -191,6 +191,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           businessType: profileData.business_type,
           vehicleType: profileData.vehicle_type,
           zone: profileData.zone,
+          merchant_name: profileData.merchant_name,
+          delivery_name: profileData.delivery_name,
+          client_name: profileData.client_name,
           kyc_status: kycStatus,
           kyc_id_card_url: profileData.kyc_id_card_url,
           kyc_selfie_url: profileData.kyc_selfie_url,
@@ -200,11 +203,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           created_at: profileData.created_at,
           updated_at: profileData.updated_at,
         });
-        console.log('Profile and roles loaded:', { 
-          roles: allRoles, 
+        console.log('Profile and roles loaded:', {
+          roles: allRoles,
           primaryRole,
           status: userStatus,
-          email: authUser.email 
+          email: authUser.email
         });
       } else {
         console.warn('Profile not found for user:', authUser.id);
@@ -364,10 +367,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
  */
 export function useRole(requiredRoles: AppRole | AppRole[]) {
   const { user, isLoading } = useAuth();
-  
+
   if (isLoading) return false;
   if (!user) return false;
-  
+
   const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
   return user.roles.some(role => roles.includes(role));
 }
@@ -377,20 +380,20 @@ export function useRole(requiredRoles: AppRole | AppRole[]) {
  */
 export function useHasPermission(resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'manage') {
   const { user, isLoading } = useAuth();
-  
+
   if (isLoading) return false;
   if (!user) return false;
-  
+
   // Admin has all permissions
   if (user.roles.includes('admin')) return true;
-  
+
   // Import and check ROLE_PERMISSIONS dynamically to avoid circular deps
   const { ROLE_PERMISSIONS } = require('@/types/auth');
-  
+
   return user.roles.some(role => {
     const permissions = ROLE_PERMISSIONS[role] || [];
-    return permissions.some((p: any) => 
-      (p.resource === '*' || p.resource === resource) && 
+    return permissions.some((p: any) =>
+      (p.resource === '*' || p.resource === resource) &&
       (p.action === 'manage' || p.action === action)
     );
   });
@@ -401,9 +404,9 @@ export function useHasPermission(resource: string, action: 'create' | 'read' | '
  */
 export function useIsActiveUser() {
   const { user, isLoading } = useAuth();
-  
+
   if (isLoading) return false;
   if (!user) return false;
-  
+
   return user.status === 'active';
 }

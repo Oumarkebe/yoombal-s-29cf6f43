@@ -1,12 +1,9 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,11 +15,11 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !serviceRoleKey) {
-        console.error('Missing Supabase URL or Service Role Key');
-        return new Response(JSON.stringify({ error: 'Internal server configuration error.' }), {
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      console.error('Missing Supabase URL or Service Role Key');
+      return new Response(JSON.stringify({ error: 'Internal server configuration error.' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
@@ -52,7 +49,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
+
     const { text, source_language = 'auto', target_language } = await req.json();
 
     if (!text || !target_language) {
@@ -77,11 +74,11 @@ serve(async (req) => {
       { name: 'mistral', model: 'open-mistral-7b', url: 'https://api.mistral.ai/v1/chat/completions', apiKey: dbApiKeys.mistralApiKey || Deno.env.get('MISTRAL_API_KEY') },
       { name: 'together', model: 'meta-llama/Llama-3-8B-chat-hf', url: 'https://api.together.xyz/v1/chat/completions', apiKey: dbApiKeys.togetherApiKey || Deno.env.get('TOGETHER_API_KEY') },
     ];
-    
+
     const preferredProvider = settings.configuration?.provider || 'openai';
-    
+
     const availableProviders = providerConfigs.filter(p => p.apiKey);
-    
+
     if (availableProviders.length === 0) {
       console.error('No AI provider API key is configured.');
       const userMessage = "Aucun fournisseur d'IA n'est configuré. Veuillez ajouter au moins une clé API dans les paramètres d'administration.";
@@ -121,21 +118,21 @@ serve(async (req) => {
         });
 
         if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`API error from ${provider.name}: ${response.status} ${response.statusText}. Details: ${errorBody}`);
+          const errorBody = await response.text();
+          throw new Error(`API error from ${provider.name}: ${response.status} ${response.statusText}. Details: ${errorBody}`);
         }
 
         const completion = await response.json();
-        
+
         const translatedText = completion?.choices?.[0]?.message?.content?.trim();
 
         if (translatedText) {
-            console.log(`Translation successful with ${provider.name}!`);
-            return new Response(JSON.stringify({ translated_text: translatedText }), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
+          console.log(`Translation successful with ${provider.name}!`);
+          return new Response(JSON.stringify({ translated_text: translatedText }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
         } else {
-            throw new Error(`Invalid completion response structure from ${provider.name}.`);
+          throw new Error(`Invalid completion response structure from ${provider.name}.`);
         }
       } catch (error) {
         console.error(`Translation with ${provider.name} failed:`, error.message);

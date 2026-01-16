@@ -30,14 +30,23 @@ const Navbar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { getTotalItems } = useCart();
+  const [isCartBouncing, setIsCartBouncing] = useState(false);
 
   const userRole = (user?.role as any);
   const isAdmin = userRole === 'admin';
-  const isMerchant = userRole === 'merchant' || userRole === 'marchand';
-  const isClient = userRole === 'client';
-  const isDriver = userRole === 'driver' || userRole === 'delivery' || userRole === 'livreur';
+  const isMerchant = userRole === 'merchant' || userRole === 'marchand' || isAdmin;
+  const isClient = userRole === 'client' || isAdmin;
+  const isDriver = userRole === 'driver' || userRole === 'delivery' || userRole === 'livreur' || isAdmin;
 
   const totalItems = getTotalItems();
+
+  React.useEffect(() => {
+    if (totalItems > 0) {
+      setIsCartBouncing(true);
+      const timer = setTimeout(() => setIsCartBouncing(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [totalItems]);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -145,8 +154,8 @@ const Navbar = () => {
             {user ? (
               <>
                 {location.pathname !== '/cart' && (
-                  <Link to="/cart" className="flex items-center text-gray-700 hover:text-amber-600">
-                    <ShoppingCart className="w-5 h-5" />
+                  <Link to="/cart" id="navbar-cart-icon" className={`flex items-center text-gray-700 hover:text-amber-600 transition-transform duration-300 ${isCartBouncing ? 'scale-125' : 'scale-100'}`}>
+                    <ShoppingCart className={`w-5 h-5 ${isCartBouncing ? 'text-amber-600' : ''}`} />
                     {totalItems > 0 && (
                       <span className="ml-1 text-sm font-semibold text-amber-600">{totalItems}</span>
                     )}
@@ -167,10 +176,18 @@ const Navbar = () => {
                         Profil
                       </DropdownMenuItem>
                       {isAdmin && (
-                        <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
-                          <Settings className="mr-2 h-4 w-4" />
-                          Admin
-                        </DropdownMenuItem>
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>Administration</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Tableau de Bord Admin
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer font-semibold text-amber-600">
+                            <User className="mr-2 h-4 w-4" />
+                            Mon Espace Client (Perso)
+                          </DropdownMenuItem>
+                        </>
                       )}
                       {isMerchant && (
                         <DropdownMenuItem onClick={() => navigate('/merchant')} className="cursor-pointer">

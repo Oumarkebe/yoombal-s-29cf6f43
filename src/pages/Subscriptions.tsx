@@ -106,10 +106,10 @@ export default function Subscriptions() {
 
     // Filter features that are premium, enabled by admin, and NOT already in user's active features
     // We only show modules that are not part of the current plan to stay clear.
+    // List all premium modules available for purchase
     const individualModules = globalFeatures?.filter(f =>
         f.is_premium &&
         f.is_enabled &&
-        !resolvedFeatures.includes(f.feature_key) &&
         f.price_monthly > 0
     ) || [];
 
@@ -186,20 +186,31 @@ export default function Subscriptions() {
                                         )}
                                         <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Annulable à tout moment</li>
                                     </ul>
-                                    <Button className="w-full" onClick={() => {
-                                        setSelectedPlan({
-                                            id: feature.id,
-                                            name: feature.name,
-                                            price_monthly: feature.price_monthly,
-                                            price_yearly: feature.price_monthly * 10, // Yearly approx
-                                            slug: `module_${feature.feature_key}`,
-                                            features: [feature.feature_key],
-                                            limits: {}
-                                        } as any);
-                                        setActionType('module_purchase');
-                                        setPaymentOpen(true);
-                                    }}>
-                                        Activer le module
+                                    <Button
+                                        className="w-full"
+                                        variant={resolvedFeatures.includes(feature.feature_key) ? "outline" : "default"}
+                                        disabled={resolvedFeatures.includes(feature.feature_key)}
+                                        onClick={() => {
+                                            setSelectedPlan({
+                                                id: feature.id,
+                                                name: feature.name,
+                                                price_monthly: feature.price_monthly,
+                                                price_yearly: feature.price_monthly * 10, // Yearly approx
+                                                slug: `module_${feature.feature_key}`,
+                                                features: [feature.feature_key],
+                                                limits: {}
+                                            } as any);
+                                            setActionType('module_purchase');
+                                            setPaymentOpen(true);
+                                        }}
+                                    >
+                                        {resolvedFeatures.includes(feature.feature_key) ? (
+                                            <>
+                                                <ShieldCheck className="w-4 h-4 mr-2" /> Module Actif
+                                            </>
+                                        ) : (
+                                            'Activer le module'
+                                        )}
                                     </Button>
                                 </div>
                             ))}

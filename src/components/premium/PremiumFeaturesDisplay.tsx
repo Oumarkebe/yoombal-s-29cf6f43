@@ -115,11 +115,11 @@ export const PremiumFeaturesDisplay = ({ filterRole }: PremiumFeaturesDisplayPro
         return true;
     });
 
-    console.log("PremiumFeaturesDisplay: Available Features:", availableFeatures);
-    console.log("PremiumFeaturesDisplay: Actionable Features:", actionableFeatures);
+    // console.log("PremiumFeaturesDisplay: Available Features:", availableFeatures);
+    // console.log("PremiumFeaturesDisplay: Actionable Features:", actionableFeatures);
 
     if (actionableFeatures.length === 0) {
-        console.log("PremiumFeaturesDisplay: No actionable features found, returning null.");
+        // console.log("PremiumFeaturesDisplay: No actionable features found, returning null.");
         return null;
     }
 

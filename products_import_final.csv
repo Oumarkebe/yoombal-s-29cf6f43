@@ -1,0 +1,11 @@
+merchant_id,name,description,price,stock,category_id,image_url
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Riz Parfumé Royal (50kg)","Sac de riz parfumé de qualité supérieure.",22500,100,"c70cba2f-8179-45db-baa9-906d19785358","https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Huile d'Arachide (5L)","Bidon d'huile d'arachide pure.",6500,50,"c70cba2f-8179-45db-baa9-906d19785358","https://images.unsplash.com/photo-1474979266404-7cadd259c308?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Sucre En Poudre (1kg)","Sucre blanc raffiné de haute qualité.",800,200,"c70cba2f-8179-45db-baa9-906d19785358","https://images.unsplash.com/photo-1585651911762-b98a00067b45?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Lait En Poudre (500g)","Lait entier en poudre.",2500,150,"c70cba2f-8179-45db-baa9-906d19785358","https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Café Touba (Sachet 250g)","Authentique café Touba aux épices.",1500,300,"bfca5c52-53c1-4bc7-9335-0e72d343805a","https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Tomates Concentrées (Boîte 1kg)","Double concentré de tomates.",2200,80,"c70cba2f-8179-45db-baa9-906d19785358","https://images.unsplash.com/photo-1596568461757-790113c01a93?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Oignons (Sac 5kg)","Oignons frais locaux.",3000,40,"a6bb66a3-4ff5-41b5-9d9a-4d463e356b61","https://images.unsplash.com/photo-1620574387735-3624d75b2dbc?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Pommes de Terre (Sac 5kg)","Pommes de terre à chair ferme.",3500,40,"a6bb66a3-4ff5-41b5-9d9a-4d463e356b61","https://images.unsplash.com/photo-1518977676601-b53f82a6b69d?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Savon de Marseille (Lot de 4)","Savon traditionnel.",1200,100,"77e79d00-a91c-431a-95f1-7060950199f5","https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=500&q=80"
+"289c9a6c-0cf4-493b-a0c7-907366f96ead","Jus de Bouye (1L)","Jus naturel de fruit de baobab.",1000,60,"bfca5c52-53c1-4bc7-9335-0e72d343805a","https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=500&q=80"

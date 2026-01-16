@@ -1,16 +1,19 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders } from '../_shared/cors.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  const { method } = req;
+  const origin = req.headers.get('origin');
+  console.log(`${method} request received from ${origin}`);
+
+  if (method === 'OPTIONS') {
+    return new Response('ok', {
+      status: 200,
+      headers: corsHeaders
+    });
   }
 
   try {
@@ -18,11 +21,11 @@ serve(async (req) => {
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !serviceRoleKey) {
-        console.error('Missing Supabase URL or Service Role Key');
-        return new Response(JSON.stringify({ error: 'Internal server configuration error.' }), {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      console.error('Missing Supabase URL or Service Role Key');
+      return new Response(JSON.stringify({ error: 'Internal server configuration error.' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
@@ -52,7 +55,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
+
     const { prompt } = await req.json();
 
     if (!prompt) {
@@ -71,17 +74,23 @@ serve(async (req) => {
     const dbApiKeys = (apiKeysSettings?.value as { openaiApiKey?: string; groqApiKey?: string; perplexityApiKey?: string; mistralApiKey?: string; togetherApiKey?: string; }) || {};
 
     const providerConfigs = [
+      {
+        name: 'local',
+        model: 'local-model',
+        url: Deno.env.get('LOCAL_AI_URL') || 'http://host.docker.internal:8000/v1/chat/completions',
+        apiKey: 'local-no-key-required' // Dummy key to pass availability check
+      },
       { name: 'openai', model: 'gpt-4o-mini', url: 'https://api.openai.com/v1/chat/completions', apiKey: dbApiKeys.openaiApiKey || Deno.env.get('OPENAI_API_KEY') },
       { name: 'groq', model: 'llama3-8b-8192', url: 'https://api.groq.com/openai/v1/chat/completions', apiKey: dbApiKeys.groqApiKey || Deno.env.get('GROQ_API_KEY') },
       { name: 'perplexity', model: 'llama-3.1-sonar-small-128k-online', url: 'https://api.perplexity.ai/chat/completions', apiKey: dbApiKeys.perplexityApiKey || Deno.env.get('PERPLEXITY_API_KEY') },
       { name: 'mistral', model: 'open-mistral-7b', url: 'https://api.mistral.ai/v1/chat/completions', apiKey: dbApiKeys.mistralApiKey || Deno.env.get('MISTRAL_API_KEY') },
       { name: 'together', model: 'meta-llama/Llama-3-8B-chat-hf', url: 'https://api.together.xyz/v1/chat/completions', apiKey: dbApiKeys.togetherApiKey || Deno.env.get('TOGETHER_API_KEY') },
     ];
-    
+
     const preferredProvider = settings.configuration?.provider || 'openai';
-    
+
     const availableProviders = providerConfigs.filter(p => p.apiKey);
-    
+
     if (availableProviders.length === 0) {
       console.error('No AI provider API key is configured.');
       const userMessage = "Aucun fournisseur d'IA n'est configuré. Veuillez ajouter au moins une clé API dans les paramètres d'administration.";
@@ -120,21 +129,24 @@ serve(async (req) => {
         });
 
         if (!response.ok) {
-            const errorBody = await response.text();
-            throw new Error(`API error from ${provider.name}: ${response.status} ${response.statusText}. Details: ${errorBody}`);
+          const errorBody = await response.text();
+          throw new Error(`API error from ${provider.name}: ${response.status} ${response.statusText}. Details: ${errorBody}`);
         }
 
         const completion = await response.json();
-        
+
         const generatedText = completion?.choices?.[0]?.message?.content?.trim();
 
         if (generatedText) {
-            console.log(`Generation successful with ${provider.name}!`);
-            return new Response(JSON.stringify({ generated_text: generatedText }), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
+          console.log(`Generation successful with ${provider.name}!`);
+          return new Response(JSON.stringify({
+            generated_text: generatedText,
+            provider: provider.name
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
         } else {
-            throw new Error(`Invalid completion response structure from ${provider.name}.`);
+          throw new Error(`Invalid completion response structure from ${provider.name}.`);
         }
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';

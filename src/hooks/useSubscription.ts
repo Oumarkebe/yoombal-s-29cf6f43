@@ -55,7 +55,7 @@ export type UserSubscription = UserSubscriptionRow & {
 
 export function useSubscription() {
     const { user } = useAuth();
-    console.log("Hooks: useSubscription user:", user?.id);
+    // console.log("Hooks: useSubscription user:", user?.id);
     const queryClient = useQueryClient();
 
 
@@ -122,10 +122,9 @@ export function useSubscription() {
         queryKey: ['userFeatureSettings', user?.id],
         queryFn: async () => {
             if (!user) return [];
-            // Cast supabase to any to avoid "Argument of type ... is not assignable to parameter of type never"
-            // This happens because 'user_ai_feature_settings' is missing from the generated Database type definition
+            // Cast supabase to any because types might be out of sync
             const { data, error } = await (supabase as any)
-                .from('user_ai_feature_settings')
+                .from('user_ai_settings')
                 .select('*')
                 .eq('user_id', user.id);
 
@@ -145,7 +144,11 @@ export function useSubscription() {
             const { data, error } = await supabase
                 .from('premium_features')
                 .select('*');
-            if (error) throw error;
+            if (error) {
+                console.error("Hooks: Error fetching globalPremiumFeatures:", error);
+                throw error;
+            }
+            // console.log("Hooks: Loaded globalPremiumFeatures count:", data?.length);
             return data as any[];
         },
         staleTime: 5 * 60 * 1000,
@@ -168,11 +171,11 @@ export function useSubscription() {
                 return [];
             }
 
-            console.log("Hooks: useSubscription - Raw Purchased Modules Data:", data);
+            // console.log("Hooks: useSubscription - Raw Purchased Modules Data:", data);
 
             // Extract feature keys from the joined response
             const keys = data.map((item: any) => item.feature?.feature_key).filter(Boolean) as string[];
-            console.log("Hooks: useSubscription - Purchased Modules Keys:", keys);
+            // console.log("Hooks: useSubscription - Purchased Modules Keys:", keys);
             return keys;
         },
         enabled: !!user,
@@ -180,61 +183,122 @@ export function useSubscription() {
 
     // Resolve effective features matching User Override -> Purchased -> Plan -> Default
     const hasFeature = (featureKey: string): boolean => {
-        // -1. Check GLOBAL Admin Toggle First
-        const globalFeature = globalFeatures.find(f => f.feature_key === featureKey);
-        // If the feature is globally disabled by Admin, it's false unless it's a core/free feature (we could add that logic)
-        // For now, if it's in premium_features and is_enabled is false, it's OFF globally.
-        if (globalFeature && globalFeature.is_enabled === false) {
-            console.log(`Hooks: hasFeature(${featureKey}) -> false (GLOBALLY DISABLED by Admin)`);
-            return false;
+        // 👑 Admin Bypass: Admin has access to everything
+        if (user?.role === 'admin') {
+            return true;
         }
 
         // Mapping for backward compatibility with older DB records
         const keysToCheck = [featureKey];
         if (featureKey === 'ai_assistant') {
-            keysToCheck.push('assistant_intelligent', 'advanced_ai', 'custom_chatbot');
+            keysToCheck.push(
+                'assistant_intelligent',
+                'advanced_ai',
+                'custom_chatbot',
+                'generation_contenu',
+                'ai_product_descriptions',
+                'content_generation',
+                'ai_vision',
+                'vision_ai'
+            );
         }
-        if (featureKey === 'ai_pricing') keysToCheck.push('tarification_dynamique');
-        if (featureKey === 'predictions') keysToCheck.push('analyses_predictives');
+        if (featureKey === 'ai_pricing') keysToCheck.push('tarification_dynamique', 'ramadan_pricing');
+        if (featureKey === 'predictions') {
+            keysToCheck.push(
+                'analyses_predictives',
+                'demand_prediction',
+                'gestion_stock_ia',
+                'stock_prediction'
+            );
+        }
+        if (featureKey === 'marketing') {
+            keysToCheck.push(
+                'optimisation_seo',
+                'marketing_studio',
+                'marketing_automation',
+                'customer_notifications'
+            );
+        }
+        if (featureKey === 'finance') {
+            keysToCheck.push(
+                'fraud_detection',
+                'blanchiment_detection',
+                'audit_securite'
+            );
+        }
 
-        const checkInList = (list: string[]) => keysToCheck.some(k => list.includes(k));
+        const checkInList = (list: string[]) => {
+            if (keysToCheck.some(k => list.includes(k))) return true;
+            // Bundle expansion: if list contains all_pro_features and we are checking a pro feature
+            if (list.includes('all_pro_features')) {
+                const proPlan = plans.find((p: any) => p.slug === 'pro');
+                if (proPlan?.features && keysToCheck.some(k => (proPlan.features as string[]).includes(k))) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        // -1. Check GLOBAL Admin Toggle and is_free flag
+        const globalFeature = globalFeatures.find(f => keysToCheck.includes(f.feature_key));
+        if (globalFeature) {
+            if (globalFeature.is_enabled === false) return false;
+            if (globalFeature.is_free === true) return true;
+        }
 
         // 0. Check Purchased Modules
-        if (checkInList(purchasedModules)) {
-            console.log(`Hooks: hasFeature(${featureKey}) -> true (Purchased Module)`);
-            return true;
-        }
+        if (checkInList(purchasedModules)) return true;
 
         // 1. Check User Override (Highest Priority)
         const override = featureSettings.find(s => keysToCheck.includes(s.feature_key));
         if (override && override.is_enabled !== null) {
-            console.log(`Hooks: hasFeature(${featureKey}) -> ${override.is_enabled} (Override)`);
             return override.is_enabled;
         }
 
         // 2. Check Plan Features
         if (!subscription?.plan) {
             const starterPlan = plans.find((p: any) => p.slug === 'starter');
-            const hasInStarter = starterPlan?.features ? checkInList(starterPlan.features) : false;
-            console.log(`Hooks: hasFeature(${featureKey}) -> ${hasInStarter} (Starter Plan)`);
-            return hasInStarter;
+            return starterPlan?.features ? checkInList(starterPlan.features) : false;
         }
 
         // @ts-ignore
-        const hasInPlan = subscription.plan.features ? checkInList(subscription.plan.features) : false;
-        console.log(`Hooks: hasFeature(${featureKey}) -> ${hasInPlan} (User Plan: ${subscription.plan.name})`);
-        if (!hasInPlan && subscription.plan.features) {
-            console.log(`Hooks: Detailed check for ${featureKey}. Available features in plan:`, subscription.plan.features);
-        }
-        return hasInPlan;
+        const planFeatures = subscription.plan.features || [];
+        return checkInList(planFeatures);
     };
 
     // Compute list of ALL active features for display
     const resolvedFeatures = React.useMemo(() => {
-        const planFeatures = subscription?.plan?.features || plans.find((p: any) => p.slug === 'starter')?.features || [];
+        // 👑 Admin Bypass: Ensure all known premium features are considered active
+        if (user?.role === 'admin') {
+            const adminFeatures = new Set<string>();
+            globalFeatures.forEach(f => {
+                adminFeatures.add(f.feature_key);
+                // Add standardized alternates
+                if (['assistant_intelligent', 'advanced_ai', 'custom_chatbot', 'generation_contenu', 'ai_product_descriptions', 'content_generation', 'ai_vision', 'vision_ai'].includes(f.feature_key)) {
+                    adminFeatures.add('ai_assistant');
+                } else if (['tarification_dynamique', 'ai_pricing', 'ramadan_pricing'].includes(f.feature_key)) {
+                    adminFeatures.add('ai_pricing');
+                } else if (['analyses_predictives', 'predictions', 'demand_prediction', 'gestion_stock_ia', 'stock_prediction'].includes(f.feature_key)) {
+                    adminFeatures.add('predictions');
+                } else if (['optimisation_seo', 'marketing_studio', 'marketing_automation', 'customer_notifications'].includes(f.feature_key)) {
+                    adminFeatures.add('marketing');
+                } else if (['fraud_detection', 'blanchiment_detection', 'audit_securite'].includes(f.feature_key)) {
+                    adminFeatures.add('finance');
+                }
+            });
+            return Array.from(adminFeatures);
+        }
 
-        // Start with plan features
+        const planFeatures = subscription?.plan?.features || plans.find((p: any) => p.slug === 'starter')?.features || [];
         const activeSet = new Set(planFeatures);
+
+        // Bundle expansion for UI
+        if (activeSet.has('all_pro_features')) {
+            const proPlan = plans.find((p: any) => p.slug === 'pro');
+            if (proPlan?.features) {
+                (proPlan.features as string[]).forEach(f => activeSet.add(f));
+            }
+        }
 
         // Apply overrides
         featureSettings.forEach((setting: any) => {
@@ -248,26 +312,30 @@ export function useSubscription() {
         // Add purchased modules
         purchasedModules.forEach(key => activeSet.add(key));
 
-        // Standardize keys for UI consistency
-        const standardizedSet = new Set<string>();
+        const finalSet = new Set<string>();
         activeSet.forEach(key => {
             // Respect Global Admin Toggle in resolved list too
             const globalF = globalFeatures.find(f => f.feature_key === key);
             if (globalF && globalF.is_enabled === false) return;
 
-            if (['assistant_intelligent', 'advanced_ai', 'custom_chatbot'].includes(key as string)) {
-                standardizedSet.add('ai_assistant');
-            } else if (['tarification_dynamique', 'ai_pricing'].includes(key as string)) {
-                standardizedSet.add('ai_pricing');
-            } else if (['analyses_predictives', 'predictions'].includes(key as string)) {
-                standardizedSet.add('predictions');
-            } else {
-                standardizedSet.add(key as string);
+            finalSet.add(key as string);
+
+            // Add standardized groupings for easier UI checks
+            if (['assistant_intelligent', 'advanced_ai', 'custom_chatbot', 'generation_contenu', 'ai_product_descriptions', 'content_generation', 'ai_vision', 'vision_ai'].includes(key as string)) {
+                finalSet.add('ai_assistant');
+            } else if (['tarification_dynamique', 'ai_pricing', 'ramadan_pricing'].includes(key as string)) {
+                finalSet.add('ai_pricing');
+            } else if (['analyses_predictives', 'predictions', 'demand_prediction', 'gestion_stock_ia', 'stock_prediction'].includes(key as string)) {
+                finalSet.add('predictions');
+            } else if (['optimisation_seo', 'marketing_studio', 'marketing_automation', 'customer_notifications'].includes(key as string)) {
+                finalSet.add('marketing');
+            } else if (['fraud_detection', 'blanchiment_detection', 'audit_securite'].includes(key as string)) {
+                finalSet.add('finance');
             }
         });
 
-        return Array.from(standardizedSet) as string[];
-    }, [subscription, plans, featureSettings, purchasedModules, globalFeatures]);
+        return Array.from(finalSet) as string[];
+    }, [subscription, plans, featureSettings, purchasedModules, globalFeatures, user?.role]);
 
     // Helper to check expiry
     const isExpiringSoon = (expiresAt: string | null | undefined) => {

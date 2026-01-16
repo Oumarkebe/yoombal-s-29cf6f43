@@ -26,6 +26,11 @@ import AdminDashboard from './pages/AdminDashboard';
 import MerchantDashboard from './pages/MerchantDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
 import Subscriptions from './pages/Subscriptions';
+import DynamicPricingPage from './pages/merchant/DynamicPricingPage';
+import PredictiveStocksPage from './pages/merchant/PredictiveStocksPage';
+import AfricaFinancePage from './pages/finance/AfricaFinancePage';
+import LogisticsDashboard from './pages/logistics/LogisticsDashboard';
+import MarketingStudio from './pages/marketing/MarketingStudio';
 import MySubscriptions from './pages/premium/MySubscriptions';
 import UserCredits from './pages/premium/UserCredits';
 import BecomeMerchant from './pages/landing/BecomeMerchant';
@@ -39,8 +44,7 @@ import EconomicModel from '@/pages/EconomicModel';
 import NotFound from './pages/NotFound';
 import { AIAssistant } from './components/ai/AIAssistant';
 import { Toaster } from "@/components/ui/sonner";
-import { AdminRoute } from './components/admin/AdminRoute';
-import ProtectedRoute from './components/ProtectedRoute';
+import { RoleGuard } from './components/auth/RoleGuard';
 import AIErrorBoundary from './components/ai/AIErrorBoundary';
 
 function App() {
@@ -59,6 +63,11 @@ function App() {
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/merchant/ai-pricing" element={<DynamicPricingPage />} />
+              <Route path="/merchant/predictions" element={<PredictiveStocksPage />} />
+              <Route path="/merchant/finance" element={<AfricaFinancePage />} />
+              <Route path="/merchant/logistics" element={<LogisticsDashboard />} />
+              <Route path="/merchant/marketing" element={<MarketingStudio />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/bnpl" element={<BNPL />} />
@@ -77,7 +86,7 @@ function App() {
               <Route path="/premium/credits" element={<UserCredits />} />
 
               {/* Admin Routes Protected */}
-              <Route element={<AdminRoute />}>
+              <Route element={<RoleGuard allowedRoles={['admin']} />}>
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/admin/statistics" element={<AdminStatistics />} />
                 <Route path="/admin/products" element={<AdminProducts />} />
@@ -90,12 +99,12 @@ function App() {
               </Route>
 
               {/* Protected Merchant Routes */}
-              <Route element={<ProtectedRoute roles={['merchant']} />}>
+              <Route element={<RoleGuard allowedRoles={['merchant']} />}>
                 <Route path="/merchant" element={<MerchantDashboard />} />
               </Route>
 
               {/* Protected Delivery Routes */}
-              <Route element={<ProtectedRoute roles={['driver']} />}>
+              <Route element={<RoleGuard allowedRoles={['driver']} />}>
                 <Route path="/delivery" element={<DeliveryDashboard />} />
               </Route>
 

@@ -18,6 +18,7 @@ import { CreditCard, Smartphone, Building2, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { KYCVerificationDialog } from '@/components/KYCVerificationDialog';
+import { PaymentDialog } from '@/components/PaymentDialog';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -46,6 +47,59 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isKYCOpen, setIsKYCOpen] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+
+  // Payment Success Handler - Actually creates the order
+  const handlePaymentSuccess = async (method: 'orange_money' | 'wave', phoneNumber: string) => {
+    setPaymentMethod(method === 'orange_money' ? 'mobile_money' : 'card'); // Map to simple types if simpler
+    await processOrderCreation();
+    setIsPaymentOpen(false);
+  };
+
+  const processOrderCreation = async () => {
+    setIsProcessing(true);
+    try {
+      if (user) {
+        // Utilisateur connecté
+        const orderItems = items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.products?.price || 0,
+          merchant_id: item.products?.merchant_id || ''
+        }));
+
+        const result = await createOrder(orderItems, deliveryInfo, paymentMethod);
+
+        if (result.data) {
+          clearCart();
+          navigate(`/order-confirmation?orderId=${result.data.id}`);
+        }
+      } else {
+        // Utilisateur invité
+        const orderItems = items.map(item => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price: item.products?.price || 0,
+          merchant_id: item.products?.merchant_id || ''
+        }));
+
+        const result = await createGuestOrder(guestInfo, orderItems, paymentMethod);
+
+        if (result.data) {
+          // Vider le panier local
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('guestCart');
+          }
+          clearCart();
+          navigate(`/order-confirmation?orderId=${result.data.id || 'GUEST'}`);
+        }
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -94,49 +148,14 @@ const CheckoutPage = () => {
       }
     }
 
-    setIsProcessing(true);
-
-    try {
-      if (user) {
-        // Utilisateur connecté
-        const orderItems = items.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.products?.price || 0,
-          merchant_id: item.products?.merchant_id || ''
-        }));
-
-        const result = await createOrder(orderItems, deliveryInfo, paymentMethod);
-
-        if (result.data) {
-          clearCart();
-          navigate(`/order-confirmation?orderId=${result.data.id}`);
-        }
-      } else {
-        // Utilisateur invité
-        const orderItems = items.map(item => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.products?.price || 0,
-          merchant_id: item.products?.merchant_id || ''
-        }));
-
-        const result = await createGuestOrder(guestInfo, orderItems, paymentMethod);
-
-        if (result.data) {
-          // Vider le panier local
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('guestCart');
-          }
-          clearCart();
-          navigate(`/order-confirmation?orderId=${result.data.id || 'GUEST'}`);
-        }
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-    } finally {
-      setIsProcessing(false);
+    // If Payment Method is Digital (Card or Mobile), Require Payment First
+    if (['card', 'mobile'].includes(paymentMethod)) {
+      setIsPaymentOpen(true);
+      return;
     }
+
+    // Cash or BNPL -> Proceed directly
+    processOrderCreation();
   };
 
   return (
@@ -313,6 +332,16 @@ const CheckoutPage = () => {
                 // Refresh profile or allow proceed
                 window.location.reload(); // Simple refresh to fetch new status
               }}
+            />
+
+            <PaymentDialog
+              isOpen={isPaymentOpen}
+              onClose={() => setIsPaymentOpen(false)}
+              amount={getTotalPrice()}
+              description="Paiement Commande"
+              type="product_purchase"
+              metadata={{ itemsCount: items.length }}
+              onSuccess={handlePaymentSuccess}
             />
 
             <div className="lg:col-span-1">

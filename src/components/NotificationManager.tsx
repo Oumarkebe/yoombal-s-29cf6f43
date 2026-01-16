@@ -6,69 +6,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface Notification {
   id: string;
-  type: 'order' | 'delivery' | 'stock' | 'system';
+  type: string;
   title: string;
   message: string;
-  read: boolean;
+  is_read: boolean;
   created_at: string;
   data?: any;
 }
 
 const NotificationManager: React.FC = () => {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { notifications, isLoading, markAsRead } = useNotifications();
 
-  useEffect(() => {
-    if (!user) return;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
-    // Simuler des notifications basées sur les données réelles
-    const fetchNotifications = async () => {
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'order',
-          title: 'Nouvelle commande',
-          message: 'Vous avez reçu une nouvelle commande',
-          read: false,
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          type: 'delivery',
-          title: 'Livraison en cours',
-          message: 'Votre commande est en cours de livraison',
-          read: false,
-          created_at: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: '3',
-          type: 'stock',
-          title: 'Stock faible',
-          message: 'Certains produits sont en rupture de stock',
-          read: true,
-          created_at: new Date(Date.now() - 7200000).toISOString(),
-        },
-      ];
-
-      setNotifications(mockNotifications);
-      setUnreadCount(mockNotifications.filter(n => !n.read).length);
-    };
-
-    fetchNotifications();
-  }, [user]);
-
-  const markAsRead = (notificationId: string) => {
-    setNotifications(prev => 
-      prev.map(n => 
-        n.id === notificationId ? { ...n, read: true } : n
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
-  };
+  // markAsRead is now provided by useNotifications hook
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -93,7 +48,7 @@ const NotificationManager: React.FC = () => {
 
       <div className="space-y-3">
         {notifications.map((notification) => (
-          <Card key={notification.id} className={`${notification.read ? 'opacity-60' : ''}`}>
+          <Card key={notification.id} className={`${notification.is_read ? 'opacity-60' : ''}`}>
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
                 <div className="mt-1">
@@ -107,7 +62,7 @@ const NotificationManager: React.FC = () => {
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">{notification.message}</p>
-                  {!notification.read && (
+                  {!notification.is_read && (
                     <Button
                       size="sm"
                       variant="outline"

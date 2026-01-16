@@ -90,6 +90,9 @@ export interface UserProfile {
   businessType?: string;
   vehicleType?: string;
   zone?: string;
+  merchant_name?: string;
+  delivery_name?: string;
+  client_name?: string;
   kyc_status?: KycStatus;
   kyc_id_card_url?: string;
   kyc_selfie_url?: string;
@@ -119,7 +122,7 @@ export function hasHigherPrivilege(roleA: AppRole, roleB: AppRole): boolean {
 // Helper to get the highest role from a list
 export function getHighestRole(roles: AppRole[]): AppRole {
   if (roles.length === 0) return 'user';
-  return roles.reduce((highest, current) => 
+  return roles.reduce((highest, current) =>
     hasHigherPrivilege(current, highest) ? current : highest
   );
 }

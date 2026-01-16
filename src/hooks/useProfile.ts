@@ -14,6 +14,9 @@ export interface UserProfile {
   vehicleType?: string;
   zone?: string;
   role?: string;
+  merchantName?: string;
+  deliveryName?: string;
+  clientName?: string;
 }
 
 export interface UpdateProfileData {
@@ -25,6 +28,9 @@ export interface UpdateProfileData {
   vehicleType?: string;
   zone?: string;
   avatarUrl?: string;
+  merchantName?: string;
+  deliveryName?: string;
+  clientName?: string;
 }
 
 const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -50,6 +56,9 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
     vehicleType: data.vehicle_type || undefined,
     zone: data.zone || undefined,
     role: (data as any).role || undefined,
+    merchantName: (data as any).merchant_name || undefined,
+    deliveryName: (data as any).delivery_name || undefined,
+    clientName: (data as any).client_name || undefined,
   } : null;
 };
 
@@ -65,6 +74,9 @@ const updateUserProfile = async (userId: string, profileData: UpdateProfileData)
       vehicle_type: profileData.vehicleType,
       zone: profileData.zone,
       avatar_url: profileData.avatarUrl,
+      merchant_name: profileData.merchantName,
+      delivery_name: profileData.deliveryName,
+      client_name: profileData.clientName,
       updated_at: new Date().toISOString(),
     })
     .eq('id', userId)

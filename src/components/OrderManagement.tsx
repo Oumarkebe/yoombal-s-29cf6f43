@@ -3,17 +3,18 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Filter, 
-  Package, 
-  Truck, 
-  Check, 
-  X, 
+import {
+  Search,
+  Filter,
+  Package,
+  Truck,
+  Check,
+  X,
   Eye,
   Calendar,
   User,
-  CreditCard
+  CreditCard,
+  Download
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders } from '@/hooks/useOrders';
@@ -46,14 +47,15 @@ const OrderManagement = () => {
         try {
           const { data: orderItems } = await supabase
             .from('order_items')
-            .select('product_id, quantity, price, products(name)')
+            .select('product_id, quantity, price, products(name, is_digital)')
             .eq('order_id', order.id);
           items = (orderItems || []).map(i => ({
             name: i.products?.name || i.product_id,
             quantity: i.quantity,
-            price: i.price
+            price: i.price,
+            is_digital: i.products?.is_digital || false
           }));
-        } catch {}
+        } catch { }
         // Récupérer l'utilisateur
         let user = null;
         let userId = order.user_id || order.client_id || order.customer_id || null;
@@ -66,7 +68,7 @@ const OrderManagement = () => {
               .single();
             user = data;
           }
-        } catch {}
+        } catch { }
         return {
           ...order,
           user_id: userId,
@@ -75,7 +77,8 @@ const OrderManagement = () => {
           email: user?.email || '',
           phone: user?.phone || '',
           total: items.reduce((sum, i) => sum + (i.price * i.quantity), 0),
-          date: order.created_at || ''
+          date: order.created_at || '',
+          is_digital_only: items.length > 0 && items.every(i => i.is_digital)
         };
       }));
       setEnrichedOrders(enriched);
@@ -168,12 +171,12 @@ const OrderManagement = () => {
           >
             {statusOptions.map(status => (
               <option key={status} value={status}>
-                {status === 'all' ? 'Tous les statuts' : 
-                 status === 'pending' ? 'En attente' :
-                 status === 'processing' ? 'En traitement' :
-                 status === 'shipped' ? 'Expédié' :
-                 status === 'delivered' ? 'Livré' :
-                 status === 'cancelled' ? 'Annulé' : status}
+                {status === 'all' ? 'Tous les statuts' :
+                  status === 'pending' ? 'En attente' :
+                    status === 'processing' ? 'En traitement' :
+                      status === 'shipped' ? 'Expédié' :
+                        status === 'delivered' ? 'Livré' :
+                          status === 'cancelled' ? 'Annulé' : status}
               </option>
             ))}
           </select>
@@ -210,8 +213,11 @@ const OrderManagement = () => {
                 {/* Order Items */}
                 <div className="space-y-2 mb-4">
                   {order.items && order.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span>{item.name}</span>
+                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100">
+                      <div className="flex items-center gap-2">
+                        {item.is_digital && <span className="text-blue-600" title="Produit numérique"><Download className="h-3 w-3" /></span>}
+                        <span className="text-sm font-medium">{item.name}</span>
+                      </div>
                       <span className="text-sm text-gray-600">
                         {item.quantity}x {formatCurrency(item.price)}
                       </span>
@@ -232,23 +238,33 @@ const OrderManagement = () => {
                   <Eye className="h-4 w-4 mr-1" />
                   Détails
                 </Button>
-                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(order.id, 'processing')}>
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 font-bold shadow-sm"
+                  onClick={() => handleStatusChange(order.id, order.is_digital_only ? 'delivered' : 'processing')}
+                >
                   <Check className="h-4 w-4 mr-1" />
-                  Accepter
+                  {order.is_digital_only ? 'Accepter & Livrer' : 'Accepter'}
                 </Button>
-                <Button size="sm" variant="outline" className="text-red-600" onClick={() => handleStatusChange(order.id, 'cancelled')}>
+                <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleStatusChange(order.id, 'cancelled')}>
                   <X className="h-4 w-4 mr-1" />
                   Refuser
                 </Button>
-                <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => handleStatusChange(order.id, 'shipped')}>
-                  <Truck className="h-4 w-4 mr-1" />
-                  Expédier
-                </Button>
-                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(order.id, 'delivered')}>
-                  <Package className="h-4 w-4 mr-1" />
-                  Marquer livré
-                </Button>
-                <Button size="sm" variant="outline" className="text-red-600" onClick={() => handleDelete(order.id)}>
+
+                {!order.is_digital_only && (
+                  <>
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => handleStatusChange(order.id, 'shipped')}>
+                      <Truck className="h-4 w-4 mr-1" />
+                      Expédier
+                    </Button>
+                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(order.id, 'delivered')}>
+                      <Package className="h-4 w-4 mr-1" />
+                      Marquer livré
+                    </Button>
+                  </>
+                )}
+
+                <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600" onClick={() => handleDelete(order.id)}>
                   Supprimer
                 </Button>
               </div>

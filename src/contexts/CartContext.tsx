@@ -34,6 +34,7 @@ interface CartContextType {
   getTotalPrice: () => number;
   getTotalItems: () => number;
   isUpdating: boolean;
+  triggerAnimation: (startCoords: { x: number, y: number }, productImage?: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -42,6 +43,49 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [flyingItems, setFlyingItems] = React.useState<{ id: number, start: { x: number, y: number }, end: { x: number, y: number }, image?: string }[]>([]);
+
+  const triggerAnimation = useCallback((startCoords: { x: number, y: number }, productImage?: string) => {
+    const cartIcon = document.getElementById('navbar-cart-icon');
+    if (!cartIcon) return;
+
+    const rect = cartIcon.getBoundingClientRect();
+    const endCoords = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+
+    const newItem = { id: Date.now(), start: startCoords, end: endCoords, image: productImage };
+    setFlyingItems(prev => [...prev, newItem]);
+
+    setTimeout(() => {
+      setFlyingItems(prev => prev.filter(item => item.id !== newItem.id));
+    }, 1500); // Durée de l'animation synchronisée avec le CSS
+  }, []);
+
+  const playSuccessSound = useCallback(() => {
+    try {
+      // Un son de "pop" discret en base64 (format WAV)
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Note La (A5)
+      oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1); // Descente vers La (A4)
+
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.1);
+    } catch (e) {
+      console.warn("Audio Context not supported or interaction required for sound", e);
+    }
+  }, []);
 
   // État local pour le panier des utilisateurs non connectés
   const [localCart, setLocalCart] = React.useState<LocalCartItem[]>(() => {
@@ -153,7 +197,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     },
     ...mutationOptions,
     onMutate: () => {
-      toast({ title: 'Succès', description: 'Produit ajouté au panier' });
+      playSuccessSound();
+      toast({
+        title: '🛒 Produit ajouté !',
+        description: 'Votre article a été ajouté au panier.',
+        className: "bg-amber-600 text-white border-none shadow-lg",
+      });
     }
   });
 
@@ -271,10 +320,34 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       clearCart: () => clearCartMutation.mutate(),
       getTotalPrice,
       getTotalItems,
-      isUpdating
+      isUpdating,
+      triggerAnimation
     }}>
       {children}
-    </CartContext.Provider>
+      {/* Animation Layer */}
+      <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+        {flyingItems.map(item => (
+          <div
+            key={item.id}
+            className="fixed w-14 h-14 rounded-full bg-amber-600 flex items-center justify-center shadow-lg border-2 border-white animate-fly-to-cart overflow-hidden"
+            style={{
+              "--start-x": `${item.start.x}px`,
+              "--start-y": `${item.start.y}px`,
+              "--end-x": `${item.end.x}px`,
+              "--end-y": `${item.end.y}px`,
+              left: 0,
+              top: 0
+            } as React.CSSProperties}
+          >
+            {item.image ? (
+              <img src={item.image} className="w-full h-full object-cover" alt="" />
+            ) : (
+              <span className="text-white text-[10px] font-bold">🛒</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </CartContext.Provider >
   );
 };
 

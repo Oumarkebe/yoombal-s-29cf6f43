@@ -40,7 +40,16 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
-import ProductForm from '@/components/ProductForm';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { ProductFormUltimate } from './ProductFormUltimate';
+import { ProductFormData } from '@/types/product';
+import { Plus } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
 import { Product } from '@/hooks/useProducts';
 
@@ -74,24 +83,24 @@ const fetchAllProducts = async (page: number, pageSize: number) => {
 };
 
 const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-SN', {
-      style: 'currency',
-      currency: 'XOF',
-      minimumFractionDigits: 0
-    }).format(amount);
+  return new Intl.NumberFormat('fr-SN', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0
+  }).format(amount);
 };
 
 const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Badge className="bg-green-100 text-green-800">Actif</Badge>;
-      case 'draft':
-        return <Badge className="bg-yellow-100 text-yellow-800">Brouillon</Badge>;
-      case 'out_of_stock':
-        return <Badge className="bg-red-100 text-red-800">Rupture</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
+  switch (status) {
+    case 'active':
+      return <Badge className="bg-green-100 text-green-800">Actif</Badge>;
+    case 'draft':
+      return <Badge className="bg-yellow-100 text-yellow-800">Brouillon</Badge>;
+    case 'out_of_stock':
+      return <Badge className="bg-red-100 text-red-800">Rupture</Badge>;
+    default:
+      return <Badge>{status}</Badge>;
+  }
 };
 
 export function AdminProductList() {
@@ -107,9 +116,10 @@ export function AdminProductList() {
 
   const { data: categoriesData } = useCategories();
   const categories = categoriesData || [];
-  
+
   const [editingProduct, setEditingProduct] = useState<ProductWithDetails | null>(null);
   const [viewingProduct, setViewingProduct] = useState<ProductWithDetails | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const products = data?.products;
   const totalCount = data?.count ?? 0;
@@ -118,24 +128,56 @@ export function AdminProductList() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof ProductWithDetails | 'business_name' | 'category_name'; direction: 'ascending' | 'descending' }>({ key: 'created_at', direction: 'descending' });
   const [productToDelete, setProductToDelete] = useState<ProductWithDetails | null>(null);
 
-  const updateProductMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string, data: Partial<Product> }) => {
-        const { error } = await supabase.from('products').update(data).eq('id', id);
-        if (error) throw new Error(error.message);
+  const createProductMutation = useMutation({
+    mutationFn: async (data: ProductFormData) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      // Nettoyage des champs UI-only
+      const { new_tags, gallery_files, ...dbData } = data as any;
+
+      const productToSave = {
+        ...dbData,
+        merchant_id: user.id
+      };
+
+      const { error } = await supabase.from('products').insert(productToSave);
+      if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-        toast({ title: "Succès", description: "Produit mis à jour." });
-        queryClient.invalidateQueries({ queryKey: ['allProducts'] });
-        setEditingProduct(null);
+      toast({ title: "Succès", description: "Produit créé avec succès." });
+      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+      setIsCreating(false);
     },
     onError: (error: Error) => {
-        toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
     },
   });
 
-  const handleUpdateProduct = async (productData: any) => {
-      if (!editingProduct) return;
-      return updateProductMutation.mutateAsync({ id: editingProduct.id, data: productData });
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string, data: Partial<Product> }) => {
+      // Nettoyage des champs UI-only
+      const { new_tags, gallery_files, ...dbData } = data as any;
+      const { error } = await supabase.from('products').update(dbData).eq('id', id);
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => {
+      toast({ title: "Succès", description: "Produit mis à jour." });
+      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+      setEditingProduct(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleCreateProduct = async (productData: ProductFormData) => {
+    return createProductMutation.mutateAsync(productData);
+  };
+
+  const handleUpdateProduct = async (productData: ProductFormData) => {
+    if (!editingProduct) return;
+    return updateProductMutation.mutateAsync({ id: editingProduct.id, data: productData });
   };
 
   const deleteProductMutation = useMutation({
@@ -184,7 +226,7 @@ export function AdminProductList() {
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
         let aValue: any, bValue: any;
-        
+
         if (sortConfig.key === 'business_name') {
           aValue = a.profiles?.business_name?.toLowerCase() || '';
           bValue = b.profiles?.business_name?.toLowerCase() || '';
@@ -218,15 +260,15 @@ export function AdminProductList() {
     }
     setSortConfig({ key, direction });
   };
-  
+
   const SortableHeader = ({ children, columnKey }: { children: React.ReactNode, columnKey: keyof ProductWithDetails | 'business_name' | 'category_name' }) => (
     <TableHead onClick={() => requestSort(columnKey)} className="cursor-pointer hover:bg-gray-100 transition-colors">
-        <div className="flex items-center gap-2">
-            {children}
-            {sortConfig?.key === columnKey && (
-                sortConfig.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-            )}
-        </div>
+      <div className="flex items-center gap-2">
+        {children}
+        {sortConfig?.key === columnKey && (
+          sortConfig.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
+        )}
+      </div>
     </TableHead>
   );
 
@@ -273,7 +315,7 @@ export function AdminProductList() {
               {sortedProducts?.map(product => (
                 <TableRow key={product.id} className="hover:bg-gray-50/50">
                   <TableCell>
-                     <img src={product.image_url || '/placeholder.svg'} alt={product.name} className="w-12 h-12 object-cover rounded-md bg-gray-100" />
+                    <img src={product.image_url || '/placeholder.svg'} alt={product.name} className="w-12 h-12 object-cover rounded-md bg-gray-100" />
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
@@ -283,7 +325,7 @@ export function AdminProductList() {
                     </div>
                   </TableCell>
                   <TableCell>
-                     <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Package className="w-4 h-4 text-gray-400" />
                       {product.categories?.name || 'Sans catégorie'}
                     </div>
@@ -323,30 +365,33 @@ export function AdminProductList() {
           </Table>
         </div>
         <div className="flex items-center justify-between p-4 border-t">
-            <div className="text-sm text-gray-600">
-                {totalCount > 0
-                    ? `Affiche ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, totalCount)} sur ${totalCount} produits`
-                    : 'Aucun produit trouvé.'
-                }
-            </div>
-            <div className="flex items-center space-x-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage <= 1 || isFetching}
-                >
-                    Précédent
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    disabled={currentPage >= totalPages || isFetching}
-                >
-                    Suivant
-                </Button>
-            </div>
+          <div className="text-sm text-gray-600">
+            {totalCount > 0
+              ? `Affiche ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, totalCount)} sur ${totalCount} produits`
+              : 'Aucun produit trouvé.'
+            }
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage <= 1 || isFetching}
+            >
+              Précédent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              disabled={currentPage >= totalPages || isFetching}
+            >
+              Suivant
+            </Button>
+          </div>
+          <Button onClick={() => setIsCreating(true)} className="bg-primary hover:bg-primary/90">
+            <Plus className="mr-2 h-4 w-4" /> Ajouter un produit
+          </Button>
         </div>
       </Card>
 
@@ -356,60 +401,78 @@ export function AdminProductList() {
           <p>Aucun produit ne correspond à votre recherche.</p>
         </div>
       )}
-      
+
       {/* View Product Details Dialog */}
       <Dialog open={!!viewingProduct} onOpenChange={(isOpen) => !isOpen && setViewingProduct(null)}>
         <DialogContent>
-            <DialogHeader>
-                <DialogTitle>{viewingProduct?.name}</DialogTitle>
-                <DialogDescription>Détails complets du produit</DialogDescription>
-            </DialogHeader>
-            {viewingProduct && (
-              <div className="grid gap-2 text-sm py-4">
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <p className="text-gray-500">ID Produit</p>
-                    <p className="font-mono text-xs">{viewingProduct.id}</p>
-                  </div>
-                   <div className="grid grid-cols-2 gap-x-4">
-                    <p className="text-gray-500">Vendeur</p>
-                    <p>{viewingProduct.profiles?.business_name || 'N/A'}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <p className="text-gray-500">Catégorie</p>
-                    <p>{viewingProduct.categories?.name || 'Sans catégorie'}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <p className="text-gray-500">Prix</p>
-                    <p className="font-semibold">{formatCurrency(viewingProduct.price)}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <p className="text-gray-500">Stock</p>
-                    <p>{viewingProduct.stock} unités</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <p className="text-gray-500">Statut</p>
-                    <div>{getStatusBadge(viewingProduct.status)}</div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-x-4 mt-2">
-                    <p className="text-gray-500">Description</p>
-                    <p className="mt-1">{viewingProduct.description || 'Aucune description'}</p>
-                  </div>
+          <DialogHeader>
+            <DialogTitle>{viewingProduct?.name}</DialogTitle>
+            <DialogDescription>Détails complets du produit</DialogDescription>
+          </DialogHeader>
+          {viewingProduct && (
+            <div className="grid gap-2 text-sm py-4">
+              <div className="grid grid-cols-2 gap-x-4">
+                <p className="text-gray-500">ID Produit</p>
+                <p className="font-mono text-xs">{viewingProduct.id}</p>
               </div>
-            )}
+              <div className="grid grid-cols-2 gap-x-4">
+                <p className="text-gray-500">Vendeur</p>
+                <p>{viewingProduct.profiles?.business_name || 'N/A'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4">
+                <p className="text-gray-500">Catégorie</p>
+                <p>{viewingProduct.categories?.name || 'Sans catégorie'}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4">
+                <p className="text-gray-500">Prix</p>
+                <p className="font-semibold">{formatCurrency(viewingProduct.price)}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4">
+                <p className="text-gray-500">Stock</p>
+                <p>{viewingProduct.stock} unités</p>
+              </div>
+              <div className="grid grid-cols-2 gap-x-4">
+                <p className="text-gray-500">Statut</p>
+                <div>{getStatusBadge(viewingProduct.status)}</div>
+              </div>
+              <div className="grid grid-cols-1 gap-x-4 mt-2">
+                <p className="text-gray-500">Description</p>
+                <p className="mt-1">{viewingProduct.description || 'Aucune description'}</p>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
-      
-      {/* Edit Product Form */}
-      {editingProduct && (
-        <ProductForm
-            isOpen={!!editingProduct}
-            onClose={() => setEditingProduct(null)}
-            onSubmit={handleUpdateProduct}
-            categories={categories}
-            product={editingProduct as unknown as Product}
-            isLoading={updateProductMutation.isPending}
-        />
-      )}
+
+      {/* Create/Edit Product Sheet */}
+      <Sheet open={isCreating || !!editingProduct} onOpenChange={(open) => {
+        if (!open) {
+          setIsCreating(false);
+          setEditingProduct(null);
+        }
+      }}>
+        <SheetContent className="w-full sm:max-w-4xl overflow-y-auto p-0" side="right">
+          <div className="h-full flex flex-col">
+            <SheetHeader className="px-6 py-4 border-b">
+              <SheetTitle>{isCreating ? "Nouveau Produit" : "Modifier le produit"}</SheetTitle>
+              <SheetDescription>
+                {isCreating ? "Remplissez les informations pour créer un nouveau produit." : "Modifiez les informations du produit existant."}
+              </SheetDescription>
+            </SheetHeader>
+            <div className="flex-1 overflow-hidden">
+              <ProductFormUltimate
+                initialData={editingProduct ? (editingProduct as unknown as Product) : undefined}
+                onSubmit={isCreating ? handleCreateProduct : handleUpdateProduct}
+                isLoading={isCreating ? createProductMutation.isPending : updateProductMutation.isPending}
+                onClose={() => {
+                  setIsCreating(false);
+                  setEditingProduct(null);
+                }}
+              />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!productToDelete} onOpenChange={(isOpen) => !isOpen && setProductToDelete(null)}>

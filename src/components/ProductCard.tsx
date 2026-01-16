@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Heart, ShoppingCart, Star, UserPlus } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNotifications } from '@/hooks/useNotifications';
 import { useProductRating } from "@/hooks/useProductRating";
 import { Link } from 'react-router-dom';
 
@@ -28,18 +27,17 @@ const ProductCard = ({
   merchant,
   bnplAvailable = false
 }: ProductCardProps) => {
-  const { addItem } = useCart();
-  const { notify } = useNotifications();
+  const { addItem, triggerAnimation } = useCart();
   const { isAuthenticated } = useAuth();
   const { average, count } = useProductRating(id);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
     addItem(id);
-    notify.success("Produit ajouté", `${name} a été ajouté à votre panier`);
+    triggerAnimation({ x: e.clientX, y: e.clientY }, image);
   };
 
   const formattedPrice = new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(price);
-  
+
   return (
     <Card className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
       <Link to={`/product/${id}`} className="block">
@@ -81,11 +79,10 @@ const ProductCard = ({
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-center gap-1 mb-2 text-sm">
           <Star
-            className={`h-4 w-4 ${
-              average && average > 0
-                ? "text-yellow-400 fill-yellow-400"
-                : "text-gray-300"
-            }`}
+            className={`h-4 w-4 ${average && average > 0
+              ? "text-yellow-400 fill-yellow-400"
+              : "text-gray-300"
+              }`}
           />
           <span className="font-semibold text-gray-800 dark:text-gray-200">
             {average !== null ? average.toFixed(1) : "N/A"}
@@ -116,7 +113,7 @@ const ProductCard = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleAddToCart();
+            handleAddToCart(e);
           }}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />

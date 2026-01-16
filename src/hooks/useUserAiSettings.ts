@@ -25,9 +25,9 @@ export interface UserAiFeatureSetting {
   is_enabled: boolean;
 }
 
-// Fetch settings for a user using user_ai_settings table (correct table name)
+// Fetch settings for a user using user_ai_settings table
 async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('user_ai_settings')
     .select('*')
     .eq('user_id', userId);
@@ -37,8 +37,8 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
     return [];
   }
 
-  // Map from user_ai_settings to our interface
-  return (data || []).map((item) => ({
+  // Map from user_ai_feature_settings to our interface
+  return (data || []).map((item: any) => ({
     id: item.id,
     user_id: item.user_id,
     feature_key: item.feature_key as AiFeatureKey,
@@ -47,17 +47,17 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
 }
 
 // Upsert a setting for a user
-async function upsertUserAiSetting({ 
-  userId, 
-  featureKey, 
-  isEnabled 
-}: { 
-  userId: string; 
-  featureKey: AiFeatureKey; 
+async function upsertUserAiSetting({
+  userId,
+  featureKey,
+  isEnabled
+}: {
+  userId: string;
+  featureKey: AiFeatureKey;
   isEnabled: boolean;
 }) {
   // First check if record exists
-  const { data: existing } = await supabase
+  const { data: existing } = await (supabase as any)
     .from('user_ai_settings')
     .select('id')
     .eq('user_id', userId)
@@ -66,7 +66,7 @@ async function upsertUserAiSetting({
 
   if (existing) {
     // Update existing record
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_ai_settings')
       .update({
         is_enabled: isEnabled,
@@ -79,7 +79,7 @@ async function upsertUserAiSetting({
     return data;
   } else {
     // Insert new record
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('user_ai_settings')
       .insert({
         user_id: userId,

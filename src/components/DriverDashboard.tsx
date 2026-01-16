@@ -164,7 +164,7 @@ const DriverDashboard = () => {
           <div className="p-2 bg-green-600 rounded-xl">
             <Truck className="h-7 w-7 text-white" />
           </div>
-          Dashboard Livreur
+          {user?.delivery_name || 'Dashboard Livreur'}
         </h1>
         <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-green-200">
           En ligne

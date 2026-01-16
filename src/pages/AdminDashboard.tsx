@@ -6,6 +6,7 @@ import { StatCard } from "@/components/admin/StatCard";
 import { Users, Package, ShoppingCart, DollarSign, BarChart, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
+import { UserManagementTable } from "@/components/admin/UserManagementTable";
 
 export default function AdminDashboard() {
   const { data, isLoading, error } = useAdminDashboardStats();
@@ -77,6 +78,9 @@ export default function AdminDashboard() {
             />
             <p className="text-gray-500 text-sm mt-2">(Graphique exemple – connecter vos vraies données)</p>
           </div>
+
+          {/* User Management Section */}
+          <UserManagementTable />
         </div>
       </main>
       <Footer />

@@ -80,6 +80,15 @@ export function useBNPLApplications() {
 
       if (error) throw error;
 
+      // Envoyer une notification persistante au marchand
+      await (supabase.from('notifications' as any) as any).insert({
+        user_id: applicationData.merchant_id,
+        type: 'bnpl',
+        title: 'Nouvelle demande BNPL 💳',
+        message: `Vous avez reçu une nouvelle demande de paiement échelonné pour le montant de ${applicationData.requested_amount.toLocaleString()} CFA.`,
+        data: { application_id: data.id, product_id: applicationData.product_id }
+      });
+
       await fetchApplications();
       return { success: true, data };
     } catch (err) {

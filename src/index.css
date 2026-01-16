@@ -107,29 +107,54 @@
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(24px);}
-  to { opacity: 1; transform: none;}
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
+
 .animate-fade-in {
-  animation: fade-in 0.7s cubic-bezier(.4,0,.2,1);
+  animation: fade-in 0.7s cubic-bezier(.4, 0, .2, 1);
   /* Ajout pour garantir que l'élément est visible pendant l'animation */
   will-change: opacity, transform;
 }
 
 @keyframes yoombal-fade-in-up {
-  from { opacity: 0; transform: translateY(32px);}
-  to { opacity: 1; transform: none;}
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
+
 @keyframes yoombal-fade-in-left {
-  from { opacity: 0; transform: translateX(-32px);}
-  to { opacity: 1; transform: none;}
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
+
 .animate-fade-in-up {
-  animation: yoombal-fade-in-up 0.8s cubic-bezier(.4,0,.2,1);
+  animation: yoombal-fade-in-up 0.8s cubic-bezier(.4, 0, .2, 1);
   will-change: opacity, transform;
 }
+
 .animate-fade-in-left {
-  animation: yoombal-fade-in-left 0.8s cubic-bezier(.4,0,.2,1);
+  animation: yoombal-fade-in-left 0.8s cubic-bezier(.4, 0, .2, 1);
   will-change: opacity, transform;
 }
 
@@ -143,12 +168,42 @@
 .animation-delay-200 {
   animation-delay: 200ms;
 }
+
 .animation-delay-400 {
   animation-delay: 400ms;
 }
+
 .animation-delay-600 {
   animation-delay: 600ms;
 }
+
 .animation-delay-800 {
   animation-delay: 800ms;
+}
+
+@keyframes flyToCart {
+  0% {
+    transform: translate(var(--start-x), var(--start-y)) scale(0.5);
+    opacity: 0;
+  }
+
+  15% {
+    transform: translate(var(--start-x), var(--start-y)) scale(1.4);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translate(calc(var(--start-x) - 40px), calc(var(--start-y) - 80px)) scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(var(--end-x), var(--end-y)) scale(0.2);
+    opacity: 0.2;
+    filter: blur(1px);
+  }
+}
+
+.animate-fly-to-cart {
+  animation: flyToCart 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }

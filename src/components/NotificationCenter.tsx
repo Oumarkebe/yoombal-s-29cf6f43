@@ -4,75 +4,32 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Bell, Package, CreditCard, Star, Gift, X } from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
 
 interface Notification {
   id: string;
-  type: 'order' | 'payment' | 'review' | 'promo';
+  type: string;
   title: string;
   message: string;
-  time: string;
-  read: boolean;
+  is_read: boolean;
+  created_at: string;
+  data?: any;
 }
 
 const NotificationCenter = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'order',
-      title: 'Commande expédiée',
-      message: 'Votre commande #1234 a été expédiée et sera livrée demain.',
-      time: '2h',
-      read: false
-    },
-    {
-      id: '2',
-      type: 'payment',
-      title: 'Paiement BNPL dû',
-      message: 'Votre échéance de 15 000 XOF est due dans 3 jours.',
-      time: '5h',
-      read: false
-    },
-    {
-      id: '3',
-      type: 'review',
-      title: 'Évaluez votre achat',
-      message: 'Comment était votre Samsung Galaxy A54 ? Laissez un avis.',
-      time: '1j',
-      read: true
-    },
-    {
-      id: '4',
-      type: 'promo',
-      title: 'Offre spéciale',
-      message: '20% de réduction sur tous les smartphones ce weekend !',
-      time: '2j',
-      read: true
-    }
-  ]);
+  const { notifications, isLoading, markAsRead, removeNotification } = useNotifications();
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'order': return <Package className="h-5 w-5 text-blue-600" />;
-      case 'payment': return <CreditCard className="h-5 w-5 text-orange-600" />;
+      case 'bnpl': return <CreditCard className="h-5 w-5 text-orange-600" />;
       case 'review': return <Star className="h-5 w-5 text-green-600" />;
       case 'promo': return <Gift className="h-5 w-5 text-purple-600" />;
       default: return <Bell className="h-5 w-5 text-gray-600" />;
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notif => 
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
     <Card className="w-80 max-h-96 overflow-hidden">
@@ -87,7 +44,7 @@ const NotificationCenter = () => {
           )}
         </div>
       </div>
-      
+
       <div className="max-h-80 overflow-y-auto">
         {notifications.length === 0 ? (
           <div className="p-4 text-center text-gray-500">
@@ -98,9 +55,8 @@ const NotificationCenter = () => {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 hover:bg-gray-50 transition-colors ${
-                  !notification.read ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
-                }`}
+                className={`p-4 hover:bg-gray-50 transition-colors ${!notification.is_read ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+                  }`}
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-shrink-0 mt-1">
@@ -116,11 +72,16 @@ const NotificationCenter = () => {
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-500 mt-2">
-                          Il y a {notification.time}
+                          {new Date(notification.created_at).toLocaleDateString('fr-FR', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
                       <div className="flex items-center gap-1 ml-2">
-                        {!notification.read && (
+                        {!notification.is_read && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -146,14 +107,16 @@ const NotificationCenter = () => {
           </div>
         )}
       </div>
-      
+
       {notifications.length > 0 && (
         <div className="p-4 border-t">
           <Button
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => setNotifications(prev => prev.map(n => ({ ...n, read: true })))}
+            onClick={() => {
+              notifications.filter(n => !n.is_read).forEach(n => markAsRead(n.id));
+            }}
           >
             Tout marquer comme lu
           </Button>

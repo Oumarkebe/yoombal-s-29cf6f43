@@ -51,10 +51,22 @@ export function useMerchantBNPLApplications() {
 
       if (error) throw error;
 
-      // Si approuvé, créer le plan BNPL
-      if (decision === 'approved') {
-        const application = applications.find(app => app.id === applicationId);
-        if (application) {
+      // Envoyer une notification persistante au client
+      const application = applications.find(app => app.id === applicationId);
+      if (application) {
+        const isApproved = decision === 'approved';
+        await (supabase.from('notifications' as any) as any).insert({
+          user_id: application.user_id,
+          type: 'bnpl',
+          title: isApproved ? 'Demande BNPL Approuvée ! 🎉' : 'Mise à jour Demande BNPL',
+          message: isApproved
+            ? `Bonne nouvelle ! Votre demande pour "${application.products?.name}" a été approuvée. Veuillez procéder au paiement de l'apport initial.`
+            : `Désolé, votre demande pour "${application.products?.name}" n'a pas pu être acceptée pour le moment.`,
+          data: { application_id: applicationId, decision: decision }
+        });
+
+        // Si approuvé, créer le plan BNPL
+        if (isApproved) {
           await createBNPLPlan(application);
         }
       }
@@ -68,20 +80,44 @@ export function useMerchantBNPLApplications() {
   };
 
   const createBNPLPlan = async (application: any) => {
-    const nextPaymentDate = new Date();
-    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+    // Générer l'échéancier (Installments)
+    const installments = [];
+
+    // 1. L'apport initial (Deposit)
+    installments.push({
+      type: 'deposit',
+      amount: application.first_payment_amount,
+      due_date: new Date().toISOString().split('T')[0],
+      status: 'pending',
+      label: 'Apport initial (20%)'
+    });
+
+    // 2. Les mensualités
+    for (let i = 1; i <= application.plan_duration; i++) {
+      const dueDate = new Date();
+      dueDate.setMonth(dueDate.getMonth() + i);
+      installments.push({
+        type: 'installment',
+        amount: application.monthly_payment,
+        due_date: dueDate.toISOString().split('T')[0],
+        status: 'pending',
+        label: `Échéance ${i}/${application.plan_duration}`
+      });
+    }
 
     const { error } = await supabase
       .from("bnpl_plans")
       .insert({
         user_id: application.user_id,
+        merchant_id: application.merchant_id,
         product_id: application.product_id,
         total_amount: application.requested_amount,
         monthly_payment: application.monthly_payment,
         remaining_months: application.plan_duration,
         duration_months: application.plan_duration,
-        next_payment_date: nextPaymentDate.toISOString().split('T')[0],
-        status: 'active'
+        next_payment_date: installments[0].due_date, // Le premier paiement est l'apport
+        status: 'awaiting_deposit',
+        installments: installments
       });
 
     if (error) throw error;
