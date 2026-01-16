@@ -73,12 +73,13 @@ CREATE TABLE IF NOT EXISTS public.user_subscriptions (
 );
 
 -- Index pour performance
-CREATE INDEX idx_user_sub_user_id ON public.user_subscriptions(user_id);
-CREATE INDEX idx_user_sub_status ON public.user_subscriptions(status);
-CREATE INDEX idx_user_sub_expires ON public.user_subscriptions(expires_at) WHERE status = 'active';
+CREATE INDEX IF NOT EXISTS idx_user_sub_user_id ON public.user_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sub_status ON public.user_subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_user_sub_expires ON public.user_subscriptions(expires_at) WHERE status = 'active';
 
 -- Contrainte: Un seul abonnement actif par utilisateur
-CREATE UNIQUE INDEX idx_one_active_sub_per_user 
+-- Contrainte: Un seul abonnement actif par utilisateur
+CREATE UNIQUE INDEX IF NOT EXISTS idx_one_active_sub_per_user 
 ON public.user_subscriptions(user_id) 
 WHERE status = 'active';
 
@@ -112,9 +113,9 @@ CREATE TABLE IF NOT EXISTS public.subscription_audit_log (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_audit_user_id ON public.subscription_audit_log(user_id);
-CREATE INDEX idx_audit_created_at ON public.subscription_audit_log(created_at DESC);
-CREATE INDEX idx_audit_action ON public.subscription_audit_log(action);
+CREATE INDEX IF NOT EXISTS idx_audit_user_id ON public.subscription_audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created_at ON public.subscription_audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON public.subscription_audit_log(action);
 
 -- ============================================================================
 -- 4. ROW LEVEL SECURITY
@@ -169,7 +170,7 @@ VALUES (
     'Gratuit',
     'blue',
     1
-);
+) ON CONFLICT (slug) DO NOTHING;
 
 -- Plan 2: Pro (Pour Marchands & Livreurs)
 INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, target_roles, badge_text, badge_color, display_order)
@@ -184,7 +185,7 @@ VALUES (
     'Populaire',
     'green',
     2
-);
+) ON CONFLICT (slug) DO NOTHING;
 
 -- Plan 3: Enterprise (Pour Admins)
 INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, target_roles, badge_text, badge_color, display_order)
@@ -199,7 +200,7 @@ VALUES (
     'Premium',
     'purple',
     3
-);
+) ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================
 -- 6. FUNCTIONS
@@ -259,10 +260,12 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================================
 
 -- Auto-update timestamps
+DROP TRIGGER IF EXISTS update_premium_plans_updated_at ON public.premium_plans;
 CREATE TRIGGER update_premium_plans_updated_at
     BEFORE UPDATE ON public.premium_plans
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_subscriptions_updated_at ON public.user_subscriptions;
 CREATE TRIGGER update_user_subscriptions_updated_at
     BEFORE UPDATE ON public.user_subscriptions
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
