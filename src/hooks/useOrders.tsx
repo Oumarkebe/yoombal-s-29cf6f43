@@ -6,7 +6,7 @@ import { type Database } from '@/integrations/supabase/types';
 
 export type Order = Database['public']['Tables']['orders']['Row'] & {
   order_items?: Array<Database['public']['Tables']['order_items']['Row'] & {
-    products?: { name: string };
+    products?: { name: string; is_digital: boolean };
   }>;
   profiles?: {
     email?: string;
@@ -39,10 +39,10 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
         .from('orders')
         .select(`
           *,
-          order_items:order_items(*, products(name))
+          order_items:order_items(*, products(name, is_digital))
         `)
         .order('created_at', { ascending: false });
-        
+
       if (options?.role === 'merchant' && options.merchantId) {
         query = query.eq('merchant_id', options.merchantId);
       } else if (options?.role === 'admin') {
@@ -53,7 +53,7 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
       const { data, error: queryError } = await query;
 
       if (queryError) throw queryError;
-      
+
       setOrders(data as Order[]);
     } catch (err: any) {
       setError('Impossible de charger les commandes');
@@ -114,7 +114,7 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
         })
         .select()
         .single();
-      
+
       if (orderError) throw orderError;
 
       const orderItemsData = items.map(item => ({
@@ -123,7 +123,7 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
         quantity: item.quantity,
         price: item.price
       }));
-      
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItemsData);

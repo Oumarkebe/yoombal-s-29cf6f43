@@ -299,6 +299,15 @@ export function AIAssistant() {
                 };
                 setLastAnalyticTags(analyticTags);
 
+                // --- EXECUTE AI ACTIONS (v3.0) ---
+                if (analyticTags.action_detected === 'add_cart' && analyticTags.target_id) {
+                    addItem(analyticTags.target_id);
+                    triggerAnimation();
+                    toast.success("Produit ajouté au panier par l'assistant ! 🛒", {
+                        description: "Une excellente recommandation waay !",
+                    });
+                }
+
                 if (voiceEnabled) {
                     speakText(data.response);
                 }
