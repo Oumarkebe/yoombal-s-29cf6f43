@@ -481,6 +481,52 @@ export function useSubscription() {
         }
     });
 
+    // Module activation mutation
+    const activateModuleMutation = useMutation({
+        mutationFn: async (featureId: string) => {
+            if (!user) throw new Error('Non authentifié');
+
+            const { data, error } = await supabase
+                .from('user_premium_subscriptions' as any)
+                .insert({
+                    user_id: user.id,
+                    feature_id: featureId,
+                    status: 'active',
+                    started_at: new Date().toISOString(),
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userPurchasedModules', user?.id] });
+            toast.success('Module activé avec succès !');
+        },
+        onError: (error: Error) => {
+            toast.error(`Erreur d'activation: ${error.message}`);
+        }
+    });
+
+    const deactivateModuleMutation = useMutation({
+        mutationFn: async (featureId: string) => {
+            if (!user) throw new Error('Non authentifié');
+
+            const { data, error } = await supabase
+                .from('user_premium_subscriptions' as any)
+                .update({ status: 'cancelled' })
+                .eq('user_id', user.id)
+                .eq('feature_id', featureId);
+
+            if (error) throw error;
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userPurchasedModules', user?.id] });
+        }
+    });
+
     return {
         // Data
         subscription,
@@ -490,6 +536,7 @@ export function useSubscription() {
         error,
         resolvedFeatures,
         globalFeatures,
+        purchasedModules,
 
         // Helpers
         hasFeature,
@@ -500,11 +547,14 @@ export function useSubscription() {
         changePlan: changePlanMutation.mutate,
         cancel: cancelMutation.mutate,
         renew: renewMutation.mutate,
+        activateModule: activateModuleMutation.mutate,
+        deactivateModule: deactivateModuleMutation.mutate,
 
         // Loading states
         isSubscribing: subscribeMutation.isPending,
         isChanging: changePlanMutation.isPending,
         isCancelling: cancelMutation.isPending,
         isRenewing: renewMutation.isPending,
+        isProcessingModule: activateModuleMutation.isPending || deactivateModuleMutation.isPending
     };
 }

@@ -476,6 +476,8 @@ export type Database = {
           name: string
           price_monthly: number | null
           updated_at: string | null
+          is_free: boolean | null
+          trial_days: number | null
         }
         Insert: {
           category?: string
@@ -489,6 +491,8 @@ export type Database = {
           name: string
           price_monthly?: number | null
           updated_at?: string | null
+          is_free?: boolean | null
+          trial_days?: number | null
         }
         Update: {
           category?: string
@@ -502,6 +506,8 @@ export type Database = {
           name?: string
           price_monthly?: number | null
           updated_at?: string | null
+          is_free?: boolean | null
+          trial_days?: number | null
         }
         Relationships: []
       }
@@ -541,6 +547,7 @@ export type Database = {
           created_at: string | null
           updated_at: string | null
           status: string | null
+          bnpl_enabled: boolean | null
         }
         Insert: {
           id?: string
@@ -577,6 +584,7 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
           status?: string | null
+          bnpl_enabled?: boolean | null
         }
         Update: {
           id?: string
@@ -613,6 +621,7 @@ export type Database = {
           created_at?: string | null
           updated_at?: string | null
           status?: string | null
+          bnpl_enabled?: boolean | null
         }
         Relationships: [
           {

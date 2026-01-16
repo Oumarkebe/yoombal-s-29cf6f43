@@ -4,22 +4,33 @@ import { useSubscription, PremiumPlan } from '@/hooks/useSubscription';
 import { PlanCard } from '@/components/subscription/PlanCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Loader2, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldCheck, Sparkles, Check, Globe, Zap, MessageSquare, HelpCircle } from 'lucide-react';
 import { toast } from 'sonner';
-
 import { PaymentDialog } from '@/components/PaymentDialog';
-import { supabase } from '@/integrations/supabase/client';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 export default function Subscriptions() {
     const navigate = useNavigate();
-    const { plans, subscription, subscribe, isSubscribing, changePlan, isChanging, renew, isRenewing } = useSubscription();
+    const {
+        plans,
+        subscription,
+        subscribe,
+        isSubscribing,
+        changePlan,
+        isChanging,
+        renew,
+        isRenewing,
+        globalFeatures,
+        resolvedFeatures
+    } = useSubscription();
+
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
     const [paymentOpen, setPaymentOpen] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<PremiumPlan | null>(null);
     const [actionType, setActionType] = useState<'subscribe' | 'renew' | 'change' | 'module_purchase'>('subscribe');
 
     const handleSubscribe = async (plan: PremiumPlan & { isExpiringSoon?: boolean }) => {
-        // Case 1: Renewal (Same plan + Expiring soon)
         if (subscription?.plan_id === plan.id && plan.isExpiringSoon) {
             setSelectedPlan(plan);
             setActionType('renew');
@@ -27,46 +38,31 @@ export default function Subscriptions() {
             return;
         }
 
-        // Case 2: Change Plan (Different plan)
         if (subscription && subscription.plan_id !== plan.id) {
             const price = billingPeriod === 'monthly' ? plan.price_monthly : plan.price_yearly;
-
-            // If switching to free plan -> Confirm and switch directly
             if (price === 0) {
                 if (window.confirm(`Confirmez-vous le passage au plan ${plan.name} ?`)) {
                     changePlan({ newPlanId: plan.id, applyProrata: true });
                 }
                 return;
             }
-
-            // If switching to paid plan -> Payment first
             setSelectedPlan(plan);
             setActionType('change');
             setPaymentOpen(true);
             return;
         }
 
-        // Case 3: Already active (Not expiring)
         if (subscription && subscription.plan_id === plan.id) {
             toast.info("Votre abonnement est déjà actif");
             return;
         }
 
-        // Case 4: New Subscription (No active sub)
         const price = billingPeriod === 'monthly' ? plan.price_monthly : plan.price_yearly;
-
         if (price === 0) {
-            subscribe({
-                planId: plan.id,
-                billingPeriod,
-                paymentMethod: 'wallet',
-                amount: 0,
-                status: 'active'
-            });
+            subscribe({ planId: plan.id, billingPeriod, paymentMethod: 'wallet', amount: 0, status: 'active' });
             return;
         }
 
-        // Open payment dialog for paid plans
         setSelectedPlan(plan);
         setActionType('subscribe');
         setPaymentOpen(true);
@@ -74,190 +70,131 @@ export default function Subscriptions() {
 
     const handlePaymentSuccess = (method: 'orange_money' | 'wave', phoneNumber: string) => {
         if (!selectedPlan) return;
-
         const price = billingPeriod === 'monthly' ? selectedPlan.price_monthly : selectedPlan.price_yearly;
         const paymentMethodEnum = method === 'orange_money' ? 'mobile_money' : 'wallet';
 
         if (actionType === 'renew') {
             renew(price);
         } else if (actionType === 'change') {
-            changePlan({
-                newPlanId: selectedPlan.id,
-                applyProrata: true,
-                paymentMethod: paymentMethodEnum,
-                amount: price
-            });
+            changePlan({ newPlanId: selectedPlan.id, applyProrata: true, paymentMethod: paymentMethodEnum, amount: price });
+        } else if (actionType === 'module_purchase') {
+            // Already handled in PaymentDialog onSuccess usually, 
+            // but let's ensure consistency if we use a central handler
+            toast.success("Module activé !");
         } else {
-            subscribe({
-                planId: selectedPlan.id,
-                billingPeriod,
-                paymentMethod: paymentMethodEnum,
-                amount: price,
-                status: 'active'
-            });
+            subscribe({ planId: selectedPlan.id, billingPeriod, paymentMethod: paymentMethodEnum, amount: price, status: 'active' });
         }
-
         setPaymentOpen(false);
         setSelectedPlan(null);
     };
 
     const isLoading = isSubscribing || isChanging || isRenewing;
-    const { globalFeatures, resolvedFeatures } = useSubscription();
-
-    // Filter features that are premium, enabled by admin, and NOT already in user's active features
-    // We only show modules that are not part of the current plan to stay clear.
-    // List all premium modules available for purchase
-    const individualModules = globalFeatures?.filter(f =>
-        f.is_premium &&
-        f.is_enabled &&
-        f.price_monthly > 0
-    ) || [];
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-20 pb-10">
-            <div className="container mx-auto px-4 max-w-6xl">
-                <div className="mb-8">
-                    <Button variant="ghost" onClick={() => navigate('/profile')} className="mb-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Retour au profil
+        <div className="min-h-screen bg-white pt-24 pb-20">
+            <div className="container mx-auto px-4 max-w-7xl">
+                {/* Header Section */}
+                <div className="flex flex-col items-center text-center space-y-4 mb-16">
+                    <Button variant="ghost" onClick={() => navigate('/profile')} className="mb-4 hover:bg-muted self-start">
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Retour
                     </Button>
 
-                    <div className="text-center max-w-2xl mx-auto">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                            Choisissez le plan adapté à vos besoins
-                        </h1>
-                        <p className="text-gray-500 mb-8">
-                            Débloquez tout le potentiel de Yoombal avec nos offres premium.
-                            Passez à la vitesse supérieure dès aujourd'hui.
-                        </p>
+                    <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 px-4 py-1 animate-pulse">
+                        <Sparkles className="h-3 w-3 mr-2 text-primary" />
+                        OFFRES LIMITÉES
+                    </Badge>
 
+                    <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-gray-900 max-w-4xl">
+                        Équipez votre business de <span className="text-primary italic">super-pouvoirs</span>
+                    </h1>
+
+                    <p className="text-xl text-muted-foreground max-w-2xl">
+                        Des outils de pointe basés sur l'IA pour automatiser vos ventes,
+                        prédire vos stocks et fidéliser vos clients.
+                    </p>
+
+                    <div className="flex flex-col items-center pt-8 gap-4">
                         <Tabs
                             defaultValue="monthly"
-                            className="w-[400px] mx-auto mb-10"
+                            className="bg-muted/50 p-1 rounded-full border border-muted"
                             onValueChange={(v) => setBillingPeriod(v as 'monthly' | 'yearly')}
                         >
-                            <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="monthly">Mensuel</TabsTrigger>
-                                <TabsTrigger value="yearly">Annuel (-20%)</TabsTrigger>
+                            <TabsList className="bg-transparent h-12">
+                                <TabsTrigger value="monthly" className="rounded-full px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Mensuel</TabsTrigger>
+                                <TabsTrigger value="yearly" className="rounded-full px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                                    Annuel <span className="ml-2 text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">-20%</span>
+                                </TabsTrigger>
                             </TabsList>
                         </Tabs>
+                        <p className="text-xs text-muted-foreground flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-green-500" />
+                            Paiement sécurisé par Orange Money et Wave
+                        </p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Plans Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
                     {plans.map((plan) => (
                         <PlanCard
                             key={plan.id}
                             plan={plan}
                             billingPeriod={billingPeriod}
-                            currentPlanId={subscription?.plan_id}
-                            onSubscribe={handleSubscribe}
+                            isCurrent={subscription?.plan_id === plan.id}
+                            onSubscribe={() => handleSubscribe(plan)}
                             isLoading={isLoading}
                         />
                     ))}
                 </div>
 
-                <div className="mt-16 text-center">
-                    <div className="inline-flex items-center gap-2 text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm">
-                        <ShieldCheck className="h-5 w-5 text-green-500" />
-                        <span className="text-sm">Paiement 100% sécurisé via Wave, Orange Money ou Carte Bancaire</span>
+                {/* FAQ Section */}
+                <div className="max-w-3xl mx-auto border-t pt-16">
+                    <div className="text-center mb-10 space-y-2">
+                        <div className="flex justify-center">
+                            <HelpCircle className="h-8 w-8 text-primary/50" />
+                        </div>
+                        <h2 className="text-3xl font-black">Questions Fréquentes</h2>
+                        <p className="text-muted-foreground">Tout ce que vous devez savoir sur nos offres.</p>
+                    </div>
+
+                    <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="item-1" className="border-b-muted">
+                            <AccordionTrigger className="hover:no-underline font-bold text-left">Quels sont les modes de paiement acceptés ?</AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground">
+                                Nous acceptons les paiements via Orange Money et Wave. C'est simple, rapide et sécurisé.
+                                Vous recevrez une notification sur votre téléphone pour valider la transaction.
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-2" className="border-b-muted">
+                            <AccordionTrigger className="hover:no-underline font-bold text-left">Puis-je changer de plan en cours de mois ?</AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground">
+                                Oui ! Vous pouvez passer à un plan supérieur à tout moment. La différence de prix sera
+                                calculée au prorata pour la période restante.
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+            </div>
+
+            {selectedPlan && (
+                <PaymentDialog
+                    open={paymentOpen}
+                    onOpenChange={setPaymentOpen}
+                    amount={billingPeriod === 'monthly' ? selectedPlan.price_monthly : selectedPlan.price_yearly}
+                    onSuccess={handlePaymentSuccess}
+                    title={actionType === 'renew' ? "Renouvellement" : "Finalisez votre abonnement"}
+                />
+            )}
+
+            {isLoading && (
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-2xl shadow-xl border flex items-center gap-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <p className="font-bold">Traitement en cours...</p>
                     </div>
                 </div>
-
-                {/* Section Modules à la carte - DYNAMIC */}
-                {individualModules.length > 0 && (
-                    <div className="mt-16 mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Modules IA & Boosters à la carte</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {individualModules.map((feature) => (
-                                <div key={feature.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                                        <ShieldCheck className="w-12 h-12 text-primary" />
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-2">{feature.name}</h3>
-                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{feature.description}</p>
-                                    <div className="text-2xl font-bold text-primary mb-4">
-                                        {feature.price_monthly.toLocaleString()} FCFA
-                                        <span className="text-sm text-gray-500 font-normal"> / mois</span>
-                                    </div>
-                                    <ul className="text-sm space-y-2 mb-6">
-                                        <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Activation immédiate</li>
-                                        {feature.trial_days > 0 && (
-                                            <li className="flex gap-2"><Sparkles className="w-4 h-4 text-amber-500" /> {feature.trial_days} jours d'essai</li>
-                                        )}
-                                        <li className="flex gap-2"><ShieldCheck className="w-4 h-4 text-green-500" /> Annulable à tout moment</li>
-                                    </ul>
-                                    <Button
-                                        className="w-full"
-                                        variant={resolvedFeatures.includes(feature.feature_key) ? "outline" : "default"}
-                                        disabled={resolvedFeatures.includes(feature.feature_key)}
-                                        onClick={() => {
-                                            setSelectedPlan({
-                                                id: feature.id,
-                                                name: feature.name,
-                                                price_monthly: feature.price_monthly,
-                                                price_yearly: feature.price_monthly * 10, // Yearly approx
-                                                slug: `module_${feature.feature_key}`,
-                                                features: [feature.feature_key],
-                                                limits: {}
-                                            } as any);
-                                            setActionType('module_purchase');
-                                            setPaymentOpen(true);
-                                        }}
-                                    >
-                                        {resolvedFeatures.includes(feature.feature_key) ? (
-                                            <>
-                                                <ShieldCheck className="w-4 h-4 mr-2" /> Module Actif
-                                            </>
-                                        ) : (
-                                            'Activer le module'
-                                        )}
-                                    </Button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {selectedPlan && (
-                    <PaymentDialog
-                        isOpen={paymentOpen}
-                        onClose={() => setPaymentOpen(false)}
-                        amount={billingPeriod === 'monthly' ? selectedPlan.price_monthly : selectedPlan.price_yearly}
-                        description={actionType === 'module_purchase' ? `Module: ${selectedPlan.name}` : `Abonnement ${selectedPlan.name} (${billingPeriod === 'monthly' ? 'Mensuel' : 'Annuel'})`}
-                        type="subscription_purchase"
-                        metadata={{
-                            planId: selectedPlan.id,
-                            planName: selectedPlan.name,
-                            isModule: actionType === 'module_purchase',
-                            featureKey: selectedPlan.features?.[0] || ''
-                        }}
-                        onSuccess={async (method, phoneNumber) => {
-                            // Custom Module Logic
-                            if (actionType === 'module_purchase') {
-                                try {
-                                    const { error } = await (supabase as any)
-                                        .from('user_premium_subscriptions')
-                                        .insert({
-                                            user_id: (await supabase.auth.getUser()).data.user?.id,
-                                            feature_id: selectedPlan.id,
-                                            status: 'active',
-                                            billing_period: 'monthly'
-                                        });
-                                    if (error) throw error;
-                                    toast.success("Module activé avec succès !");
-                                    window.location.reload();
-                                } catch (e) {
-                                    console.error("Error activating module", e);
-                                    toast.error("Erreur lors de l'activation du module");
-                                }
-                                setPaymentOpen(false);
-                                return;
-                            }
-                            handlePaymentSuccess(method, phoneNumber);
-                        }}
-                    />
-                )}
-            </div>
+            )}
         </div>
     );
 }
+

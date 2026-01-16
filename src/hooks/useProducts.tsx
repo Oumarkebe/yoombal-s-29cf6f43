@@ -18,6 +18,12 @@ export interface Product {
   merchant_id: string;
   features?: string[];
   specs?: Record<string, any>;
+  bnpl_enabled?: boolean;
+  is_digital?: boolean;
+  download_url?: string | null;
+  tags?: string[];
+  slug?: string;
+  sku?: string;
   categories?: {
     name: string;
   };
