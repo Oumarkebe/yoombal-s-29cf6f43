@@ -1,0 +1,16 @@
+{
+    "name": "Yoombal - Le Marketplace du Sénégal",
+    "short_name": "Yoombal",
+    "description": "Plateforme e-commerce avec IA Griot, BNPL et logistique intégrée.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "icons": [
+        {
+            "src": "/og-image.png",
+            "sizes": "1200x630",
+            "type": "image/png"
+        }
+    ]
+}

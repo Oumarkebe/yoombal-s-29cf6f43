@@ -16,6 +16,7 @@ interface ProductCardProps {
   image: string;
   merchant: string;
   bnplAvailable?: boolean;
+  isSponsored?: boolean;
 }
 
 const ProductCard = ({
@@ -25,7 +26,8 @@ const ProductCard = ({
   originalPrice,
   image,
   merchant,
-  bnplAvailable = false
+  bnplAvailable = false,
+  isSponsored = false
 }: ProductCardProps) => {
   const { addItem, triggerAnimation } = useCart();
   const { isAuthenticated } = useAuth();
@@ -42,6 +44,11 @@ const ProductCard = ({
     <Card className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
       <Link to={`/product/${id}`} className="block">
         <div className="relative overflow-hidden">
+          {isSponsored && (
+            <div className="absolute top-2 right-2 z-10 bg-amber-500/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-amber-400">
+              SPONSORISÉ
+            </div>
+          )}
           <img
             src={image}
             alt={name}

@@ -38,7 +38,7 @@ export function useBNPLPlans() {
       supabase
         .from("bnpl_plans")
         .select("*, products(name, image_url)")
-        .eq("user_id", user.id)
+        .eq("client_id", user.id)
         .order("created_at", { ascending: false })
         .then(({ data, error }) => {
           if (error) setError("Erreur lors de la récupération des plans BNPL");
@@ -61,7 +61,7 @@ export function useBNPLPlans() {
           event: '*',
           schema: 'public',
           table: 'bnpl_plans',
-          filter: `user_id=eq.${user.id}`
+          filter: `client_id=eq.${user.id}`
         }, (payload) => {
           // Refresh full list
           fetchPlans();

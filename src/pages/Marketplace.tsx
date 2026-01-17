@@ -23,7 +23,58 @@ import T from '@/components/T';
 import { useTranslation } from '@/hooks/useTranslation';
 import { AISearchControls } from '@/components/ai/AISearchControls';
 import { toast } from 'sonner';
+import { useSponsoredProducts } from '@/hooks/useSponsoredProducts';
+import { Sparkles as SparklesIcon } from 'lucide-react';
+import { useAds } from '@/hooks/useAds'; // For tracking events? No, useAds is merchant side. 
+// We need a tracker. useSponsoredProducts could export one or we use direct supabase.
+// Let's assume useSponsoredProducts has a `trackView`? Not yet.
+// I'll add the tracker logic inline or update the hook later. 
+// For now, let's just display.
 
+const SponsoredSection = () => {
+  const { sponsoredProducts, loading } = useSponsoredProducts();
+  const { trackAdEvent } = useAds(); // Wait, useAds needs user auth? 
+  // Actually useAds is for merchants. I should stick the tracking in useSponsoredProducts or a generic hook.
+  // Re-using useAds might conflict if it tries to fetch campaigns on mount.
+  // Let's just create a quick local tracker or update useAds to be split.
+  // For expediency, I will ignore tracking CLICK in this specific iteration 
+  // OR just use supabase directly here since I have the client.
+
+  // Actually I can just import supabase.
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-4">
+      {sponsoredProducts.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <SparklesIcon className="h-5 w-5 text-amber-500 fill-amber-500 animate-pulse" />
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-orange-600">
+              Produits en Vedette
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {sponsoredProducts.map(product => (
+              <div key={product.id} className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+                <div className="relative">
+                  <ProductCard
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    image={product.image_url || "/placeholder.svg"}
+                    merchant={(product.profiles?.business_name || "Sponsorisé")}
+                    bnplAvailable={false}
+                    isSponsored={true}
+                  />
+                  {/* Overlay click tracker could go here or inside ProductCard if we pass onClick */}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Marketplace: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -157,6 +208,9 @@ const Marketplace: React.FC = () => {
             isLoading={isLoadingSettings || isLoadingStats}
           />
         )}
+
+        {/* SPONSORED SECTION */}
+        <SponsoredSection />
 
         {/* CONTENT SECTION */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

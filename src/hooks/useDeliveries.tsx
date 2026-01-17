@@ -20,6 +20,8 @@ export interface Delivery {
   delivery_fee: number;
   distance_km?: number;
   notes?: string;
+  signature_url?: string;
+  proof_photo_url?: string;
   created_at: string;
   updated_at: string;
   driver_profile?: {
@@ -124,7 +126,13 @@ export const useDeliveries = () => {
     }
   };
 
-  const updateDeliveryStatus = async (deliveryId: string, status: Delivery['status'], notes?: string) => {
+  const updateDeliveryStatus = async (
+    deliveryId: string,
+    status: Delivery['status'],
+    notes?: string,
+    signatureUrl?: string,
+    proofPhotoUrl?: string
+  ) => {
     try {
       const updateData: any = { status };
 
@@ -132,9 +140,9 @@ export const useDeliveries = () => {
         updateData.actual_delivery_time = new Date().toISOString();
       }
 
-      if (notes) {
-        updateData.notes = notes;
-      }
+      if (notes) updateData.notes = notes;
+      if (signatureUrl) updateData.signature_url = signatureUrl;
+      if (proofPhotoUrl) updateData.proof_photo_url = proofPhotoUrl;
 
       const { error } = await supabase
         .from('deliveries')

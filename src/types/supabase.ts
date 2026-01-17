@@ -41,6 +41,85 @@ export type Database = {
         }
         Relationships: []
       }
+      ads_campaigns: {
+        Row: {
+          id: string
+          merchant_id: string
+          product_id: string
+          start_date: string
+          end_date: string
+          daily_budget: number
+          status: string
+          current_spend: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          merchant_id: string
+          product_id: string
+          start_date: string
+          end_date: string
+          daily_budget?: number
+          status: string
+          current_spend?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          merchant_id?: string
+          product_id?: string
+          start_date?: string
+          end_date?: string
+          daily_budget?: number
+          status?: string
+          current_spend?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      ads_analytics: {
+        Row: {
+          id: string
+          campaign_id: string
+          event_type: string
+          viewer_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          campaign_id: string
+          event_type: string
+          viewer_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          campaign_id?: string
+          event_type?: string
+          viewer_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ads_analytics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ads_campaigns"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       ai_module_settings: {
         Row: {
           configuration: Json | null
@@ -141,7 +220,7 @@ export type Database = {
           remaining_months: number
           status: string
           total_amount: number
-          user_id: string
+          client_id: string
         }
         Insert: {
           application_status?: string | null
@@ -156,7 +235,7 @@ export type Database = {
           remaining_months: number
           status?: string
           total_amount: number
-          user_id: string
+          client_id: string
         }
         Update: {
           application_status?: string | null
@@ -850,6 +929,163 @@ export type Database = {
         }
         Relationships: []
       }
+      warehouses: {
+        Row: {
+          capacity: number | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          location: string
+          manager_id: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          location: string
+          manager_id?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          manager_id?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouses_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      warehouse_inventory: {
+        Row: {
+          created_at: string
+          id: string
+          min_threshold: number
+          product_id: string
+          quantity: number
+          updated_at: string
+          warehouse_id: string
+          zone_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          min_threshold?: number
+          product_id: string
+          quantity?: number
+          updated_at?: string
+          warehouse_id: string
+          zone_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          min_threshold?: number
+          product_id?: string
+          quantity?: number
+          updated_at?: string
+          warehouse_id?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouse_inventory_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_inventory_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      warehouse_movements: {
+        Row: {
+          created_at: string
+          from_warehouse_id: string | null
+          id: string
+          notes: string | null
+          performed_by: string | null
+          item_id: string
+          quantity: number
+          reference_id: string | null
+          to_warehouse_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          item_id: string
+          quantity: number
+          reference_id?: string | null
+          to_warehouse_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          from_warehouse_id?: string | null
+          id?: string
+          notes?: string | null
+          performed_by?: string | null
+          item_id?: string
+          quantity?: number
+          reference_id?: string | null
+          to_warehouse_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "warehouse_movements_from_warehouse_id_fkey"
+            columns: ["from_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_movements_to_warehouse_id_fkey"
+            columns: ["to_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_movements_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "warehouse_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -881,116 +1117,116 @@ type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+    DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] &
+    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["Enums"]
+  | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof DefaultSchema["CompositeTypes"]
+  | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+  ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+  : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
   public: {

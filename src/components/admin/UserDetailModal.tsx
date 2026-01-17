@@ -112,10 +112,20 @@ export function UserDetailModal({ userId, isOpen, onClose }: UserDetailModalProp
         mutationFn: async (newRole: string) => {
             if (!userId) return;
 
-            // Upsert role
+            // Since we are setting a primary role via this modal, and 'user_roles' allows multiple,
+            // we first remove all existing roles for this user to ensure we "set" the selected one.
+            // This matches the single-select UI behavior. For granular control, use RolesModal.
+            const { error: deleteError } = await supabase
+                .from('user_roles')
+                .delete()
+                .eq('user_id', userId);
+
+            if (deleteError) throw deleteError;
+
+            // Insert new role
             const { error } = await supabase
                 .from('user_roles')
-                .upsert({ user_id: userId, role: newRole as any }, { onConflict: 'user_id' });
+                .insert({ user_id: userId, role: newRole as any });
 
             if (error) throw error;
         },

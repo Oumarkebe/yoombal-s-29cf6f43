@@ -13,6 +13,7 @@ import {
   ListChecks,
   Store,
   TrendingUp,
+  Megaphone,
 } from "lucide-react";
 import ProductManagement from "@/components/ProductManagement";
 import OrderManagement from "@/components/OrderManagement";
@@ -95,6 +96,12 @@ const MerchantDashboard = () => {
               IA Insights
             </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">Paramètres</TabsTrigger>
+            <Link to="/merchant/ads">
+              <Button variant="ghost" className="rounded-none border-b-2 border-transparent hover:border-purple-600 hover:text-purple-600 gap-2">
+                <Megaphone className="h-4 w-4" />
+                Publicité
+              </Button>
+            </Link>
           </TabsList>
 
           <TabsContent value="products">

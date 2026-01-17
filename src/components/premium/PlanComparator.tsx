@@ -36,39 +36,39 @@ const COMPARISON_FEATURES = [
                 starter: 'L1 (Griot Conseil)',
                 pro: 'L2 (Agent Assisté)',
                 enterprise: 'L3 (Agent Autonome)',
-                description: 'Niveau d\'autorité IA ajustable (Conseil, Supervision ou Autonomie totale).'
+                description: 'Niveau d\'autorité IA ajustable : L1 (Conseil), L2 (Supervision), L3 (Autonomie totale Zero-Touch).'
             },
-            { key: 'content_generation', label: 'Génération de Contenu IA', starter: false, pro: 'Assistée', enterprise: 'Automatisée' },
-            { key: 'ai_smart_search', label: 'Recherche Visuelle/Vocale', starter: false, pro: true, enterprise: true },
-            { key: 'ai_vision', label: 'Vision IA (Analyse Images)', starter: false, pro: false, enterprise: true },
-            { key: 'ai_pricing', label: 'Pricing Dynamique', starter: false, pro: false, enterprise: true },
-            { key: 'predictions', label: 'Analyses Prédictives', starter: false, pro: false, enterprise: true },
-            { key: 'stock_prediction', label: 'Prédiction de Stocks', starter: false, pro: false, enterprise: true },
-            { key: 'product_recommendations', label: 'Recommandations Smart', starter: false, pro: true, enterprise: true },
+            { key: 'content_generation', label: 'Génération de Contenu IA', starter: false, pro: 'Assistée', enterprise: 'Automatisée', description: 'Génération automatique de descriptions, posts réseaux sociaux et mails via IA.' },
+            { key: 'ai_smart_search', label: 'Recherche Visuelle/Vocale', starter: false, pro: true, enterprise: true, description: 'Recherche ultra-rapide par la voix ou en téléchargeant une photo d\'un produit.' },
+            { key: 'ai_vision', label: 'Vision IA (Analyse Images)', starter: false, pro: false, enterprise: true, description: 'L\'IA analyse vos photos de stock pour identifier automatiquement les produits.' },
+            { key: 'ai_pricing', label: 'Pricing Dynamique', starter: false, pro: false, enterprise: true, description: 'Ajustement automatique des prix selon la demande du marché sénégalais et vos stocks.' },
+            { key: 'predictions', label: 'Analyses Prédictives', starter: false, pro: false, enterprise: true, description: 'Anticipez vos revenus futurs grâce aux modèles prédictifs de l\'Assistant Yoombal.' },
+            { key: 'stock_prediction', label: 'Prédiction de Stocks', starter: false, pro: false, enterprise: true, description: 'Alertes intelligentes pour éviter les ruptures de stock avant qu\'elles n\'arrivent.' },
+            { key: 'product_recommendations', label: 'Recommandations Smart', starter: false, pro: true, enterprise: true, description: 'L\'IA suggère les bons produits à vos clients pour augmenter le panier moyen.' },
         ]
     },
     {
         category: "Livraison & Logistique",
         items: [
-            { key: 'delivery_dashboard', label: 'Dashboard Livreur', starter: 'Standard', pro: 'Avancé', enterprise: 'Temps Réel' },
-            { key: 'route_optimization', label: 'Optimisation Itinéraires', starter: false, pro: true, enterprise: true },
-            { key: 'multi_deliveries', label: 'Livraisons Groupées', starter: false, pro: true, enterprise: true },
+            { key: 'delivery_dashboard', label: 'Dashboard Livreur', starter: 'Standard', pro: 'Avancé', enterprise: 'Temps Réel', description: 'Interface dédiée pour les livreurs avec suivi GPS et gestion des statuts de course.' },
+            { key: 'route_optimization', label: 'Optimisation Itinéraires', starter: false, pro: true, enterprise: true, description: 'Calcul automatique du trajet le plus rapide pour livrer plusieurs clients.' },
+            { key: 'multi_deliveries', label: 'Livraisons Groupées', starter: false, pro: true, enterprise: true, description: 'Possibilité pour un livreur de gérer plusieurs commandes simultanément.' },
         ]
     },
     {
         category: "Marketing & Fidélité",
         items: [
-            { key: 'marketing_automation', label: 'Marketing Automatisé', starter: false, pro: true, enterprise: true },
-            { key: 'vip_program', label: 'Programme VIP / Fidélité', starter: false, pro: true, enterprise: true },
-            { key: 'gamification', label: 'Gamification (Points)', starter: false, pro: false, enterprise: true },
+            { key: 'marketing_automation', label: 'Marketing Automatisé', starter: false, pro: true, enterprise: true, description: 'Envoi automatique de SMS/Emails pour relancer les paniers abandonnés.' },
+            { key: 'vip_program', label: 'Programme VIP / Fidélité', starter: false, pro: true, enterprise: true, description: 'Système de fidélité avancé pour récompenser vos meilleurs clients.' },
+            { key: 'gamification', label: 'Gamification (Points)', starter: false, pro: false, enterprise: true, description: 'Défis et points pour engager vos clients et livreurs via des récompenses.' },
         ]
     },
     {
         category: "Gestion & Support",
         items: [
-            { key: 'analytics', label: 'Analytics', starter: 'Basique', pro: 'Avancé', enterprise: 'Complet' },
-            { key: 'support', label: 'Support', starter: 'Email', pro: 'Prioritaire', enterprise: 'Dédié 24/7' },
-            { key: 'api', label: 'Accès API', starter: false, pro: false, enterprise: true },
+            { key: 'analytics', label: 'Analytics', starter: 'Basique', pro: 'Avancé', enterprise: 'Complet', description: 'Tableaux de bord détaillés sur vos ventes et vos performances logistiques.' },
+            { key: 'support', label: 'Support', starter: 'Email', pro: 'Prioritaire', enterprise: 'Dédié 24/7', description: 'Assistance technique spécialisée pour vous aider à utiliser Yoombal.' },
+            { key: 'api', label: 'Accès API', starter: false, pro: false, enterprise: true, description: 'Connectez vos propres outils externes directement au système Yoombal.' },
         ]
     }
 ];
@@ -101,39 +101,37 @@ export const PlanComparator: React.FC = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {COMPARISON_FEATURES.map((group, idx) => (
-                            <React.Fragment key={idx}>
-                                <TableRow className="bg-gray-50/30">
-                                    <TableCell colSpan={4} className="py-2 px-8 font-black text-xs uppercase tracking-widest text-gray-400">
-                                        {group.category}
+                        {COMPARISON_FEATURES.map((group, idx) => [
+                            <TableRow key={`group-${idx}`} className="bg-gray-50/30">
+                                <TableCell colSpan={4} className="py-2 px-8 font-black text-xs uppercase tracking-widest text-gray-400">
+                                    {group.category}
+                                </TableCell>
+                            </TableRow>,
+                            ...group.items.map((item) => (
+                                <TableRow key={item.key} className="hover:bg-gray-50/50 transition-colors">
+                                    <TableCell className="py-4 px-8 font-medium text-gray-600">
+                                        <div className="flex items-center gap-2">
+                                            {item.label}
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                        <Info className="h-3 w-3 text-gray-400" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p className="text-xs max-w-[200px]">
+                                                            {(item as any).description || `Détails sur ${item.label}`}
+                                                        </p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
                                     </TableCell>
+                                    <TableCell className="text-center py-4">{renderValue(item.starter)}</TableCell>
+                                    <TableCell className="text-center py-4 bg-primary/[0.02]">{renderValue(item.pro)}</TableCell>
+                                    <TableCell className="text-center py-4">{renderValue(item.enterprise)}</TableCell>
                                 </TableRow>
-                                {group.items.map((item) => (
-                                    <TableRow key={item.key} className="hover:bg-gray-50/50 transition-colors">
-                                        <TableCell className="py-4 px-8 font-medium text-gray-600">
-                                            <div className="flex items-center gap-2">
-                                                {item.label}
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger>
-                                                            <Info className="h-3 w-3 text-gray-400" />
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p className="text-xs max-w-[200px]">
-                                                                {(item as any).description || `Détails sur ${item.label}`}
-                                                            </p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-center py-4">{renderValue(item.starter)}</TableCell>
-                                        <TableCell className="text-center py-4 bg-primary/[0.02]">{renderValue(item.pro)}</TableCell>
-                                        <TableCell className="text-center py-4">{renderValue(item.enterprise)}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </React.Fragment>
-                        ))}
+                            ))
+                        ])}
                     </TableBody>
                 </Table>
             </div>

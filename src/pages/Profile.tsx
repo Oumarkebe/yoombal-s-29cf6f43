@@ -20,6 +20,7 @@ import { PremiumFeaturesDisplay } from '@/components/premium/PremiumFeaturesDisp
 import { useSubscription } from "@/hooks/useSubscription";
 import { useProfile } from "@/hooks/useProfile";
 import { useBNPLPlans } from "@/hooks/useBNPLPlans";
+import { KYCUpload } from "@/components/merchant/KYCUpload";
 
 const formatDownloadUrl = (url: string) => {
   if (!url) return '';
@@ -442,6 +443,15 @@ const Profile = () => {
 
             <div className="mb-6">
               <PremiumFeaturesDisplay filterRole={profile?.role as any} />
+            </div>
+
+            {/* KYC Section */}
+            <div className="mb-6">
+              <KYCUpload
+                currentStatus={profile?.kycStatus}
+                rejectionReason={profile?.kycRejectionReason}
+                onSuccess={() => window.location.reload()}
+              />
             </div>
 
             {/* Orders History */}

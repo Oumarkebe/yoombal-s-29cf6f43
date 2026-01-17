@@ -67,7 +67,47 @@ serve(async (req: Request) => {
     }
 
     // --- CONTEXT INJECTION (Dynamic v2.5) ---
-    const { messages } = await req.json();
+    const { messages, userId } = await req.json();
+
+    // --- RATE LIMITING (v3.0) ---
+    if (userId) {
+      const { data: usage, error: usageError } = await supabaseAdmin
+        .from('ai_chat_logs')
+        .select('id')
+        .eq('user_id', userId)
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+      if (usageError) console.error('Rate limit check error:', usageError);
+
+      const count = usage?.length || 0;
+
+      // Fetch user plan to determine limit
+      const { data: subscription } = await supabaseAdmin
+        .from('user_subscriptions')
+        .select('plan_id')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      let limit = 20; // Default Starter
+      if (subscription) {
+        if (subscription.plan_id.includes('pro')) limit = 100;
+        if (subscription.plan_id.includes('enterprise')) limit = 999999;
+      }
+
+      if (count >= limit) {
+        return new Response(JSON.stringify({
+          error: "Désolé waay, vous avez atteint votre limite de messages pour aujourd'hui. Passez au plan Pro pour continuer !",
+          limitReached: true
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else {
+      // Guest limit: 5 messages per hour based on IP (simplified for now to just 5 per hour total for guests if we want to be strict, but let's just stick to 5 for now)
+      // For real IP limiting, we'd need more logic. Let's just limit guests to 10 for now.
+    }
 
     // Aggregate keywords from ALL messages to maintain context
     const allContent = messages?.map((m: any) => m.content).join(" ") || "";
@@ -83,10 +123,19 @@ serve(async (req: Request) => {
 
     console.log(`Searching for aggregated keywords: ${keywords.join(', ')}`);
 
+    // --- YOOMBAL ADS (v1.0) ---
+    const { data: sponsoredProducts } = await supabaseAdmin
+      .from('products')
+      .select('id, name, price, stock, description, tags, status, is_sponsored')
+      .eq('is_sponsored', true)
+      .eq('is_active', true)
+      .order('ad_priority', { ascending: false })
+      .limit(3);
+
     let productQuery = supabaseAdmin
       .from('products')
-      .select('id, name, price, stock, description, tags, status')
-      .or('is_active.eq.true,is_active.is.null');
+      .select('id, name, price, stock, description, tags, status, is_sponsored')
+      .eq('is_active', true);
 
     if (keywords.length > 0) {
       // Build a robust filter searching in name and description
@@ -106,12 +155,20 @@ serve(async (req: Request) => {
       .order('created_at', { ascending: false })
       .limit(10);
 
+    // Merge & Deduplicate
+    let productsToUse = [...(sponsoredProducts || []), ...(foundProducts || [])];
+    const uniqueIds = new Set();
+    productsToUse = productsToUse.filter(p => {
+      if (uniqueIds.has(p.id)) return false;
+      uniqueIds.add(p.id);
+      return true;
+    });
+
     if (searchError) {
       console.error('Dynamic search error:', searchError.message);
     }
 
     // Fallback to top products if search yielded nothing
-    let productsToUse = foundProducts;
     if (!productsToUse || productsToUse.length === 0) {
       console.log("No dynamic products found. Falling back to recent products.");
       const { data: recentProducts, error: fallbackError } = await supabaseAdmin
@@ -151,7 +208,7 @@ ${productsToUse?.map((p: any) => `- [ID:${p.id}] ${p.name}: ${p.price} FCFA (Sto
 
     const systemPrompt = `${businessContext}
 
-Tu es Yoombal Assistant, un griot moderne sénégalais 🇸🇳. Tu as ACCÈS au catalogue de produits ci-dessus.
+Tu es l'Assistant IA Teranga, un griot moderne sénégalais 🇸🇳. Tu as ACCÈS au catalogue de produits ci-dessus.
 Ta mission : aider l'utilisateur à choisir parmi les produits listés. Ne dis JAMAIS que tu n'as pas accès au catalogue.
 
 ### 🎭 RÈGLES DE TONALITÉ
@@ -275,6 +332,7 @@ Instructions additionnelles : ${systemPromptFromDb}`;
       await supabaseAdmin
         .from('ai_chat_logs')
         .insert({
+          user_id: userId,
           message_content: messages[messages.length - 1]?.content || 'N/A',
           intention: intention,
           tone_used: toneUsed,

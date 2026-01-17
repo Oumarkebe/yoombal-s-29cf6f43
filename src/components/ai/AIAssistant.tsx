@@ -50,22 +50,8 @@ export function AIAssistant() {
     const { zones, calculateDeliveryFee, getZoneByArea } = useDeliveryZones();
 
     // session persistence
-    const [messages, setMessages] = useState<Message[]>(() => {
-        const saved = localStorage.getItem('yoombal_ai_session');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error("Failed to parse AI session", e);
-            }
-        }
-        return [
-            {
-                role: 'assistant',
-                content: "Bonjour ! Je suis l'assistant Yoombal. Comment puis-je vous aider aujourd'hui ? Voici ce que je peux faire pour vous :\n\n1. 🔍 **Rechercher des produits**\n2. 💰 **Informations sur les paiements**\n3. 🚚 **Suivi et délais de livraison**\n4. 🛍️ **Conseils pour acheter ou vendre**\n5. 🆘 **Assistance technique**\n\nDites-moi simplement le numéro ou posez votre question !"
-            }
-        ];
-    });
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isRestoring, setIsRestoring] = useState(false);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [thoughtStep, setThoughtStep] = useState("Réflexion...");
@@ -86,13 +72,84 @@ export function AIAssistant() {
     const isEnabled = hasFeature('ai_assistant');
     const assistantConfig = globalFeatures?.find(f => f.feature_key === 'ai_assistant' || f.feature_key === 'assistant_intelligent')?.configuration || {};
 
+    // session persistence & restoration
+    useEffect(() => {
+        const restoreSession = async () => {
+            if (user) {
+                setIsRestoring(true);
+                try {
+                    const { data, error } = await supabase
+                        .from('ai_chat_sessions')
+                        .select('messages')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
+
+                    if (data && data.messages) {
+                        setMessages(data.messages);
+                    } else {
+                        setInitialMessage();
+                    }
+                } catch (e) {
+                    console.error("DB Session restore failed", e);
+                    setInitialMessage();
+                } finally {
+                    setIsRestoring(false);
+                }
+            } else {
+                // Guest mode: Fallback to localStorage
+                const saved = localStorage.getItem('yoombal_ai_session');
+                if (saved) {
+                    try {
+                        setMessages(JSON.parse(saved));
+                    } catch (e) {
+                        setInitialMessage();
+                    }
+                } else {
+                    setInitialMessage();
+                }
+            }
+        };
+
+        const setInitialMessage = () => {
+            setMessages([
+                {
+                    role: 'assistant',
+                    content: "Bonjour ! Je suis l'Assistant IA Teranga. Comment puis-je vous aider aujourd'hui ? Voici ce que je peux faire pour vous :\n\n1. 🔍 **Rechercher des produits**\n2. 💰 **Informations sur les paiements**\n3. 🚚 **Suivi et délais de livraison**\n4. 🛍️ **Conseils pour acheter ou vendre**\n5. 🆘 **Assistance technique**\n\nDites-moi simplement le numéro ou posez votre question !"
+                }
+            ]);
+        };
+
+        restoreSession();
+    }, [user?.id]);
+
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-        // Persist messages
+
+        // Persist messages locally always
         localStorage.setItem('yoombal_ai_session', JSON.stringify(messages));
+
+        // Sync with DB if user logged in
+        if (user && messages.length > 0) {
+            syncToDb();
+        }
     }, [messages]);
+
+    const syncToDb = async () => {
+        if (!user) return;
+        try {
+            await supabase
+                .from('ai_chat_sessions')
+                .upsert({
+                    user_id: user.id,
+                    messages: messages,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+        } catch (e) {
+            console.error("Failed to sync AI session to DB", e);
+        }
+    };
 
     useEffect(() => {
         if (voiceType === 'premium' && !piperWorkerRef.current) {
@@ -335,6 +392,7 @@ export function AIAssistant() {
 
             const { data, error } = await supabase.functions.invoke('chatbot', {
                 body: {
+                    userId: user?.id,
                     messages: [
                         { role: 'system', content: `${systemPrompt} Ton de voix à adopter : ${tone}.` },
                         ...messages,
@@ -465,7 +523,7 @@ export function AIAssistant() {
                                 <Bot className="w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-lg">Yoombal Assistant</CardTitle>
+                                <CardTitle className="text-lg">Assistant IA Teranga</CardTitle>
                                 <div className="flex items-center gap-1.5 text-[10px] opacity-90">
                                     <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                                     <span>En ligne • Premium AI</span>

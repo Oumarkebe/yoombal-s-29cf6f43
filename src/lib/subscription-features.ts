@@ -14,7 +14,7 @@ export const FEATURE_TRANSLATIONS: Record<string, string> = {
     'unlimited_history': 'Historique illimité',
 
     // AI & Intelligence
-    'ai_assistant': 'Assistant IA (Yoombal Bot)',
+    'ai_assistant': 'Assistant IA Teranga',
     'content_generation': 'Génération de Contenu IA',
     'ai_smart_search': 'Recherche Intelligente (Visuelle/Vocale)',
     'ai_vision': 'Vision IA (Analyse d\'images)',

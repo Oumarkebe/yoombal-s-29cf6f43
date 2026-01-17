@@ -27,6 +27,7 @@ import MerchantDashboard from './pages/MerchantDashboard';
 import DeliveryDashboard from './pages/DeliveryDashboard';
 import Subscriptions from './pages/Subscriptions';
 import DynamicPricingPage from './pages/merchant/DynamicPricingPage';
+import AdsManager from './pages/merchant/AdsManager';
 import PredictiveStocksPage from './pages/merchant/PredictiveStocksPage';
 import AfricaFinancePage from './pages/finance/AfricaFinancePage';
 import LogisticsDashboard from './pages/logistics/LogisticsDashboard';
@@ -37,6 +38,8 @@ import BecomeMerchant from './pages/landing/BecomeMerchant';
 import BecomeDelivery from './pages/landing/BecomeDelivery';
 import BecomeClient from './pages/landing/BecomeClient';
 import AdminKYCRequests from "./pages/admin/AdminKYCRequests";
+import AdminFinancialAudit from "./pages/admin/AdminFinancialAudit";
+import WarehouseDashboard from "./pages/WarehouseDashboard";
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -67,7 +70,9 @@ function App() {
               <Route path="/merchant/predictions" element={<PredictiveStocksPage />} />
               <Route path="/merchant/finance" element={<AfricaFinancePage />} />
               <Route path="/merchant/logistics" element={<LogisticsDashboard />} />
+              <Route path="/merchant/logistics" element={<LogisticsDashboard />} />
               <Route path="/merchant/marketing" element={<MarketingStudio />} />
+              <Route path="/merchant/ads" element={<AdsManager />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="/bnpl" element={<BNPL />} />
@@ -78,7 +83,7 @@ function App() {
               <Route path="/join/merchant" element={<BecomeMerchant />} />
               <Route path="/join/delivery" element={<BecomeDelivery />} />
               <Route path="/join/client" element={<BecomeClient />} />
-              <Route path="/admin/kyc" element={<AdminKYCRequests />} />
+              <Route path="/join/client" element={<BecomeClient />} />
 
               {/* Premium Routes */}
               <Route path="/premium/subscriptions" element={<Subscriptions />} />
@@ -96,9 +101,16 @@ function App() {
                 <Route path="/admin/settings" element={<AdminSettings />} />
                 <Route path="/admin/ai" element={<AdminAICenter />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/kyc" element={<AdminKYCRequests />} />
+                <Route path="/admin/finance/audit" element={<AdminFinancialAudit />} />
               </Route>
 
-              {/* Protected Merchant Routes */}
+              {/* Warehouse & Logistics */}
+              <Route element={<RoleGuard allowedRoles={['admin', 'merchant']} />}>
+                <Route path="/warehouse" element={<WarehouseDashboard />} />
+              </Route>
+
+              {/* Merchant Routes Protected */}
               <Route element={<RoleGuard allowedRoles={['merchant']} />}>
                 <Route path="/merchant" element={<MerchantDashboard />} />
               </Route>

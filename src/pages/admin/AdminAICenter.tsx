@@ -75,7 +75,7 @@ export default function AdminAICenter() {
 
     // Chatbot settings
     const [botSettings, setBotSettings] = useState({
-        systemPrompt: "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.",
+        systemPrompt: "Tu es l'Assistant IA Teranga, un griot moderne et expert commercial pour Yoombal, la plateforme e-commerce de référence au Sénégal.",
         tone: "professionnel et chaleureux (Teranga)"
     });
     const [aiKeys, setAiKeys] = useState({
@@ -145,7 +145,7 @@ export default function AdminAICenter() {
             { feature_key: 'panier_abandonne', name: 'Récupération Panier', description: 'Relances automatisées intelligentes', category: 'commerce', price_monthly: 3900, trial_days: 14 },
 
             // SUPPORT (4)
-            { feature_key: 'ai_assistant', name: 'Yoombal Bot (Chatbot IA)', description: 'Support client 24/7 automatisé et intelligent', category: 'support', price_monthly: 8900, trial_days: 30 },
+            { feature_key: 'ai_assistant', name: 'Assistant IA Teranga', description: 'Support client 24/7 automatisé et intelligent (Griot IA)', category: 'support', price_monthly: 8900, trial_days: 30 },
             { feature_key: 'faq_auto', name: 'FAQ Automatique', description: 'Réponses générées et mises à jour par IA', category: 'support', price_monthly: 2900, trial_days: 7 },
             { feature_key: 'tickets_priorite', name: 'Priorisation Tickets', description: 'Tri automatique par urgence et type', category: 'support', price_monthly: 3900, trial_days: 14 },
             { feature_key: 'sentiment_analysis', name: 'Analyse de Sentiment', description: 'Détection satisfaction client en temps réel', category: 'support', price_monthly: 4900, trial_days: 14 },
@@ -662,7 +662,7 @@ export default function AdminAICenter() {
                 <TabsContent value="chatbot" className="space-y-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Personnalisation Yoombal Bot</CardTitle>
+                            <CardTitle>Personnalisation Assistant IA Teranga</CardTitle>
                             <CardDescription>Définissez la personnalité de votre assistant IA.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
