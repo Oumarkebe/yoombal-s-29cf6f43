@@ -20,6 +20,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ error?: string }>;
   register: (userData: RegisterData) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error?: string, message?: string }>;
+  updatePassword: (password: string) => Promise<{ error?: string }>;
   isAuthenticated: boolean;
   isLoading: boolean;
   refreshProfile: () => Promise<void>;
@@ -341,13 +343,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      return { message: 'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.' };
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      return { error: error.message || 'Erreur lors de la demande de réinitialisation' };
+    }
+  };
+
+  const updatePassword = async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      return {};
+    } catch (error: any) {
+      console.error('Update password error:', error);
+      return { error: error.message || 'Erreur lors de la mise à jour du mot de passe' };
+    }
+  };
+
   const value = {
     user,
-    profile: user, // Alias for backward compatibility
+    profile: user,
     session,
     login,
     register,
     logout,
+    resetPassword,
+    updatePassword,
     isAuthenticated: !!session,
     isLoading,
     refreshProfile,

@@ -13,6 +13,9 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import BNPL from './pages/BNPL';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import DemoRequest from './pages/DemoRequest'; // New Demo Page
 import MerchantStore from './pages/MerchantStore';
 import AdminPanel from './pages/AdminPanel';
 import AdminStatistics from './pages/AdminStatistics';
@@ -62,10 +65,13 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/register" element={<Register />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/demo" element={<DemoRequest />} />
               <Route path="/merchant/ai-pricing" element={<DynamicPricingPage />} />
               <Route path="/merchant/predictions" element={<PredictiveStocksPage />} />
               <Route path="/merchant/finance" element={<AfricaFinancePage />} />
@@ -103,6 +109,8 @@ function App() {
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="/admin/kyc" element={<AdminKYCRequests />} />
                 <Route path="/admin/finance/audit" element={<AdminFinancialAudit />} />
+                <Route path="/economic-model" element={<EconomicModel />} />
+                <Route path="/platform" element={<EconomicModel />} />
               </Route>
 
               {/* Warehouse & Logistics */}
@@ -120,7 +128,7 @@ function App() {
                 <Route path="/delivery" element={<DeliveryDashboard />} />
               </Route>
 
-              <Route path="/economic-model" element={<EconomicModel />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
             <AIErrorBoundary fallbackName="Assistant IA">

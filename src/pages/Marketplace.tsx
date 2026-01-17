@@ -194,7 +194,7 @@ const Marketplace: React.FC = () => {
                   </div>
                 </div>
                 <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-gray-500 hover:bg-white/10 hover:border-white">
-                  <Link to="/platform"><T>Découvrir la plateforme</T></Link>
+                  <Link to="/about"><T>Découvrir la plateforme</T></Link>
                 </Button>
               </div>
             </div>
