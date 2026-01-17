@@ -31,6 +31,11 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { evaluateAIPolicy, AIActionLevel, AIContext } from '@/lib/ai-policy';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'react-router-dom';
+import { useDeliveryZones } from '@/hooks/useDeliveryZones';
+import { useUserAiSettings } from '@/hooks/useUserAiSettings';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -39,13 +44,28 @@ interface Message {
 
 export function AIAssistant() {
     const [isOpen, setIsOpen] = useState(false);
+    const { user } = useAuth();
+    const location = useLocation();
     const { addItem, triggerAnimation } = useCart();
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            role: 'assistant',
-            content: "Bonjour ! Je suis l'assistant Yoombal. Comment puis-je vous aider aujourd'hui ? Voici ce que je peux faire pour vous :\n\n1. 🔍 **Rechercher des produits**\n2. 💰 **Informations sur les paiements**\n3. 🚚 **Suivi et délais de livraison**\n4. 🛍️ **Conseils pour acheter ou vendre**\n5. 🆘 **Assistance technique**\n\nDites-moi simplement le numéro ou posez votre question !"
+    const { zones, calculateDeliveryFee, getZoneByArea } = useDeliveryZones();
+
+    // session persistence
+    const [messages, setMessages] = useState<Message[]>(() => {
+        const saved = localStorage.getItem('yoombal_ai_session');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse AI session", e);
+            }
         }
-    ]);
+        return [
+            {
+                role: 'assistant',
+                content: "Bonjour ! Je suis l'assistant Yoombal. Comment puis-je vous aider aujourd'hui ? Voici ce que je peux faire pour vous :\n\n1. 🔍 **Rechercher des produits**\n2. 💰 **Informations sur les paiements**\n3. 🚚 **Suivi et délais de livraison**\n4. 🛍️ **Conseils pour acheter ou vendre**\n5. 🆘 **Assistance technique**\n\nDites-moi simplement le numéro ou posez votre question !"
+            }
+        ];
+    });
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [thoughtStep, setThoughtStep] = useState("Réflexion...");
@@ -60,6 +80,9 @@ export function AIAssistant() {
 
 
     const { hasFeature, globalFeatures, isLoading: isCheckingPermission } = useSubscription();
+    // User-specific targeted overrides
+    const { settings: userTargetedSettings } = useUserAiSettings({ userId: user?.id });
+
     const isEnabled = hasFeature('ai_assistant');
     const assistantConfig = globalFeatures?.find(f => f.feature_key === 'ai_assistant' || f.feature_key === 'assistant_intelligent')?.configuration || {};
 
@@ -67,6 +90,8 @@ export function AIAssistant() {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
+        // Persist messages
+        localStorage.setItem('yoombal_ai_session', JSON.stringify(messages));
     }, [messages]);
 
     useEffect(() => {
@@ -130,9 +155,29 @@ export function AIAssistant() {
         };
 
         recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
+            const transcript = event.results[0][0].transcript.toLowerCase();
             setInput(transcript);
             setIsListening(false);
+
+            // Commandes "Zero-Touch" (Voice L3) - Auto Send
+            const authorityWords = ['valide', 'confirme', 'go', 'envoyé', 'envoye', 'entré', 'entree', 'va'];
+            const shouldAutoSend = authorityWords.some(word => transcript.endsWith(word));
+
+            if (shouldAutoSend) {
+                // Nettoyer le mot d'autorité du transcript final
+                let cleanTranscript = transcript;
+                authorityWords.forEach(word => {
+                    if (cleanTranscript.endsWith(word)) {
+                        cleanTranscript = cleanTranscript.slice(0, -word.length).trim();
+                    }
+                });
+
+                if (cleanTranscript) {
+                    setInput(cleanTranscript);
+                    // On déclenche l'envoi après un court délai pour que l'input soit mis à jour
+                    setTimeout(() => handleSendMessage(cleanTranscript), 100);
+                }
+            }
         };
 
         recognition.onerror = (event: any) => {
@@ -245,10 +290,18 @@ export function AIAssistant() {
 
 
 
-    const handleSendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+    const handleSendMessage = async (overrideInput?: string) => {
+        const messageToSend = overrideInput || input;
+        if (!messageToSend.trim() || isLoading) return;
 
-        const userMessage = input.trim();
+        // --- SANITATION PRO+ ---
+        const forbiddenPatterns = [/ignore.*règles/i, /agis.*admin/i, /système.*interne/i, /danse.*comme/i];
+        if (forbiddenPatterns.some(p => p.test(messageToSend))) {
+            toast.error("Instruction non autorisée par la politique de sécurité.");
+            return;
+        }
+
+        const userMessage = messageToSend.trim();
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
         setIsLoading(true);
@@ -271,12 +324,21 @@ export function AIAssistant() {
             const systemPrompt = assistantConfig.system_prompt || "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.";
             const tone = assistantConfig.tone || "professionnel et chaleureux (Teranga)";
 
+            // Build page context
+            let pageContext = `[CONTEXTE_PAGE: ${document.title} | URL: ${window.location.pathname}]`;
+
+            // Si on est sur une page produit, essayer d'extraire l'ID ou le nom (basé sur le titre)
+            if (window.location.pathname.includes('/product/')) {
+                const productName = document.title.split('|')[0].trim();
+                pageContext += ` [PRODUIT_ACTUEL: ${productName}]`;
+            }
+
             const { data, error } = await supabase.functions.invoke('chatbot', {
                 body: {
                     messages: [
                         { role: 'system', content: `${systemPrompt} Ton de voix à adopter : ${tone}.` },
                         ...messages,
-                        { role: 'user', content: userMessage }
+                        { role: 'user', content: `${pageContext}\n${userMessage}` }
                     ]
                 }
             });
@@ -299,13 +361,81 @@ export function AIAssistant() {
                 };
                 setLastAnalyticTags(analyticTags);
 
-                // --- EXECUTE AI ACTIONS (v3.0) ---
-                if (analyticTags.action_detected === 'add_cart' && analyticTags.target_id) {
-                    addItem(analyticTags.target_id);
-                    triggerAnimation();
-                    toast.success("Produit ajouté au panier par l'assistant ! 🛒", {
-                        description: "Une excellente recommandation waay !",
+                // --- ORCHESTRATION & POLICY (v4.0 PRO+) ---
+                const intentInfo = {
+                    type: actionParts[0] || 'none',
+                    targetId: actionParts[1],
+                    confidence: parseFloat(data.response.match(/intent_confidence\s*:\s*([\d.]+)/)?.[1] || "1.0")
+                };
+
+                // Get user-specific authority override if any
+                const userAiOverride = userTargetedSettings.find(s => s.feature_key === 'ai_assistant');
+                const userAuthorityLevel = userAiOverride?.is_enabled
+                    ? userAiOverride.configuration?.authority_level
+                    : null;
+
+                const policyCtx: AIContext = {
+                    user: {
+                        isAuthenticated: !!user,
+                        role: 'customer',
+                        subscriptionActive: isEnabled,
+                        authorityOverride: userAuthorityLevel // New field for policy
+                    },
+                    session: {
+                        voiceEnabled: voiceEnabled,
+                        voiceConfidence: 0.9, // À mapper plus tard si possible
+                        isDegradedMode: false
+                    },
+                    intent: intentInfo,
+                    environment: {
+                        networkStatus: 'ok',
+                        pageContext: window.location.pathname
+                    }
+                };
+
+                const decision = evaluateAIPolicy(policyCtx);
+
+                // --- LOG DECISION (PRO+) ---
+                try {
+                    await (supabase as any).from('ai_chat_logs').insert({
+                        user_id: user?.id,
+                        message_content: userMessage,
+                        intention: intentInfo.type,
+                        action_detected: intentInfo.type,
+                        commercial_success: decision.allowed,
+                        raw_response: {
+                            decision: decision,
+                            confidence: intentInfo.confidence,
+                            context: pageContext
+                        }
                     });
+                } catch (e) {
+                    console.error("Logging error:", e);
+                }
+
+                if (decision.allowed) {
+                    // --- EXECUTE AI ACTIONS ---
+                    if (intentInfo.type === 'add_cart' && intentInfo.targetId) {
+                        addItem(intentInfo.targetId);
+                        triggerAnimation({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+                        toast.success("Produit ajouté ! 🛒", {
+                            description: decision.requiredLevel === AIActionLevel.L3
+                                ? "Action vocale confirmée."
+                                : "L'assistant a pris l'initiative.",
+                        });
+                    }
+
+                    if (intentInfo.type === 'checkout') {
+                        toast.success("Finalisation de la commande...", {
+                            description: "Redirection vers le paiement.",
+                        });
+                        setTimeout(() => window.location.href = '/checkout', 1500);
+                    }
+                } else {
+                    console.warn("AI Policy Blocked Action:", decision.reason);
+                    if (decision.requireConfirmation) {
+                        // On laisse les tags analytiques afficher les boutons de confirmation manuelle plus bas
+                    }
                 }
 
                 if (voiceEnabled) {
@@ -452,49 +582,83 @@ export function AIAssistant() {
                                 )}
 
                                 {!isLoading && lastAnalyticTags?.action_detected && (
-                                    <div className="flex gap-2 flex-wrap ml-10 mt-2 mb-4 animate-in fade-in slide-in-from-left-2 duration-500">
+                                    <div className="flex flex-col gap-2 ml-10 mt-2 mb-4 animate-in fade-in slide-in-from-left-2 duration-500">
+                                        {/* Widget Produit */}
                                         {lastAnalyticTags.action_detected === 'add_cart' && (
-                                            <Button
-                                                size="sm"
-                                                className="bg-green-600 hover:bg-green-700 text-white gap-1.5 h-8 rounded-full shadow-sm"
-                                                onClick={(e) => {
-                                                    if (lastAnalyticTags.target_id) {
-                                                        addItem(lastAnalyticTags.target_id);
-                                                        triggerAnimation({ x: e.clientX, y: e.clientY });
-                                                        setInput("C'est fait, quoi d'autre ?");
-                                                        setLastAnalyticTags(null);
-                                                    } else {
-                                                        toast.error("Format produit invalide.");
-                                                    }
-                                                }}
-                                            >
-                                                <ShoppingCart className="w-3.5 h-3.5" />
-                                                Ajouter au panier
-                                            </Button>
+                                            <Card className="border-amber-200 bg-white shadow-sm overflow-hidden max-w-[280px]">
+                                                <div className="p-3 flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600">
+                                                        <ShoppingCart className="w-6 h-6" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs font-semibold text-slate-800 truncate">Produit identifié</p>
+                                                        <p className="text-[10px] text-slate-500">ID: {lastAnalyticTags.target_id?.slice(0, 8)}...</p>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-amber-50 p-2 flex justify-end gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="h-7 text-[10px] text-slate-500"
+                                                        onClick={() => setLastAnalyticTags(null)}
+                                                    >
+                                                        Ignorer
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-amber-600 hover:bg-amber-700 text-white text-[10px] h-7 px-3 rounded-full"
+                                                        onClick={(e) => {
+                                                            if (lastAnalyticTags.target_id) {
+                                                                addItem(lastAnalyticTags.target_id);
+                                                                triggerAnimation({ x: e.clientX, y: e.clientY });
+                                                                setLastAnalyticTags(null);
+                                                            }
+                                                        }}
+                                                    >
+                                                        Confirmer l'ajout
+                                                    </Button>
+                                                </div>
+                                            </Card>
                                         )}
-                                        {lastAnalyticTags.action_detected === 'compare' && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="border-amber-200 text-amber-700 hover:bg-amber-50 gap-1.5 h-8 rounded-full"
-                                                onClick={() => {
-                                                    setInput("Peux-tu me montrer un comparatif ?");
-                                                    handleSendMessage();
-                                                }}
-                                            >
-                                                <Scale className="w-3.5 h-3.5" />
-                                                Comparer les prix
-                                            </Button>
+
+                                        {/* Widget Livraison */}
+                                        {lastAnalyticTags.action_detected === 'delivery_query' && (
+                                            <Card className="border-blue-200 bg-white shadow-sm overflow-hidden max-w-[280px]">
+                                                <div className="p-3 flex items-center gap-3">
+                                                    <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
+                                                        <Scale className="w-6 h-6" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs font-semibold text-slate-800">Estimation Livraison</p>
+                                                        <p className="text-[10px] text-slate-500">Zone: {lastAnalyticTags.target_id || "Dakar"}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-blue-50 p-2 text-center">
+                                                    <span className="text-sm font-bold text-blue-700">
+                                                        {calculateDeliveryFee(getZoneByArea(lastAnalyticTags.target_id || 'Dakar')?.id || '')} FCFA
+                                                    </span>
+                                                </div>
+                                            </Card>
                                         )}
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-slate-400 hover:text-slate-600 gap-1 h-8 rounded-full"
-                                            onClick={() => setLastAnalyticTags(null)}
-                                        >
-                                            Plus tard
-                                            <X className="w-3 h-3" />
-                                        </Button>
+
+                                        {/* Widget Checkout */}
+                                        {lastAnalyticTags.action_detected === 'checkout' && (
+                                            <Card className="border-green-200 bg-white shadow-sm overflow-hidden max-w-[280px]">
+                                                <div className="p-4 text-center">
+                                                    <div className="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center text-green-600 mx-auto mb-2">
+                                                        <Check className="w-6 h-6" />
+                                                    </div>
+                                                    <p className="text-xs font-bold text-slate-800">Prêt pour le paiement ?</p>
+                                                    <p className="text-[10px] text-slate-500 mb-3">Votre panier est prêt waay !</p>
+                                                    <Button
+                                                        className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg h-9"
+                                                        onClick={() => window.location.href = '/checkout'}
+                                                    >
+                                                        Accéder à la caisse
+                                                    </Button>
+                                                </div>
+                                            </Card>
+                                        )}
                                     </div>
                                 )}
                             </div>

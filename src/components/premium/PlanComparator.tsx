@@ -20,17 +20,47 @@ const COMPARISON_FEATURES = [
     {
         category: "Ventes & Catalogue",
         items: [
-            { key: 'products', label: 'Nombre de produits', starter: '10', pro: 'Illimité', enterprise: 'Illimité' },
-            { key: 'digital', label: 'Produits digitaux', starter: false, pro: true, enterprise: true },
-            { key: 'custom_store', label: 'Boutique personnalisée', starter: false, pro: true, enterprise: true },
+            { key: 'unlimited_products', label: 'Nombre de produits', starter: '10', pro: 'Illimité', enterprise: 'Illimité', description: 'Nombre maximum de produits actifs dans votre catalogue.' },
+            { key: 'digital_products', label: 'Produits digitaux', starter: false, pro: true, enterprise: true, description: 'Vente de fichiers, licences et services.' },
+            { key: 'custom_store', label: 'Boutique personnalisée', starter: false, pro: true, enterprise: true, description: 'Couleurs et design adaptés à votre marque.' },
+            { key: 'bulk_actions', label: 'Actions en masse', starter: false, pro: true, enterprise: true, description: 'Modifier ou supprimer plusieurs produits d\'un coup.' },
+            { key: 'export_data', label: 'Export Données (Excel)', starter: false, pro: true, enterprise: true, description: 'Exporter vos ventes et inventaire au format Excel/CSV.' },
         ]
     },
     {
         category: "Intelligence Artificielle",
         items: [
-            { key: 'ai_assistant', label: 'Assistant IA Teranga', starter: false, pro: true, enterprise: true },
+            {
+                key: 'ai_assistant',
+                label: 'Assistant IA Teranga',
+                starter: 'L1 (Griot Conseil)',
+                pro: 'L2 (Agent Assisté)',
+                enterprise: 'L3 (Agent Autonome)',
+                description: 'Niveau d\'autorité IA ajustable (Conseil, Supervision ou Autonomie totale).'
+            },
+            { key: 'content_generation', label: 'Génération de Contenu IA', starter: false, pro: 'Assistée', enterprise: 'Automatisée' },
+            { key: 'ai_smart_search', label: 'Recherche Visuelle/Vocale', starter: false, pro: true, enterprise: true },
+            { key: 'ai_vision', label: 'Vision IA (Analyse Images)', starter: false, pro: false, enterprise: true },
             { key: 'ai_pricing', label: 'Pricing Dynamique', starter: false, pro: false, enterprise: true },
             { key: 'predictions', label: 'Analyses Prédictives', starter: false, pro: false, enterprise: true },
+            { key: 'stock_prediction', label: 'Prédiction de Stocks', starter: false, pro: false, enterprise: true },
+            { key: 'product_recommendations', label: 'Recommandations Smart', starter: false, pro: true, enterprise: true },
+        ]
+    },
+    {
+        category: "Livraison & Logistique",
+        items: [
+            { key: 'delivery_dashboard', label: 'Dashboard Livreur', starter: 'Standard', pro: 'Avancé', enterprise: 'Temps Réel' },
+            { key: 'route_optimization', label: 'Optimisation Itinéraires', starter: false, pro: true, enterprise: true },
+            { key: 'multi_deliveries', label: 'Livraisons Groupées', starter: false, pro: true, enterprise: true },
+        ]
+    },
+    {
+        category: "Marketing & Fidélité",
+        items: [
+            { key: 'marketing_automation', label: 'Marketing Automatisé', starter: false, pro: true, enterprise: true },
+            { key: 'vip_program', label: 'Programme VIP / Fidélité', starter: false, pro: true, enterprise: true },
+            { key: 'gamification', label: 'Gamification (Points)', starter: false, pro: false, enterprise: true },
         ]
     },
     {
@@ -89,7 +119,9 @@ export const PlanComparator: React.FC = () => {
                                                             <Info className="h-3 w-3 text-gray-400" />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p className="text-xs">Détails sur {item.label}</p>
+                                                            <p className="text-xs max-w-[200px]">
+                                                                {(item as any).description || `Détails sur ${item.label}`}
+                                                            </p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>

@@ -23,6 +23,7 @@ export interface UserAiFeatureSetting {
   user_id: string;
   feature_key: AiFeatureKey;
   is_enabled: boolean;
+  configuration?: any;
 }
 
 // Fetch settings for a user using user_ai_settings table
@@ -43,6 +44,7 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
     user_id: item.user_id,
     feature_key: item.feature_key as AiFeatureKey,
     is_enabled: item.is_enabled ?? false,
+    configuration: item.configuration || {},
   }));
 }
 
@@ -50,11 +52,13 @@ async function fetchUserAiSettings(userId: string): Promise<UserAiFeatureSetting
 async function upsertUserAiSetting({
   userId,
   featureKey,
-  isEnabled
+  isEnabled,
+  configuration
 }: {
   userId: string;
   featureKey: AiFeatureKey;
   isEnabled: boolean;
+  configuration?: any;
 }) {
   // First check if record exists
   const { data: existing } = await (supabase as any)
@@ -70,6 +74,7 @@ async function upsertUserAiSetting({
       .from('user_ai_settings')
       .update({
         is_enabled: isEnabled,
+        configuration: configuration || {},
         updated_at: new Date().toISOString()
       })
       .eq('id', existing.id)
@@ -84,7 +89,8 @@ async function upsertUserAiSetting({
       .insert({
         user_id: userId,
         feature_key: featureKey,
-        is_enabled: isEnabled
+        is_enabled: isEnabled,
+        configuration: configuration || {}
       })
       .select();
 
