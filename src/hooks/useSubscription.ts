@@ -7,18 +7,8 @@ import type { SubscriptionInput, ChangePlanInput, CancelSubscriptionInput } from
 import type { Database, Tables } from '@/integrations/supabase/types';
 
 // Adapting the types to match what we expect in the UI vs what is in DB
-export type PremiumPlan = {
-    id: string;
-    name: string;
-    description: string;
-    price_monthly: number;
-    price_yearly?: number;
-    slug: string;
-    features: string[];
-    is_active: boolean;
-    display_order: number;
-    [key: string]: any;
-};
+export type PremiumPlan = Tables<'premium_plans'>['Row'];
+export type PremiumFeature = Tables<'premium_features'>['Row'];
 // Note: The previous code queried 'premium_plans', but the schema shows 'premium_features'. 
 // However, earlier context suggested plans might be separate. 
 // Let's verify if 'premium_plans' exists in DB or if it was a mental model.
@@ -34,20 +24,7 @@ export type PremiumPlan = {
 
 // Since user_subscriptions might be missing from types, we'll define a strictly typed interface for it
 // matching the actual DB response we saw in previous reads.
-interface UserSubscriptionRow {
-    id: string;
-    user_id: string;
-    plan_id: string;
-    status: 'active' | 'expired' | 'cancelled' | 'pending';
-    billing_period: 'monthly' | 'yearly';
-    started_at: string;
-    expires_at: string | null;
-    cancelled_at: string | null;
-    payment_method: string | null;
-    amount_paid: number;
-    auto_renew: boolean;
-    next_billing_date: string | null;
-}
+type UserSubscriptionRow = Tables<'user_subscriptions'>['Row'];
 
 export type UserSubscription = UserSubscriptionRow & {
     plan?: PremiumPlan;
@@ -71,7 +48,7 @@ export function useSubscription() {
             // I will assume 'premium_plans' exists.
 
             const { data, error } = await supabase
-                .from('premium_plans' as any) // Keep 'as any' ONLY for table name if missing from types, but strict type the RESULT
+                .from('premium_plans')
                 .select('*')
                 .eq('is_active', true)
                 .order('display_order');
@@ -89,7 +66,7 @@ export function useSubscription() {
             if (!user) return null;
 
             const { data: subData, error } = await supabase
-                .from('user_subscriptions' as any)
+                .from('user_subscriptions')
                 .select('*')
                 .eq('user_id', user.id)
                 .eq('status', 'active')
@@ -149,7 +126,7 @@ export function useSubscription() {
                 throw error;
             }
             // console.log("Hooks: Loaded globalPremiumFeatures count:", data?.length);
-            return data as any[];
+            return data as unknown as PremiumFeature[];
         },
         staleTime: 5 * 60 * 1000,
     });

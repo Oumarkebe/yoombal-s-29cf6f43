@@ -5,17 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Check, Sparkles, AlertCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PremiumFeature } from '@/hooks/useSubscription';
 
 interface PremiumFeatureCardProps {
-    feature: {
-        id: string;
-        name: string;
-        description: string;
-        price_monthly: number;
-        feature_key: string;
-        is_free?: boolean;
-        trial_days?: number;
-    };
+    feature: PremiumFeature;
     isActive: boolean;
     isLoading: boolean;
     onActivate: () => void;

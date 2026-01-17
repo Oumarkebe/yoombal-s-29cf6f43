@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { PaymentDialog } from '@/components/PaymentDialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { AnnualSavings, PlanComparator } from '@/components/premium';
 
 export default function Subscriptions() {
     const navigate = useNavigate();
@@ -136,19 +137,24 @@ export default function Subscriptions() {
                 {/* Plans Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
                     {plans.map((plan) => (
-                        <PlanCard
-                            key={plan.id}
-                            plan={plan}
-                            billingPeriod={billingPeriod}
-                            isCurrent={subscription?.plan_id === plan.id}
-                            onSubscribe={() => handleSubscribe(plan)}
-                            isLoading={isLoading}
-                        />
+                        <div key={plan.id} className="flex flex-col gap-4">
+                            <PlanCard
+                                plan={plan}
+                                billingPeriod={billingPeriod}
+                                isCurrent={subscription?.plan_id === plan.id}
+                                onSubscribe={() => handleSubscribe(plan)}
+                                isLoading={isLoading}
+                            />
+                            {billingPeriod === 'yearly' && <AnnualSavings plan={plan} />}
+                        </div>
                     ))}
                 </div>
 
+                {/* Comparateur Section */}
+                <PlanComparator />
+
                 {/* FAQ Section */}
-                <div className="max-w-3xl mx-auto border-t pt-16">
+                <div className="max-w-3xl mx-auto border-t pt-16 mt-20">
                     <div className="text-center mb-10 space-y-2">
                         <div className="flex justify-center">
                             <HelpCircle className="h-8 w-8 text-primary/50" />
@@ -197,4 +203,3 @@ export default function Subscriptions() {
         </div>
     );
 }
-

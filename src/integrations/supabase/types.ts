@@ -740,6 +740,135 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_plans: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          price_monthly: number
+          price_yearly: number
+          slug: string
+          features: string[] | null
+          is_active: boolean | null
+          display_order: number | null
+          badge_text: string | null
+          badge_color: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          price_monthly: number
+          price_yearly: number
+          slug: string
+          features?: string[] | null
+          is_active?: boolean | null
+          display_order?: number | null
+          badge_text?: string | null
+          badge_color?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          price_monthly?: number
+          price_yearly?: number
+          slug?: string
+          features?: string[] | null
+          is_active?: boolean | null
+          display_order?: number | null
+          badge_text?: string | null
+          badge_color?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          plan_id: string
+          status: string
+          billing_period: string
+          started_at: string | null
+          expires_at: string | null
+          cancelled_at: string | null
+          payment_method: string | null
+          amount_paid: number | null
+          auto_renew: boolean | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_id: string
+          status?: string
+          billing_period: string
+          started_at?: string | null
+          expires_at?: string | null
+          cancelled_at?: string | null
+          payment_method?: string | null
+          amount_paid?: number | null
+          auto_renew?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_id?: string
+          status?: string
+          billing_period?: string
+          started_at?: string | null
+          expires_at?: string | null
+          cancelled_at?: string | null
+          payment_method?: string | null
+          amount_paid?: number | null
+          auto_renew?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_premium_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          feature_id: string
+          status: string
+          started_at: string | null
+          expires_at: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          feature_id: string
+          status?: string
+          started_at?: string | null
+          expires_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          feature_id?: string
+          status?: string
+          started_at?: string | null
+          expires_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
