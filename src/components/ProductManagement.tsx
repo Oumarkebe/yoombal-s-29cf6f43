@@ -115,10 +115,22 @@ const ProductManagement = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Gérer les produits</h2>
-        <Button onClick={handleCreateClick} className="bg-gradient-to-r from-blue-600 to-indigo-600">
-          <Plus className="h-4 w-4 mr-2" />
-          Ajouter un produit
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          <Button
+            onClick={handleCreateClick}
+            disabled={user?.kyc_status !== 'verified'}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter un produit
+          </Button>
+          {user?.kyc_status !== 'verified' && (
+            <p className="text-xs text-amber-600 flex items-center gap-1 font-medium bg-amber-50 px-2 py-1 rounded border border-amber-100">
+              <AlertTriangle className="h-3 w-3" />
+              KYC Vérifié requis pour vendre
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="space-y-3">

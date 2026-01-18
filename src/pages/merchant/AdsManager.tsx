@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Megaphone, Plus, TrendingUp, MousePointer, Eye, Calendar, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 const AdsManager = () => {
-    const { campaigns, loading, createCampaign } = useAds();
+    const { campaigns, dailyStats, loading, createCampaign } = useAds();
     const { products = [] } = useProducts();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -197,59 +198,38 @@ const AdsManager = () => {
                         <h3 className="text-lg font-bold text-slate-800">Performance sur 7 jours</h3>
                         <p className="text-slate-500 text-sm">Vues et Clics cumulés de vos campagnes actives</p>
                     </div>
-                    <Select defaultValue="7d">
-                        <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="Période" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="7d">7 derniers jours</SelectItem>
-                            <SelectItem value="30d">30 derniers jours</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
 
-                {/* Simulated Chart Area */}
-                <div className="h-64 w-full flex items-end justify-between gap-2 px-4 pb-0 relative">
-                    {/* Y-Axis Grid Lines */}
-                    <div className="absolute inset-0 flex flex-col justify-between text-xs text-slate-300 pointer-events-none">
-                        <div className="w-full border-b border-slate-100 h-0"></div>
-                        <div className="w-full border-b border-slate-100 h-0"></div>
-                        <div className="w-full border-b border-slate-100 h-0"></div>
-                        <div className="w-full border-b border-slate-100 h-0"></div>
-                        <div className="w-full border-b border-slate-200 h-0"></div>
-                    </div>
-
-                    {[...Array(7)].map((_, i) => {
-                        // Mock data simulation for "WoW" effect
-                        const views = Math.floor(Math.random() * 500) + 100;
-                        const clicks = Math.floor(views * 0.15);
-                        const day = new Date();
-                        day.setDate(day.getDate() - (6 - i));
-                        const heightPercent = (views / 600) * 100;
-
-                        return (
-                            <div key={i} className="flex flex-col items-center gap-2 group z-10 w-full">
-                                <div className="relative w-full max-w-[40px] flex flex-col items-center justify-end h-48 gap-1">
-                                    {/* Tooltip */}
-                                    <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-20 pointer-events-none">
-                                        {day.toLocaleDateString(undefined, { weekday: 'short' })}: {views} Vues, {clicks} Clics
-                                    </div>
-
-                                    {/* Bars */}
-                                    <div style={{ height: `${heightPercent}%` }} className="w-full bg-slate-200 rounded-t-sm relative overflow-hidden transition-all duration-500 group-hover:bg-slate-300">
-                                        <div style={{ height: `${(clicks / views) * 100}%` }} className="absolute bottom-0 w-full bg-purple-500 transition-all duration-500 group-hover:bg-purple-600"></div>
-                                    </div>
-                                </div>
-                                <span className="text-xs text-slate-400 font-medium">{day.toLocaleDateString(undefined, { weekday: 'short' })}</span>
-                            </div>
-                        )
-                    })}
+                <div className="h-72 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={dailyStats}>
+                            <defs>
+                                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.1} />
+                                    <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorClicks" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2} />
+                                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                            <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                                itemStyle={{ color: '#fff' }}
+                            />
+                            <Area type="monotone" dataKey="views" name="Vues" stroke="#94a3b8" fillOpacity={1} fill="url(#colorViews)" strokeWidth={2} />
+                            <Area type="monotone" dataKey="clicks" name="Clics" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorClicks)" strokeWidth={3} />
+                        </AreaChart>
+                    </ResponsiveContainer>
                 </div>
-                <div className="flex items-center justify-center gap-6 mt-4">
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <div className="w-3 h-3 bg-slate-200 rounded-sm"></div> Vues
+                <div className="flex items-center justify-center gap-6 mt-6">
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                        <div className="w-3 h-3 bg-slate-300 rounded-sm"></div> Vues
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
                         <div className="w-3 h-3 bg-purple-500 rounded-sm"></div> Clics
                     </div>
                 </div>

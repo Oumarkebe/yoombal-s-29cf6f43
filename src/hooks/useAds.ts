@@ -29,6 +29,7 @@ export const useAds = () => {
     const { user } = useAuth();
     const { toast } = useToast();
     const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
+    const [dailyStats, setDailyStats] = useState<{ date: string, views: number, clicks: number }[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchCampaigns = async () => {
@@ -46,10 +47,7 @@ export const useAds = () => {
 
             if (error) throw error;
 
-            // Fetch generic stats (Mocking granular aggregation for now or separate query)
-            // Ideally we would use a View or RPC for stats aggregation to avoid N+1 queries or massive data transfer.
-            // For MVP: Fetch all analytics for these campaigns (Careful with volume!)
-            // BETTER APPROACH: Just count rows per campaign.
+            const campaignIds = (data || []).map(c => c.id);
 
             const campaignsWithStats = await Promise.all(
                 (data || []).map(async (camp) => {
@@ -59,7 +57,39 @@ export const useAds = () => {
                 })
             );
 
+            // Fetch daily analytics for the last 7 days
+            const last7Days = Array.from({ length: 7 }).map((_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - (6 - i));
+                return d.toISOString().split('T')[0];
+            });
+
+            const daily = await Promise.all(last7Days.map(async (date) => {
+                if (campaignIds.length === 0) return { date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short' }), views: 0, clicks: 0 };
+
+                const { count: views } = await supabase.from('ads_analytics')
+                    .select('*', { count: 'exact', head: true })
+                    .in('campaign_id', campaignIds)
+                    .eq('event_type', 'VIEW')
+                    .gte('created_at', `${date}T00:00:00`)
+                    .lte('created_at', `${date}T23:59:59`);
+
+                const { count: clicks } = await supabase.from('ads_analytics')
+                    .select('*', { count: 'exact', head: true })
+                    .in('campaign_id', campaignIds)
+                    .eq('event_type', 'CLICK')
+                    .gte('created_at', `${date}T00:00:00`)
+                    .lte('created_at', `${date}T23:59:59`);
+
+                return {
+                    date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short' }),
+                    views: views || 0,
+                    clicks: clicks || 0
+                };
+            }));
+
             setCampaigns(campaignsWithStats as AdCampaign[]);
+            setDailyStats(daily);
         } catch (error) {
             console.error('Error fetching campaigns:', error);
             toast({ title: "Erreur", description: "Impossible de charger les campagnes", variant: "destructive" });
@@ -113,5 +143,5 @@ export const useAds = () => {
         fetchCampaigns();
     }, [user]);
 
-    return { campaigns, loading, createCampaign, trackAdEvent, fetchCampaigns };
+    return { campaigns, dailyStats, loading, createCampaign, trackAdEvent, fetchCampaigns };
 };

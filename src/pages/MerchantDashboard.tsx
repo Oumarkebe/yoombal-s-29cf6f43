@@ -23,10 +23,14 @@ import { AIInsights } from "@/components/ai/AIInsights";
 import { Sparkles } from "lucide-react";
 import { PremiumFeaturesDisplay } from '@/components/premium/PremiumFeaturesDisplay';
 import StoreConfiguration from "@/components/StoreConfiguration";
+import { useMerchantStats } from "@/hooks/useMerchantStats";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { formatCurrency } from "@/utils/formatters";
 
 const MerchantDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { data: stats, isLoading: statsLoading } = useMerchantStats();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get('tab') || 'products';
@@ -53,32 +57,36 @@ const MerchantDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ventes Totales</CardTitle>
+              <CardTitle className="text-sm font-medium">Ventes Totales (30j)</CardTitle>
               <TrendingUp className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">452</div>
-              <p className="text-sm text-gray-500">Depuis le mois dernier</p>
+              <div className="text-2xl font-bold">{stats?.totalSales || 0}</div>
+              <p className={`text-sm ${stats && stats.ordersGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {stats && stats.ordersGrowth >= 0 ? '+' : ''}{stats?.ordersGrowth}% par rapport aux 30j précédents
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenu</CardTitle>
+              <CardTitle className="text-sm font-medium">Revenu (30j)</CardTitle>
               <BarChart3 className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12,250,000 CFA</div>
-              <p className="text-sm text-gray-500">+19% par rapport au mois dernier</p>
+              <div className="text-2xl font-bold">{formatCurrency(stats?.totalRevenue || 0)}</div>
+              <p className={`text-sm ${stats && stats.revenueGrowth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {stats && stats.revenueGrowth >= 0 ? '+' : ''}{stats?.revenueGrowth}% par rapport aux 30j précédents
+              </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Nouvelles Commandes</CardTitle>
+              <CardTitle className="text-sm font-medium">Commandes à traiter</CardTitle>
               <ListChecks className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">201</div>
-              <p className="text-sm text-gray-500">+7% par rapport à hier</p>
+              <div className="text-2xl font-bold">{stats?.newOrders || 0}</div>
+              <p className="text-sm text-gray-500">Statut "En attente"</p>
             </CardContent>
           </Card>
         </div>
@@ -121,14 +129,55 @@ const MerchantDashboard = () => {
           </TabsContent>
 
           <TabsContent value="stats">
-            <Card>
-              <CardHeader>
-                <CardTitle>Statistiques</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Ici, vous pourrez suivre les statistiques de votre boutique.</p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenus (7 derniers jours)</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  {statsLoading ? (
+                    <div className="h-full flex items-center justify-center">Chargement...</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={stats?.recentActivity || []}>
+                        <defs>
+                          <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} />
+                        <YAxis axisLine={false} tickLine={false} />
+                        <Tooltip />
+                        <Area type="monotone" dataKey="revenue" stroke="#3b82f6" fillOpacity={1} fill="url(#colorRev)" strokeWidth={2} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Volume de Commandes</CardTitle>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  {statsLoading ? (
+                    <div className="h-full flex items-center justify-center">Chargement...</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={stats?.recentActivity || []}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} />
+                        <YAxis axisLine={false} tickLine={false} />
+                        <Tooltip />
+                        <Bar dataKey="orders" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="ai">
