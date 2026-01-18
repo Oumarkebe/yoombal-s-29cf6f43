@@ -40,7 +40,7 @@ export const useMarketplaceProducts = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string | string[]>('');
   const [sortBy, setSortBy] = useState<SortByOption>({ field: 'created_at', ascending: false });
   const { toast } = useToast();
 
@@ -74,7 +74,11 @@ export const useMarketplaceProducts = () => {
       }
 
       if (selectedCategory) {
-        query = query.eq('category_id', selectedCategory);
+        if (Array.isArray(selectedCategory)) {
+          query = query.in('category_id', selectedCategory);
+        } else {
+          query = query.eq('category_id', selectedCategory);
+        }
       }
 
       const { data: productsData, error: productsError, count } = await query;
@@ -165,7 +169,7 @@ export const useMarketplaceProducts = () => {
     hasMore,
     searchTerm,
     setSearchTerm,
-    selectedCategory,
+    selectedCategory: selectedCategory || '',
     setSelectedCategory,
     sortBy,
     setSortBy,

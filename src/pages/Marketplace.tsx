@@ -80,7 +80,7 @@ const SponsoredSection = () => {
 const Marketplace: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | string[] | null>(null);
 
   const {
     products,
@@ -147,8 +147,38 @@ const Marketplace: React.FC = () => {
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(prev => prev === categoryId ? null : categoryId);
+    // If clicking the same one, toggle it off
+    if (selectedCategory === categoryId) {
+      setSelectedCategory(null);
+      return;
+    }
+
+    const clickedCategory = categories?.find(c => c.id === categoryId);
+    if (!clickedCategory) return;
+
+    // If it's a parent (parent_id is null), select it and all its children for the filter
+    if (!clickedCategory.parent_id) {
+      const childrenIds = categories?.filter(c => c.parent_id === clickedCategory.id).map(c => c.id) || [];
+      setSelectedCategory([clickedCategory.id, ...childrenIds]);
+    } else {
+      // It's a child, just select it
+      setSelectedCategory(categoryId);
+    }
   }
+
+  // Derive which parent is "active" for the sub-categories row
+  const activeParentId = (() => {
+    if (!selectedCategory) return null;
+
+    // If selectedCategory is an array, the first element is the parent ID
+    if (Array.isArray(selectedCategory)) return selectedCategory[0];
+
+    // If it's a single ID, find its parent
+    const cat = categories?.find(c => c.id === selectedCategory);
+    return cat?.parent_id || cat?.id || null;
+  })();
+
+  const subCategories = categories?.filter(c => c.parent_id === activeParentId) || [];
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950 transition-colors duration-300">
@@ -215,50 +245,99 @@ const Marketplace: React.FC = () => {
 
         {/* CONTENT SECTION */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="mb-10">
-            <div className="flex items-center gap-2 mb-4 text-gray-900 dark:text-white">
-              <Filter className="h-4 w-4" />
-              <span className="font-semibold uppercase text-xs tracking-wider opacity-70">Parcourir par Univers</span>
+          <div className="mb-12">
+            <div className="space-y-1 mb-6">
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                <Filter className="h-5 w-5 text-slate-500" />
+                <T>Explorer par univers</T>
+              </h2>
+              <p className="text-sm text-slate-500 dark:text-gray-400">
+                <T>Découvrez tout l’écosystème Yoombal</T>
+              </p>
             </div>
 
-            <div className="flex flex-wrap gap-3 justify-start overflow-x-auto pb-2 scrollbar-hide">
-              <Button
-                variant={selectedCategory === null ? "secondary" : "ghost"}
-                onClick={() => setSelectedCategory(null)}
-                className="rounded-full px-6 h-10 font-medium whitespace-nowrap"
-              >
-                Tous les produits
-              </Button>
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="snap-start flex-none">
+                <CategoryBadge
+                  name="Tous les produits"
+                  isActive={selectedCategory === null}
+                  onClick={() => setSelectedCategory(null)}
+                />
+              </div>
+
               {isLoadingCategories ? (
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="h-10 w-24 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-full" />
+                <div className="flex gap-4">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="h-11 w-36 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-full" />
                   ))}
                 </div>
               ) : (
-                categories?.map((category: Category) => (
-                  <div
-                    key={category.id}
-                    onClick={() => handleCategoryClick(category.id)}
-                    className="cursor-pointer"
-                  >
-                    <CategoryBadge
-                      name={category.name}
-                      className={`h-10 px-5 rounded-full text-sm border-2 transition-all hover:scale-105 active:scale-95 ${selectedCategory === category.id
-                        ? "ring-2 ring-offset-2 ring-blue-500 border-blue-200 shadow-md"
-                        : "opacity-70 hover:opacity-100 border-transparent hover:border-gray-200"
-                        }`}
-                    />
-                  </div>
-                ))
+                (() => {
+                  const PRIMARY_UNIVERSES = [
+                    'Courses & Quotidien',
+                    'Mode & Style',
+                    'Maison & Espace',
+                    'High-Tech & Digital',
+                    'Services & Artisans',
+                    'Auto & Mobilité',
+                    'Yoombal Finance'
+                  ];
+
+                  // Only Parents
+                  const parentCategories = categories?.filter(c => !c.parent_id) || [];
+
+                  // Sort categories: Primary first, then name alphabetical
+                  const sortedParents = [...parentCategories].sort((a, b) => {
+                    const aIndex = PRIMARY_UNIVERSES.indexOf(a.name);
+                    const bIndex = PRIMARY_UNIVERSES.indexOf(b.name);
+                    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+                    if (aIndex !== -1) return -1;
+                    if (bIndex !== -1) return 1;
+                    return a.name.localeCompare(b.name);
+                  });
+
+                  return sortedParents.map((category: Category) => {
+                    const isPrimary = PRIMARY_UNIVERSES.includes(category.name);
+                    const isActive = Array.isArray(selectedCategory)
+                      ? selectedCategory[0] === category.id
+                      : (selectedCategory === category.id || categories?.find(c => c.id === selectedCategory)?.parent_id === category.id);
+
+                    return (
+                      <div key={category.id} className="snap-start flex-none">
+                        <CategoryBadge
+                          name={category.name}
+                          isActive={isActive}
+                          onClick={() => handleCategoryClick(category.id)}
+                          className={!isPrimary && !isActive ? "opacity-60 scale-95 saturate-[0.8]" : "opacity-100 scale-100"}
+                        />
+                      </div>
+                    );
+                  });
+                })()
               )}
             </div>
+
+            {/* SECOND ROW: SUB-CATEGORIES */}
+            {activeParentId && subCategories.length > 0 && (
+              <div className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-hide animate-fade-in -mx-4 px-4 sm:mx-0 sm:px-0">
+                {subCategories.map((sub: Category) => (
+                  <div key={sub.id} className="flex-none">
+                    <CategoryBadge
+                      name={sub.name}
+                      variant="mini"
+                      isActive={selectedCategory === sub.id}
+                      onClick={() => handleCategoryClick(sub.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {searchTerm ? <><T>Résultats pour</T> "{searchTerm}"</> : (selectedCategory ? categories?.find(c => c.id === selectedCategory)?.name : <T>Tous les produits</T>)}
+                {searchTerm ? <><T>Résultats pour</T> "{searchTerm}"</> : (selectedCategory ? (Array.isArray(selectedCategory) ? categories?.find(c => c.id === selectedCategory[0])?.name : categories?.find(c => c.id === selectedCategory)?.name) : <T>Tous les produits</T>)}
               </h2>
               <div className="flex items-center gap-4">
                 <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap">
