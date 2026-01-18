@@ -1,8 +1,7 @@
 
+import React, { useState } from 'react';
 import { useAds, AdCampaign } from '@/hooks/useAds';
-// import { useMerchantProducts } from '@/hooks/useMerchantProducts'; // Removed
-import { useProducts } from '@/hooks/useProducts'; // Using generic one or I will implement local fetch
-
+import { useProducts } from '@/hooks/useProducts';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,11 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Megaphone, Plus, TrendingUp, MousePointer, Eye, Calendar, DollarSign } from 'lucide-react';
-import { formatCurrency } from '@/utils/formatters'; // Assuming utility exists or I'll use local
+import { formatCurrency } from '@/utils/formatters';
 
 const AdsManager = () => {
     const { campaigns, loading, createCampaign } = useAds();
-    const { products } = useMerchantProducts();
+    const { products = [] } = useProducts();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     // Form State

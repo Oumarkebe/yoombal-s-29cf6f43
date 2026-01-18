@@ -173,7 +173,7 @@ serve(async (req: Request) => {
       console.log("No dynamic products found. Falling back to recent products.");
       const { data: recentProducts, error: fallbackError } = await supabaseAdmin
         .from('products')
-        .select('id, name, price, stock, description, tags, status')
+        .select('id, name, price, stock, description, tags, status, is_sponsored')
         .or('is_active.eq.true,is_active.is.null')
         .order('created_at', { ascending: false })
         .limit(5);

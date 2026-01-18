@@ -18,6 +18,7 @@ export interface InventoryItem {
     product_id: string;
     quantity: number;
     min_threshold: number;
+    zone_id?: string;
     product?: {
         name: string;
         image_url?: string;

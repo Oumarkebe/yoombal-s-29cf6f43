@@ -141,7 +141,7 @@ export default function Subscriptions() {
                             <PlanCard
                                 plan={plan}
                                 billingPeriod={billingPeriod}
-                                isCurrent={subscription?.plan_id === plan.id}
+                                currentPlanId={subscription?.plan_id}
                                 onSubscribe={() => handleSubscribe(plan)}
                                 isLoading={isLoading}
                             />
@@ -184,11 +184,12 @@ export default function Subscriptions() {
 
             {selectedPlan && (
                 <PaymentDialog
-                    open={paymentOpen}
-                    onOpenChange={setPaymentOpen}
+                    isOpen={paymentOpen}
+                    onClose={() => setPaymentOpen(false)}
                     amount={billingPeriod === 'monthly' ? selectedPlan.price_monthly : selectedPlan.price_yearly}
                     onSuccess={handlePaymentSuccess}
-                    title={actionType === 'renew' ? "Renouvellement" : "Finalisez votre abonnement"}
+                    description={actionType === 'renew' ? "Renouvellement" : "Finalisez votre abonnement"}
+                    type="subscription_purchase"
                 />
             )}
 

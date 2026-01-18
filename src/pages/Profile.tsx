@@ -449,7 +449,7 @@ const Profile = () => {
             <div className="mb-6">
               <KYCUpload
                 currentStatus={profile?.kycStatus}
-                rejectionReason={profile?.kycRejectionReason}
+                rejectionReason={profile?.rejectionReason}
                 onSuccess={() => window.location.reload()}
               />
             </div>
