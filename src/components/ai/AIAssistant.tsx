@@ -78,7 +78,7 @@ export function AIAssistant() {
             if (user) {
                 setIsRestoring(true);
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await (supabase as any)
                         .from('ai_chat_sessions')
                         .select('messages')
                         .eq('user_id', user.id)
@@ -144,7 +144,7 @@ export function AIAssistant() {
     const syncToDb = async () => {
         if (!user) return;
         try {
-            await supabase
+            await (supabase as any)
                 .from('ai_chat_sessions')
                 .upsert({
                     user_id: user.id,
@@ -383,8 +383,8 @@ export function AIAssistant() {
         }, 1500);
 
         try {
-            const systemPrompt = assistantConfig.system_prompt || "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.";
-            const tone = assistantConfig.tone || "professionnel et chaleureux (Teranga)";
+            const systemPrompt = (assistantConfig as any)?.system_prompt || "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.";
+            const tone = (assistantConfig as any)?.tone || "professionnel et chaleureux (Teranga)";
 
             // Build page context
             let pageContext = `[CONTEXTE_PAGE: ${document.title} | URL: ${window.location.pathname}]`;

@@ -353,7 +353,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 1. Check if email exists via RPC
       try {
         console.log('Calling RPC check_email_exists...');
-        const { data: exists, error: rpcError } = await supabase.rpc('check_email_exists', { email_arg: cleanEmail });
+        const { data: exists, error: rpcError } = await (supabase as any).rpc('check_email_exists', { email_arg: cleanEmail });
 
         if (rpcError) {
           console.error('❌ RPC Error:', rpcError.message);

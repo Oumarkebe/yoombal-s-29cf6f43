@@ -25,7 +25,7 @@ interface KYCProfile {
 const fetchKYCRequests = async () => {
     // Since KYC fields don't exist in profiles table, return empty or mock data
     // Or select existing fields to show list of users
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
         .from('profiles')
         .select('id, first_name, last_name, phone, business_name, kyc_status, kyc_document_url, kyc_type, kyc_verified_at, kyc_rejection_reason')
         .not('kyc_status', 'is', null)
@@ -104,7 +104,7 @@ function KYCRow({ profile }: { profile: KYCProfile }) {
     const [showRejectionInput, setShowRejectionInput] = useState(false);
 
     const handleVerify = async (status: 'verified' | 'rejected') => {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
             .from('profiles')
             .update({
                 kyc_status: status,

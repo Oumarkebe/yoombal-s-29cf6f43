@@ -11,7 +11,7 @@ export const useSponsoredProducts = () => {
         try {
             // Fetch active campaigns
             // Note: RLS allows public to view active campaigns
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('ads_campaigns')
                 .select(`
                     id,
@@ -48,7 +48,7 @@ export const useSponsoredProducts = () => {
                 const products = data.map((camp: any) => camp.product);
 
                 // Fetch merchant profiles for these products
-                const merchantIds = [...new Set(products.map((p: any) => p.merchant_id))];
+                const merchantIds = [...new Set(products.map((p: any) => p.merchant_id))] as string[];
                 const { data: profiles } = await supabase.from('profiles').select('id, business_name').in('id', merchantIds);
 
                 const profilesMap = new Map();

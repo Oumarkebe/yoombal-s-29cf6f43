@@ -105,7 +105,7 @@ export function useMerchantBNPLApplications() {
       });
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("bnpl_plans")
       .insert({
         client_id: application.user_id,

@@ -35,12 +35,12 @@ export function useBNPLPlans() {
     // Initial fetch
     const fetchPlans = () => {
       setIsLoading(true);
-      supabase
+      (supabase as any)
         .from("bnpl_plans")
         .select("*, products(name, image_url)")
         .eq("client_id", user.id)
         .order("created_at", { ascending: false })
-        .then(({ data, error }) => {
+        .then(({ data, error }: any) => {
           if (error) setError("Erreur lors de la récupération des plans BNPL");
           else setPlans((data || []) as BNPLPlan[]);
           setIsLoading(false);

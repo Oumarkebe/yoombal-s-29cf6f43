@@ -22,7 +22,7 @@ async function fetchAdminStats(): Promise<AdminStats> {
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('total_amount').eq('status', 'completed'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('kyc_status', 'pending')
+        (supabase as any).from('profiles').select('*', { count: 'exact', head: true }).eq('kyc_status', 'pending')
     ]);
 
     if (usersError) throw usersError;
