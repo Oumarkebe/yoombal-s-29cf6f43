@@ -89,17 +89,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // État local pour le panier des utilisateurs non connectés
   const [localCart, setLocalCart] = React.useState<LocalCartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('guestCart');
-      return saved ? JSON.parse(saved) : [];
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('guestCart');
+        return saved ? JSON.parse(saved) : [];
+      }
+    } catch (e) {
+      console.warn('Storage access blocked (initialization):', e);
     }
     return [];
   });
 
   // Fonction pour sauvegarder le panier local
   const saveLocalCart = useCallback((cart: LocalCartItem[]) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('guestCart', JSON.stringify(cart));
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('guestCart', JSON.stringify(cart));
+      }
+    } catch (e) {
+      console.warn('Storage access blocked (save):', e);
     }
     setLocalCart(cart);
   }, []);

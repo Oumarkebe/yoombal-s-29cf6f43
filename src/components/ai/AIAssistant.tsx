@@ -97,14 +97,15 @@ export function AIAssistant() {
                 }
             } else {
                 // Guest mode: Fallback to localStorage
-                const saved = localStorage.getItem('yoombal_ai_session');
-                if (saved) {
-                    try {
+                try {
+                    const saved = localStorage.getItem('yoombal_ai_session');
+                    if (saved) {
                         setMessages(JSON.parse(saved));
-                    } catch (e) {
+                    } else {
                         setInitialMessage();
                     }
-                } else {
+                } catch (e) {
+                    console.warn("Storage access blocked (AI restore):", e);
                     setInitialMessage();
                 }
             }
@@ -128,7 +129,11 @@ export function AIAssistant() {
         }
 
         // Persist messages locally always
-        localStorage.setItem('yoombal_ai_session', JSON.stringify(messages));
+        try {
+            localStorage.setItem('yoombal_ai_session', JSON.stringify(messages));
+        } catch (e) {
+            console.warn("Storage access blocked (AI save):", e);
+        }
 
         // Sync with DB if user logged in
         if (user && messages.length > 0) {

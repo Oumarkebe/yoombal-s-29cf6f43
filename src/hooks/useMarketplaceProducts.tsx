@@ -15,7 +15,7 @@ export interface MarketplaceProduct {
   category_id: string | null;
   bnpl_enabled: boolean | null;
   features?: string[];
-  specs?: Record<string, any>;
+  specs?: Record<string, string | number | boolean | null>;
   categories?: {
     name: string;
   } | null;

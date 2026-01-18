@@ -90,7 +90,11 @@ const CheckoutPage = () => {
         if (result.data) {
           // Vider le panier local
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('guestCart');
+            try {
+              localStorage.removeItem('guestCart');
+            } catch (e) {
+              console.warn('Storage access blocked (clear guest cart):', e);
+            }
           }
           clearCart();
           navigate(`/order-confirmation?orderId=${result.data.id || 'GUEST'}`);
