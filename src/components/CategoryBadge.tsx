@@ -20,7 +20,8 @@ import {
     Briefcase,
     Settings,
     HelpCircle,
-    Coffee
+    Coffee,
+    LucideIcon
 } from 'lucide-react';
 
 interface CategoryBadgeProps {
@@ -33,7 +34,7 @@ interface CategoryBadgeProps {
 }
 
 interface CategoryTheme {
-    icon: any;
+    icon: LucideIcon;
     color: string;
     activeBg: string;
     activeBorder: string;
