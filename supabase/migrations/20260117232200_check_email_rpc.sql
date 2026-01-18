@@ -10,7 +10,7 @@ begin
   return exists (
     select 1 
     from auth.users 
-    where email = email_arg
+    where lower(email) = lower(trim(email_arg))
   );
 end;
 $$;
