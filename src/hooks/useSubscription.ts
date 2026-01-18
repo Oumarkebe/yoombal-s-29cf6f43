@@ -79,7 +79,7 @@ export function useSubscription() {
             // Earlier logs showed: "Could not find the table 'public.user_ai_settings'".
             // I will assume 'premium_plans' exists.
 
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('premium_plans')
                 .select('*')
                 .eq('is_active', true)
@@ -97,7 +97,7 @@ export function useSubscription() {
         queryFn: async () => {
             if (!user) return null;
 
-            const { data: subData, error } = await (supabase as any)
+            const { data: subData, error } = await supabase
                 .from('user_subscriptions')
                 .select('*')
                 .eq('user_id', user.id)
@@ -132,7 +132,7 @@ export function useSubscription() {
         queryFn: async () => {
             if (!user) return [];
             // Cast supabase to any because types might be out of sync
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('user_ai_settings')
                 .select('*')
                 .eq('user_id', user.id);
@@ -169,7 +169,7 @@ export function useSubscription() {
         queryFn: async () => {
             if (!user) return [];
             // Cast to any because user_premium_subscriptions is not yet in generated types
-            const { data, error } = await (supabase as any)
+            const { data, error } = await (supabase as any) // Keep for now if missing from types
                 .from('user_premium_subscriptions')
                 .select('status, feature:premium_features(feature_key)')
                 .eq('user_id', user.id)
@@ -434,7 +434,7 @@ export function useSubscription() {
             if (!user || !subscription) throw new Error('Aucun abonnement actif');
 
             const { data, error } = await supabase
-                .from('user_subscriptions' as any)
+                .from('user_subscriptions')
                 .update({
                     status: input.immediate ? 'cancelled' : 'active',
                     auto_renew: false,
@@ -466,7 +466,7 @@ export function useSubscription() {
             const newExpiry = new Date(currentExpiry.setDate(currentExpiry.getDate() + duration));
 
             const { data, error } = await supabase
-                .from('user_subscriptions' as any)
+                .from('user_subscriptions')
                 .update({
                     status: 'active',
                     expires_at: newExpiry.toISOString(),
@@ -496,7 +496,7 @@ export function useSubscription() {
             if (!user) throw new Error('Non authentifié');
 
             const { data, error } = await supabase
-                .from('user_premium_subscriptions' as any)
+                .from('user_premium_subscriptions')
                 .insert({
                     user_id: user.id,
                     feature_id: featureId,
@@ -523,7 +523,7 @@ export function useSubscription() {
             if (!user) throw new Error('Non authentifié');
 
             const { data, error } = await supabase
-                .from('user_premium_subscriptions' as any)
+                .from('user_premium_subscriptions')
                 .update({ status: 'cancelled' })
                 .eq('user_id', user.id)
                 .eq('feature_id', featureId);

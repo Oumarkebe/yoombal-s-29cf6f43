@@ -34,7 +34,7 @@ export const useWarehouse = () => {
 
     const fetchWarehouses = async () => {
         try {
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('warehouses')
                 .select('*')
                 .eq('is_active', true);
@@ -50,7 +50,7 @@ export const useWarehouse = () => {
     const fetchInventory = async (warehouseId: string) => {
         try {
             setLoading(true);
-            const { data, error } = await (supabase as any)
+            const { data, error } = await supabase
                 .from('warehouse_inventory')
                 .select(`
                 *,
@@ -61,7 +61,7 @@ export const useWarehouse = () => {
             if (error) throw error;
 
             // Transform to match interface
-            const formattedData = data.map((item: any) => ({
+            const formattedData = (data as any[]).map((item: any) => ({
                 ...item,
                 product: item.product // Product info joined
             }));
@@ -86,7 +86,7 @@ export const useWarehouse = () => {
     ) => {
         try {
             // 1. Log movement
-            const { error: moveError } = await (supabase as any).from('warehouse_movements').insert([{
+            const { error: moveError } = await supabase.from('warehouse_movements').insert([{
                 type,
                 quantity,
                 item_id: productId, // Note: Schema uses 'item_id' mapped to products usually, check schema
@@ -100,18 +100,18 @@ export const useWarehouse = () => {
             // 2. Update Inventory (RPC call would be safer for atomicity, but doing client-side for now for simplicity)
             // IN: Increase stock
             if (type === 'IN') {
-                const { data: existing } = await (supabase as any).from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).single();
+                const { data: existing } = await supabase.from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
                 if (existing) {
-                    await (supabase as any).from('warehouse_inventory').update({ quantity: existing.quantity + quantity }).eq('id', existing.id);
+                    await supabase.from('warehouse_inventory').update({ quantity: existing.quantity + quantity }).eq('id', existing.id);
                 } else {
-                    await (supabase as any).from('warehouse_inventory').insert([{ warehouse_id: warehouseId, product_id: productId, quantity }]);
+                    await supabase.from('warehouse_inventory').insert([{ warehouse_id: warehouseId, product_id: productId, quantity }]);
                 }
             }
             // OUT: Decrease stock
             else if (type === 'OUT') {
-                const { data: existing } = await (supabase as any).from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).single();
+                const { data: existing } = await supabase.from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
                 if (!existing || existing.quantity < quantity) throw new Error("Stock insuffisant");
-                await (supabase as any).from('warehouse_inventory').update({ quantity: existing.quantity - quantity }).eq('id', existing.id);
+                await supabase.from('warehouse_inventory').update({ quantity: existing.quantity - quantity }).eq('id', existing.id);
             }
 
             toast({ title: "Succès", description: "Mouvement enregistré" });

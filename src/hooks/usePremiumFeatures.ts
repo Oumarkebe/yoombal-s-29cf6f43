@@ -19,10 +19,10 @@ export interface PremiumFeature {
 }
 
 async function fetchPremiumFeatures(): Promise<PremiumFeature[]> {
-  const { data, error } = await (supabase
-    .from('premium_features' as any)
+  const { data, error } = await supabase
+    .from('premium_features')
     .select('*')
-    .order('category', { ascending: true }) as any);
+    .order('category', { ascending: true });
 
   if (error) {
     console.error('Error fetching premium features:', error);
@@ -59,12 +59,12 @@ async function updatePremiumFeature({
     updatePayload.configuration = configuration;
   }
 
-  const { data, error } = await (supabase
-    .from('premium_features' as any)
+  const { data, error } = await supabase
+    .from('premium_features')
     .update(updatePayload)
     .eq('feature_key', feature_key)
     .select()
-    .single() as any);
+    .single();
 
   if (error) {
     console.error('Error updating premium feature:', error);

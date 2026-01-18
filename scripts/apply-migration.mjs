@@ -31,11 +31,15 @@ async function applyMigration(filePath) {
         // Alternatively, we can use the raw postgres connection if available, 
         // but here we use the REST API as typical for this setup.
 
-        const { error } = await supabase.rpc('execute_sql', { sql: sql });
+        let { error } = await supabase.rpc('execute_sql', { sql: sql });
+
+        if (error && (error.code === 'PGRST202' || error.message.includes('not found'))) {
+            console.log('execute_sql not found, trying exec_sql...');
+            const { error: error2 } = await supabase.rpc('exec_sql', { sql: sql });
+            error = error2;
+        }
 
         if (error) {
-            // If execute_sql RPC doesn't exist, we might get an error.
-            // Let's try to see if we can use a more direct approach if needed.
             console.error('Error applying migration via RPC:', error);
 
             if (error.message.includes('permission denied') || error.message.includes('not found')) {

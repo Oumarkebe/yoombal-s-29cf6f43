@@ -40,7 +40,7 @@ export function PremiumFeatureCard({
                     <div className="space-y-1">
                         <CardTitle className="text-xl font-bold flex items-center gap-2">
                             {feature.name}
-                            {!isActive && (feature as any).is_free && (
+                            {!isActive && feature.is_free && (
                                 <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-600 border-green-500/20 uppercase">
                                     Essai
                                 </Badge>
@@ -59,10 +59,10 @@ export function PremiumFeatureCard({
                         <div className="text-2xl font-black text-primary">
                             {feature.price_monthly.toLocaleString()} <span className="text-sm font-medium text-muted-foreground">FCFA/mois</span>
                         </div>
-                        {(feature as any).trial_days && (feature as any).trial_days > 0 && !isActive && (
+                        {feature.trial_days && feature.trial_days > 0 && !isActive && (
                             <div className="flex items-center text-[10px] text-orange-600 font-semibold gap-1">
                                 <Clock className="h-3 w-3" />
-                                {(feature as any).trial_days} jours d'essai gratuit
+                                {feature.trial_days} jours d'essai gratuit
                             </div>
                         )}
                     </div>

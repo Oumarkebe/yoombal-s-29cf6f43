@@ -69,10 +69,10 @@ export const ZoneModal: React.FC<ZoneModalProps> = ({ isOpen, onClose, onSuccess
       };
 
       if (zone) {
-        const { error } = await supabase.from('delivery_zones' as any).update(zoneData).eq('id', zone.id);
+        const { error } = await supabase.from('delivery_zones').update(zoneData).eq('id', zone.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('delivery_zones' as any).insert(zoneData as any);
+        const { error } = await supabase.from('delivery_zones').insert(zoneData);
         if (error) throw error;
       }
 
