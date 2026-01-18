@@ -7,6 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductRating } from "@/hooks/useProductRating";
 import { Link } from 'react-router-dom';
+import { CategoryBadge } from './CategoryBadge';
 
 interface ProductCardProps {
   id: string;
@@ -17,6 +18,7 @@ interface ProductCardProps {
   merchant: string;
   bnplAvailable?: boolean;
   isSponsored?: boolean;
+  categoryName?: string;
 }
 
 const ProductCard = ({
@@ -27,7 +29,8 @@ const ProductCard = ({
   image,
   merchant,
   bnplAvailable = false,
-  isSponsored = false
+  isSponsored = false,
+  categoryName
 }: ProductCardProps) => {
   const { addItem, triggerAnimation } = useCart();
   const { isAuthenticated } = useAuth();
@@ -96,6 +99,12 @@ const ProductCard = ({
           </span>
           <span className="text-gray-500 dark:text-gray-400">({count} avis)</span>
         </div>
+
+        {categoryName && (
+          <div className="mb-2">
+            <CategoryBadge name={categoryName} showIcon={false} className="text-[10px] py-0 px-2 h-5 opacity-80" />
+          </div>
+        )}
 
         <Link to={`/product/${id}`}>
           <h3 className="font-semibold text-gray-800 dark:text-white mb-1 line-clamp-2 flex-grow hover:text-blue-600 transition-colors">

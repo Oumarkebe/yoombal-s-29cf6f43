@@ -24,7 +24,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { AISearchControls } from '@/components/ai/AISearchControls';
 import { toast } from 'sonner';
 import { useSponsoredProducts } from '@/hooks/useSponsoredProducts';
-import { Sparkles as SparklesIcon } from 'lucide-react';
+import { Sparkles as SparklesIcon, Filter } from 'lucide-react';
+import { CategoryBadge } from '@/components/CategoryBadge';
 import { useAds } from '@/hooks/useAds'; // For tracking events? No, useAds is merchant side. 
 // We need a tracker. useSponsoredProducts could export one or we use direct supabase.
 // Let's assume useSponsoredProducts has a `trackView`? Not yet.
@@ -214,21 +215,44 @@ const Marketplace: React.FC = () => {
 
         {/* CONTENT SECTION */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-wrap gap-3 justify-center mb-10">
-            {isLoadingCategories ? (
-              <p className="text-gray-500 dark:text-gray-400"><T>Chargement des catégories...</T></p>
-            ) : (
-              categories?.map((category: Category) => (
-                <Button
-                  key={category.id}
-                  variant={selectedCategory === category.id ? "secondary" : "ghost"}
-                  onClick={() => handleCategoryClick(category.id)}
-                  className="rounded-full"
-                >
-                  {category.name}
-                </Button>
-              ))
-            )}
+          <div className="mb-10">
+            <div className="flex items-center gap-2 mb-4 text-gray-900 dark:text-white">
+              <Filter className="h-4 w-4" />
+              <span className="font-semibold uppercase text-xs tracking-wider opacity-70">Parcourir par Univers</span>
+            </div>
+
+            <div className="flex flex-wrap gap-3 justify-start overflow-x-auto pb-2 scrollbar-hide">
+              <Button
+                variant={selectedCategory === null ? "secondary" : "ghost"}
+                onClick={() => setSelectedCategory(null)}
+                className="rounded-full px-6 h-10 font-medium whitespace-nowrap"
+              >
+                Tous les produits
+              </Button>
+              {isLoadingCategories ? (
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="h-10 w-24 bg-gray-200 dark:bg-gray-800 animate-pulse rounded-full" />
+                  ))}
+                </div>
+              ) : (
+                categories?.map((category: Category) => (
+                  <div
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
+                    className="cursor-pointer"
+                  >
+                    <CategoryBadge
+                      name={category.name}
+                      className={`h-10 px-5 rounded-full text-sm border-2 transition-all hover:scale-105 active:scale-95 ${selectedCategory === category.id
+                        ? "ring-2 ring-offset-2 ring-blue-500 border-blue-200 shadow-md"
+                        : "opacity-70 hover:opacity-100 border-transparent hover:border-gray-200"
+                        }`}
+                    />
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <div>
@@ -298,6 +322,7 @@ const Marketplace: React.FC = () => {
                     image={product.image_url || "/placeholder.svg"}
                     merchant={getMerchantName(product)}
                     bnplAvailable={product.price >= 50000}
+                    categoryName={product.categories?.name}
                   />
                 ))}
               </div>

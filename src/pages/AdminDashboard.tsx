@@ -3,13 +3,20 @@ import React from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { StatCard } from "@/components/admin/StatCard";
-import { Users, Package, ShoppingCart, DollarSign, BarChart, Loader2 } from "lucide-react";
+import { Users, Package, ShoppingCart, DollarSign, BarChart, Loader2, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
+import { useAdminAnalytics } from "@/hooks/useAdminAnalytics";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
-  const { data, isLoading, error } = useAdminDashboardStats();
+  const { data, isLoading: isStatsLoading, error: statsError } = useAdminDashboardStats();
+  const { data: analyticsData, isLoading: isAnalyticsLoading } = useAdminAnalytics();
+
+  const isLoading = isStatsLoading || isAnalyticsLoading;
+  const error = statsError;
 
   if (isLoading) {
     return (
@@ -31,12 +38,7 @@ export default function AdminDashboard() {
     { title: "Utilisateurs", value: data?.usersCount || 0, icon: <Users className="h-5 w-5 text-blue-500" />, description: "Total inscrits" },
     { title: "Produits", value: data?.productsCount || 0, icon: <Package className="h-5 w-5 text-green-500" />, description: "Produits affichés" },
     { title: "Commandes", value: data?.ordersCount || 0, icon: <ShoppingCart className="h-5 w-5 text-orange-500" />, description: "Commandes totales" },
-    {
-      title: "Revenu Total",
-      value: `${(data?.totalRevenue || 0).toLocaleString('fr-FR')} CFA`,
-      icon: <DollarSign className="h-5 w-5 text-purple-500" />,
-      description: "Commandes terminées"
-    },
+    { title: "KYC en attente", value: data?.pendingKycCount || 0, icon: <Shield className="h-5 w-5 text-red-500" />, description: "Demandes à valider" },
   ];
 
   return (
@@ -68,15 +70,49 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Placeholder chart */}
-          <div className="bg-white rounded-lg shadow p-6 mb-8 flex flex-col items-center">
-            <h2 className="text-xl font-semibold mb-2">Évolution des commandes</h2>
-            <img
-              src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=500&q=80"
-              alt="Graphique placeholder"
-              className="w-full max-w-lg h-64 object-cover rounded"
-            />
-            <p className="text-gray-500 text-sm mt-2">(Graphique exemple – connecter vos vraies données)</p>
+          {/* Charts Section */}
+          <div className="grid gap-6 md:grid-cols-2 mb-8">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Volume des Commandes (7j)</h2>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={analyticsData}>
+                    <defs>
+                      <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="orders" stroke="#3b82f6" fillOpacity={1} fill="url(#colorOrders)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Revenus (7j)</h2>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={analyticsData}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} CFA`} />
+                    <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorRevenue)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
           </div>
 
           {/* User Management Section */}
