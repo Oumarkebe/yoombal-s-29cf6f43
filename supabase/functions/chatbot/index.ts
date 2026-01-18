@@ -181,7 +181,7 @@ serve(async (req: Request) => {
       if (fallbackError) {
         console.error('Fallback search error:', fallbackError.message);
       }
-      productsToUse = recentProducts;
+      productsToUse = recentProducts || [];
     }
 
     console.log(`Context catalogue will contain ${productsToUse?.length || 0} products.`);

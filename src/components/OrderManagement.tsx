@@ -47,15 +47,17 @@ const OrderManagement = () => {
         try {
           const { data: orderItems } = await supabase
             .from('order_items')
-            .select('product_id, quantity, price, products(name, is_digital)')
+            .select('product_id, quantity, price, products(name)')
             .eq('order_id', order.id);
-          items = (orderItems || []).map(i => ({
+          items = (orderItems || []).map((i: any) => ({
             name: i.products?.name || i.product_id,
             quantity: i.quantity,
             price: i.price,
-            is_digital: i.products?.is_digital || false
+            is_digital: false // Fallback until column is confirmed in all environments
           }));
-        } catch { }
+        } catch (e) {
+          console.error("Error fetching order items:", e);
+        }
         // Récupérer l'utilisateur
         let user = null;
         let userId = order.user_id || order.client_id || order.customer_id || null;

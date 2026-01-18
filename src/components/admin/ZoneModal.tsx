@@ -69,10 +69,10 @@ export const ZoneModal: React.FC<ZoneModalProps> = ({ isOpen, onClose, onSuccess
       };
 
       if (zone) {
-        const { error } = await supabase.from('delivery_zones').update(zoneData).eq('id', zone.id);
+        const { error } = await supabase.from('delivery_zones' as any).update(zoneData).eq('id', zone.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('delivery_zones').insert(zoneData as TablesInsert<'delivery_zones'>);
+        const { error } = await supabase.from('delivery_zones' as any).insert(zoneData as any);
         if (error) throw error;
       }
 
@@ -107,7 +107,7 @@ export const ZoneModal: React.FC<ZoneModalProps> = ({ isOpen, onClose, onSuccess
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Nom de la zone</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
-             <FormField control={form.control} name="areas" render={({ field }) => (
+            <FormField control={form.control} name="areas" render={({ field }) => (
               <FormItem><FormLabel>Quartiers couverts</FormLabel><FormControl><Textarea {...field} placeholder="Dakar-Plateau, Fann, Point E..." /></FormControl><FormDescription>Séparez les noms de quartiers par une virgule.</FormDescription><FormMessage /></FormItem>
             )} />
             <div className="grid grid-cols-2 gap-4">
