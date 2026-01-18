@@ -345,6 +345,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const resetPassword = async (email: string) => {
     try {
+      // 1. Check if email exists via RPC
+      try {
+        const { data: exists, error: rpcError } = await supabase.rpc('check_email_exists', { email_arg: email });
+
+        if (rpcError) {
+          console.warn('RPC check_email_exists failed or not found:', rpcError.message);
+          // Proceed anyway to maintain default security behavior if RPC is missing
+        } else if (exists === false) {
+          console.log('Verification: Email not found in database:', email);
+          return { error: "Aucun compte n'est associé à cet email." };
+        }
+      } catch (e) {
+        console.error('Unexpected error during email check:', e);
+      }
+
+      // 2. Standard reset call
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
