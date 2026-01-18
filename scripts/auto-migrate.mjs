@@ -32,8 +32,8 @@ async function run() {
             await clientEnv.connect();
             Object.assign(client, clientEnv);
         } catch (e2) {
-            console.error('❌ Database Connection Failed');
-            process.exit(1);
+            console.warn('⚠️ Database Connection Failed. Skipping migrations.');
+            return;
         }
     }
 
