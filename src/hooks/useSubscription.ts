@@ -7,8 +7,8 @@ import type { SubscriptionInput, ChangePlanInput, CancelSubscriptionInput } from
 import type { Database, Tables } from '@/integrations/supabase/types';
 
 // Adapting the types to match what we expect in the UI vs what is in DB
-export type PremiumPlan = Tables<'premium_plans'>['Row'];
-export type PremiumFeature = Tables<'premium_features'>['Row'];
+export type PremiumPlan = Tables<'premium_plans'>;
+export type PremiumFeature = Tables<'premium_features'>;
 // Note: The previous code queried 'premium_plans', but the schema shows 'premium_features'. 
 // However, earlier context suggested plans might be separate. 
 // Let's verify if 'premium_plans' exists in DB or if it was a mental model.
@@ -24,7 +24,7 @@ export type PremiumFeature = Tables<'premium_features'>['Row'];
 
 // Since user_subscriptions might be missing from types, we'll define a strictly typed interface for it
 // matching the actual DB response we saw in previous reads.
-type UserSubscriptionRow = Tables<'user_subscriptions'>['Row'];
+type UserSubscriptionRow = Tables<'user_subscriptions'>;
 
 export type UserSubscription = UserSubscriptionRow & {
     plan?: PremiumPlan;
