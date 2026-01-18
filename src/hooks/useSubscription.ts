@@ -4,27 +4,59 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { SubscriptionInput, ChangePlanInput, CancelSubscriptionInput } from '@/lib/validations/subscription';
-import type { Database, Tables } from '@/integrations/supabase/types';
 
-// Adapting the types to match what we expect in the UI vs what is in DB
-export type PremiumPlan = Tables<'premium_plans'>;
-export type PremiumFeature = Tables<'premium_features'>;
-// Note: The previous code queried 'premium_plans', but the schema shows 'premium_features'. 
-// However, earlier context suggested plans might be separate. 
-// Let's verify if 'premium_plans' exists in DB or if it was a mental model.
-// Based on typical Supabase setups and previous errors, if 'premium_plans' table DOES NOT exist in types.ts, 
-// we must assume the user might have meant 'premium_features' acting as plans or strictly 'premium_plans' that is missing from types.
-// *Update*: Looking at types.ts, 'premium_features' exists with 'price_monthly', 'is_premium'. 
-// But 'user_subscriptions' table is missing from types.ts! 
-// This implies 'user_subscriptions' might be a custom table or not yet introspected.
-// Wait, 'user_premium_subscriptions' was mentioned in summary.
-// Let's proceed with a safe approach: Define types manually if missing from generated types, 
-// BUT arguably we should use 'user_premium_subscriptions' if that's the real table.
-// *Decision*: I will keep the explicit interfaces but remove 'as any' by properly typing the Supabase response.
+// Define interfaces locally since these tables may not be in types.ts
+export interface PremiumPlan {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    price_monthly: number;
+    price_yearly: number;
+    features: string[];
+    is_active: boolean;
+    display_order: number;
+    badge?: string;
+    badge_text?: string;
+    badge_color?: string;
+    created_at: string;
+    isExpiringSoon?: boolean;
+}
 
-// Since user_subscriptions might be missing from types, we'll define a strictly typed interface for it
-// matching the actual DB response we saw in previous reads.
-type UserSubscriptionRow = Tables<'user_subscriptions'>;
+export interface PremiumFeature {
+    id: string;
+    feature_key: string;
+    name: string;
+    description: string;
+    price_monthly: number;
+    is_enabled: boolean;
+    is_premium: boolean;
+    is_free?: boolean;
+    trial_days?: number;
+    configuration?: any;
+    created_at: string;
+    updated_at: string;
+    category?: string;
+}
+
+interface UserSubscriptionRow {
+    id: string;
+    user_id: string;
+    plan_id: string;
+    status: string;
+    billing_period: string;
+    started_at: string;
+    expires_at: string;
+    cancelled_at: string | null;
+    payment_method: string;
+    amount_paid: number;
+    auto_renew: boolean;
+    next_billing_date: string | null;
+    current_period_start: string;
+    current_period_end: string | null;
+    created_at: string;
+    updated_at: string;
+}
 
 export type UserSubscription = UserSubscriptionRow & {
     plan?: PremiumPlan;
@@ -47,7 +79,7 @@ export function useSubscription() {
             // Earlier logs showed: "Could not find the table 'public.user_ai_settings'".
             // I will assume 'premium_plans' exists.
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('premium_plans')
                 .select('*')
                 .eq('is_active', true)
@@ -65,7 +97,7 @@ export function useSubscription() {
         queryFn: async () => {
             if (!user) return null;
 
-            const { data: subData, error } = await supabase
+            const { data: subData, error } = await (supabase as any)
                 .from('user_subscriptions')
                 .select('*')
                 .eq('user_id', user.id)

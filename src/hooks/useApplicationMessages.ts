@@ -119,8 +119,8 @@ export function useApplicationMessages(applicationId: string) {
         // 2. Trigger notification for recipient
         try {
             // Fetch application to find recipient
-            const { data: appData } = await supabase
-                .from('bnpl_plans' as any)
+            const { data: appData } = await (supabase as any)
+                .from('bnpl_plans')
                 .select('client_id, merchant_id, products(name)')
                 .eq('id', applicationId)
                 .single();
@@ -134,7 +134,7 @@ export function useApplicationMessages(applicationId: string) {
                     type: 'chat',
                     title: `Nouveau message de ${senderName} 💬`,
                     message: content.length > 50 ? content.substring(0, 47) + "..." : content,
-                    data: { application_id: applicationId, message_id: messageData.id }
+                    data: { application_id: applicationId, message_id: (messageData as any).id }
                 });
             }
         } catch (notifErr) {

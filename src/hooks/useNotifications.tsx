@@ -24,14 +24,14 @@ export const useNotifications = () => {
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setNotifications(data);
+      setNotifications(data as Notification[]);
     }
     setIsLoading(false);
   }, [user]);
@@ -69,7 +69,7 @@ export const useNotifications = () => {
   }, [user]); // Important : ne pas inclure fetchNotifications ici
 
   const markAsRead = useCallback(async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('notifications')
       .update({ is_read: true })
       .eq('id', id);
@@ -82,7 +82,7 @@ export const useNotifications = () => {
   }, []);
 
   const removeNotification = useCallback(async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('notifications')
       .delete()
       .eq('id', id);

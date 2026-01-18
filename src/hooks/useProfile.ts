@@ -61,8 +61,8 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
     merchantName: (data as any).merchant_name || undefined,
     deliveryName: (data as any).delivery_name || undefined,
     clientName: (data as any).client_name || undefined,
-    kycStatus: data.kyc_status || undefined,
-    rejectionReason: data.kyc_rejection_reason || undefined,
+    kycStatus: (data as any).kyc_status || undefined,
+    rejectionReason: (data as any).kyc_rejection_reason || undefined,
   } : null;
 };
 

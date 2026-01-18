@@ -25,7 +25,7 @@ export default function AdminFinancialAudit() {
     const { data: auditData, isLoading, refetch } = useQuery({
         queryKey: ['financial-audit'],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('payment_reconciliation')
                 .select(`
                     *,
@@ -42,7 +42,7 @@ export default function AdminFinancialAudit() {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            return data;
+            return data as any[];
         }
     });
 

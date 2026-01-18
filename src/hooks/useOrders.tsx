@@ -54,7 +54,7 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
 
       if (queryError) throw queryError;
 
-      setOrders(data as Order[]);
+      setOrders((data || []) as unknown as Order[]);
     } catch (err: any) {
       setError('Impossible de charger les commandes');
       toast({

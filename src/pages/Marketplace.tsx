@@ -165,8 +165,8 @@ const Marketplace: React.FC = () => {
     if (!clickedCategory) return;
 
     // If it's a parent (parent_id is null), select it and all its children for the filter
-    if (!clickedCategory.parent_id) {
-      const childrenIds = categories?.filter(c => c.parent_id === clickedCategory.id).map(c => c.id) || [];
+    if (!(clickedCategory as any).parent_id) {
+      const childrenIds = categories?.filter(c => (c as any).parent_id === clickedCategory.id).map(c => c.id) || [];
       setSelectedCategory([clickedCategory.id, ...childrenIds]);
     } else {
       // It's a child, just select it
@@ -183,10 +183,10 @@ const Marketplace: React.FC = () => {
 
     // If it's a single ID, find its parent
     const cat = categories?.find(c => c.id === selectedCategory);
-    return cat?.parent_id || cat?.id || null;
+    return (cat as any)?.parent_id || cat?.id || null;
   })();
 
-  const subCategories = categories?.filter(c => c.parent_id === activeParentId) || [];
+  const subCategories = categories?.filter(c => (c as any).parent_id === activeParentId) || [];
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950 transition-colors duration-300">
@@ -292,7 +292,7 @@ const Marketplace: React.FC = () => {
                   ];
 
                   // Only Parents
-                  const parentCategories = categories?.filter(c => !c.parent_id) || [];
+                  const parentCategories = categories?.filter(c => !(c as any).parent_id) || [];
 
                   // Sort categories: Primary first, then name alphabetical
                   const sortedParents = [...parentCategories].sort((a, b) => {
@@ -308,7 +308,7 @@ const Marketplace: React.FC = () => {
                     const isPrimary = PRIMARY_UNIVERSES.includes(category.name);
                     const isActive = Array.isArray(selectedCategory)
                       ? selectedCategory[0] === category.id
-                      : (selectedCategory === category.id || categories?.find(c => c.id === selectedCategory)?.parent_id === category.id);
+                      : (selectedCategory === category.id || (categories?.find(c => c.id === selectedCategory) as any)?.parent_id === category.id);
 
                     return (
                       <div key={category.id} className="snap-start flex-none">
