@@ -12,7 +12,7 @@ export interface PremiumFeature {
   is_premium: boolean;
   price_monthly: number;
   is_enabled: boolean;
-  is_free: boolean;
+  is_free?: boolean;
   configuration: any;
   created_at: string;
   updated_at: string;
@@ -29,7 +29,11 @@ async function fetchPremiumFeatures(): Promise<PremiumFeature[]> {
     throw new Error('Impossible de charger les fonctionnalités premium.');
   }
 
-  return data || [];
+  // Map data to ensure is_free has a default value
+  return (data || []).map((item: any) => ({
+    ...item,
+    is_free: item.is_free ?? false
+  }));
 }
 
 async function updatePremiumFeature({
@@ -84,7 +88,7 @@ export function usePremiumFeatures() {
 
   const mutation = useMutation({
     mutationFn: updatePremiumFeature,
-    onSuccess: (updatedData, variables) => {
+    onSuccess: (updatedData: any, variables) => {
       queryClient.invalidateQueries({ queryKey: ['premiumFeatures'] });
       queryClient.invalidateQueries({ queryKey: ['aiModuleSettings'] });
 

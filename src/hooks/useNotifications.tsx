@@ -24,7 +24,7 @@ export const useNotifications = () => {
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
@@ -50,7 +50,7 @@ export const useNotifications = () => {
         schema: 'public',
         table: 'notifications',
         filter: `user_id=eq.${user.id}`
-      }, (payload) => {
+      }, (payload: any) => {
         const newNotification = payload.new as Notification;
         setNotifications(prev => [newNotification, ...prev]);
 
@@ -58,7 +58,6 @@ export const useNotifications = () => {
         toast({
           title: newNotification.title,
           description: newNotification.message,
-          // variant: "default", // Optionnel, peut être coloré selon le type
         });
       })
       .subscribe();
@@ -66,10 +65,10 @@ export const useNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]); // Important : ne pas inclure fetchNotifications ici
+  }, [user]);
 
   const markAsRead = useCallback(async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('notifications')
       .update({ is_read: true })
       .eq('id', id);
@@ -82,7 +81,7 @@ export const useNotifications = () => {
   }, []);
 
   const removeNotification = useCallback(async (id: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('notifications')
       .delete()
       .eq('id', id);

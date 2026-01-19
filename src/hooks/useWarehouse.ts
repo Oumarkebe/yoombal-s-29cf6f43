@@ -34,7 +34,7 @@ export const useWarehouse = () => {
 
     const fetchWarehouses = async () => {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('warehouses')
                 .select('*')
                 .eq('is_active', true);
@@ -50,7 +50,7 @@ export const useWarehouse = () => {
     const fetchInventory = async (warehouseId: string) => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('warehouse_inventory')
                 .select(`
                 *,
@@ -63,7 +63,7 @@ export const useWarehouse = () => {
             // Transform to match interface
             const formattedData = (data as any[]).map((item: any) => ({
                 ...item,
-                product: item.product // Product info joined
+                product: item.product
             }));
 
             setInventory(formattedData);
@@ -86,10 +86,10 @@ export const useWarehouse = () => {
     ) => {
         try {
             // 1. Log movement
-            const { error: moveError } = await supabase.from('warehouse_movements').insert([{
+            const { error: moveError } = await (supabase as any).from('warehouse_movements').insert([{
                 type,
                 quantity,
-                item_id: productId, // Note: Schema uses 'item_id' mapped to products usually, check schema
+                item_id: productId,
                 from_warehouse_id: type === 'OUT' || type === 'TRANSFER' ? warehouseId : null,
                 to_warehouse_id: type === 'IN' || type === 'TRANSFER' ? (targetWarehouseId || warehouseId) : null,
                 performed_by: performedBy,
@@ -97,21 +97,20 @@ export const useWarehouse = () => {
             }]);
             if (moveError) throw moveError;
 
-            // 2. Update Inventory (RPC call would be safer for atomicity, but doing client-side for now for simplicity)
-            // IN: Increase stock
+            // 2. Update Inventory
             if (type === 'IN') {
-                const { data: existing } = await supabase.from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
+                const { data: existing } = await (supabase as any).from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
                 if (existing) {
-                    await supabase.from('warehouse_inventory').update({ quantity: existing.quantity + quantity }).eq('id', existing.id);
+                    await (supabase as any).from('warehouse_inventory').update({ quantity: (existing as any).quantity + quantity }).eq('id', (existing as any).id);
                 } else {
-                    await supabase.from('warehouse_inventory').insert([{ warehouse_id: warehouseId, product_id: productId, quantity }]);
+                    await (supabase as any).from('warehouse_inventory').insert([{ warehouse_id: warehouseId, product_id: productId, quantity }]);
                 }
             }
             // OUT: Decrease stock
             else if (type === 'OUT') {
-                const { data: existing } = await supabase.from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
-                if (!existing || existing.quantity < quantity) throw new Error("Stock insuffisant");
-                await supabase.from('warehouse_inventory').update({ quantity: existing.quantity - quantity }).eq('id', existing.id);
+                const { data: existing } = await (supabase as any).from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
+                if (!existing || (existing as any).quantity < quantity) throw new Error("Stock insuffisant");
+                await (supabase as any).from('warehouse_inventory').update({ quantity: (existing as any).quantity - quantity }).eq('id', (existing as any).id);
             }
 
             toast({ title: "Succès", description: "Mouvement enregistré" });

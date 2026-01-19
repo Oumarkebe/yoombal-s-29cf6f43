@@ -78,7 +78,7 @@ export function AIAssistant() {
             if (user) {
                 setIsRestoring(true);
                 try {
-                    const { data, error } = await supabase
+                    const { data, error } = await (supabase as any)
                         .from('ai_chat_sessions')
                         .select('messages')
                         .eq('user_id', user.id)
@@ -144,7 +144,7 @@ export function AIAssistant() {
     const syncToDb = async () => {
         if (!user) return;
         try {
-            await supabase
+            await (supabase as any)
                 .from('ai_chat_sessions')
                 .upsert({
                     user_id: user.id,
@@ -460,7 +460,7 @@ export function AIAssistant() {
 
                 // --- LOG DECISION (PRO+) ---
                 try {
-                    await supabase.from('ai_chat_logs').insert({
+                    await (supabase as any).from('ai_chat_logs').insert({
                         user_id: user?.id,
                         message_content: userMessage,
                         intention: intentInfo.type,

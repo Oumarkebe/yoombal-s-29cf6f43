@@ -36,7 +36,7 @@ export const useAds = () => {
         if (!user) return;
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('ads_campaigns')
                 .select(`
                     *,
@@ -47,12 +47,12 @@ export const useAds = () => {
 
             if (error) throw error;
 
-            const campaignIds = (data || []).map(c => c.id);
+            const campaignIds = (data || []).map((c: any) => c.id);
 
             const campaignsWithStats = await Promise.all(
-                (data || []).map(async (camp) => {
-                    const { count: views } = await supabase.from('ads_analytics').select('*', { count: 'exact', head: true }).eq('campaign_id', camp.id).eq('event_type', 'VIEW');
-                    const { count: clicks } = await supabase.from('ads_analytics').select('*', { count: 'exact', head: true }).eq('campaign_id', camp.id).eq('event_type', 'CLICK');
+                (data || []).map(async (camp: any) => {
+                    const { count: views } = await (supabase as any).from('ads_analytics').select('*', { count: 'exact', head: true }).eq('campaign_id', camp.id).eq('event_type', 'VIEW');
+                    const { count: clicks } = await (supabase as any).from('ads_analytics').select('*', { count: 'exact', head: true }).eq('campaign_id', camp.id).eq('event_type', 'CLICK');
                     return { ...camp, stats: { views: views || 0, clicks: clicks || 0 } };
                 })
             );
@@ -67,14 +67,14 @@ export const useAds = () => {
             const daily = await Promise.all(last7Days.map(async (date) => {
                 if (campaignIds.length === 0) return { date: new Date(date).toLocaleDateString('fr-FR', { weekday: 'short' }), views: 0, clicks: 0 };
 
-                const { count: views } = await supabase.from('ads_analytics')
+                const { count: views } = await (supabase as any).from('ads_analytics')
                     .select('*', { count: 'exact', head: true })
                     .in('campaign_id', campaignIds)
                     .eq('event_type', 'VIEW')
                     .gte('created_at', `${date}T00:00:00`)
                     .lte('created_at', `${date}T23:59:59`);
 
-                const { count: clicks } = await supabase.from('ads_analytics')
+                const { count: clicks } = await (supabase as any).from('ads_analytics')
                     .select('*', { count: 'exact', head: true })
                     .in('campaign_id', campaignIds)
                     .eq('event_type', 'CLICK')
@@ -105,13 +105,13 @@ export const useAds = () => {
             const endDate = new Date();
             endDate.setDate(startDate.getDate() + daysDuration);
 
-            const { error } = await supabase.from('ads_campaigns').insert([{
+            const { error } = await (supabase as any).from('ads_campaigns').insert([{
                 merchant_id: user.id,
                 product_id: productId,
                 start_date: startDate.toISOString(),
                 end_date: endDate.toISOString(),
                 daily_budget: dailyBudget,
-                status: 'active', // Direct active for MVP (Assume payment sorted or free tier)
+                status: 'active',
                 current_spend: 0
             }]);
 
@@ -129,10 +129,10 @@ export const useAds = () => {
     // Function to track view/click (Public use)
     const trackAdEvent = async (campaignId: string, type: 'VIEW' | 'CLICK') => {
         try {
-            await supabase.from('ads_analytics').insert([{
+            await (supabase as any).from('ads_analytics').insert([{
                 campaign_id: campaignId,
                 event_type: type,
-                user_id: user?.id || null // Optional tracking
+                user_id: user?.id || null
             }]);
         } catch (e) {
             console.error("Tracking error", e);
