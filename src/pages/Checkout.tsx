@@ -34,13 +34,13 @@ const CheckoutPage = () => {
   });
 
   const [guestInfo, setGuestInfo] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     address: '',
     city: '',
-    postalCode: '',
+    postal_code: '',
     notes: ''
   });
 
@@ -181,21 +181,21 @@ const CheckoutPage = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="firstName">Prénom *</Label>
+                      <Label htmlFor="first_name">Prénom *</Label>
                       <Input
-                        id="firstName"
+                        id="first_name"
                         required
-                        value={guestInfo.firstName}
-                        onChange={(e) => setGuestInfo({ ...guestInfo, firstName: e.target.value })}
+                        value={guestInfo.first_name}
+                        onChange={(e) => setGuestInfo({ ...guestInfo, first_name: e.target.value })}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Nom *</Label>
+                      <Label htmlFor="last_name">Nom *</Label>
                       <Input
-                        id="lastName"
+                        id="last_name"
                         required
-                        value={guestInfo.lastName}
-                        onChange={(e) => setGuestInfo({ ...guestInfo, lastName: e.target.value })}
+                        value={guestInfo.last_name}
+                        onChange={(e) => setGuestInfo({ ...guestInfo, last_name: e.target.value })}
                       />
                     </div>
                     <div className="col-span-2">
@@ -243,12 +243,12 @@ const CheckoutPage = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="postalCode">Code postal *</Label>
+                        <Label htmlFor="postal_code">Code postal *</Label>
                         <Input
-                          id="postalCode"
+                          id="postal_code"
                           required
-                          value={guestInfo.postalCode}
-                          onChange={(e) => setGuestInfo({ ...guestInfo, postalCode: e.target.value })}
+                          value={guestInfo.postal_code}
+                          onChange={(e) => setGuestInfo({ ...guestInfo, postal_code: e.target.value })}
                         />
                       </div>
                     </div>

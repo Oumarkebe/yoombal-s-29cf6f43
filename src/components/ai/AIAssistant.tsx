@@ -85,7 +85,7 @@ export function AIAssistant() {
                         .maybeSingle();
 
                     if (data && data.messages) {
-                        setMessages(data.messages);
+                        setMessages(data.messages as unknown as Message[]);
                     } else {
                         setInitialMessage();
                     }
@@ -146,11 +146,11 @@ export function AIAssistant() {
         try {
             await (supabase as any)
                 .from('ai_chat_sessions')
-                .upsert({
+                .upsert([{
                     user_id: user.id,
                     messages: messages as any,
                     updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id' });
+                }], { onConflict: 'user_id' });
         } catch (e) {
             console.error("Failed to sync AI session to DB", e);
         }
@@ -189,12 +189,8 @@ export function AIAssistant() {
 
     if (isCheckingPermission) return null;
 
-    // If NOT enabled, we show an upgrade prompt instead of the full chat
+    // If NOT enabled, we provide a L1 baseline experience (Info/Advice only)
     const handleInquiry = () => {
-        if (!isEnabled) {
-            toast.info("L'assistant IA est une fonctionnalité Premium. Souscrivez à un pack ou contactez l'administrateur !");
-            return;
-        }
         setIsOpen(!isOpen);
     };
 
@@ -385,6 +381,11 @@ export function AIAssistant() {
         try {
             const systemPrompt = (assistantConfig as any)?.system_prompt || "Tu es un assistant utile pour Yoombal, une plateforme e-commerce sénégalaise.";
             const tone = (assistantConfig as any)?.tone || "professionnel et chaleureux (Teranga)";
+            let finalSystemPrompt = `${systemPrompt} Ton de voix à adopter : ${tone}.`;
+
+            if (!isEnabled) {
+                finalSystemPrompt += " IMPORTANT : L'utilisateur n'a pas d'abonnement premium. Tu ne peux PAS ajouter de produits au panier ou effectuer des commandes. Propose uniquement des conseils, des informations et aide-le à choisir. Suggère poliment de s'abonner pour activer les actions automatiques.";
+            }
 
             // Build page context
             let pageContext = `[CONTEXTE_PAGE: ${document.title} | URL: ${window.location.pathname}]`;
@@ -399,7 +400,7 @@ export function AIAssistant() {
                 body: {
                     userId: user?.id,
                     messages: [
-                        { role: 'system', content: `${systemPrompt} Ton de voix à adopter : ${tone}.` },
+                        { role: 'system', content: finalSystemPrompt },
                         ...messages,
                         { role: 'user', content: `${pageContext}\n${userMessage}` }
                     ]
@@ -460,7 +461,7 @@ export function AIAssistant() {
 
                 // --- LOG DECISION (PRO+) ---
                 try {
-                    await (supabase as any).from('ai_chat_logs').insert({
+                    await supabase.from('ai_chat_logs').insert([{
                         user_id: user?.id,
                         message_content: userMessage,
                         intention: intentInfo.type,
@@ -471,7 +472,7 @@ export function AIAssistant() {
                             confidence: intentInfo.confidence,
                             context: pageContext
                         } as any
-                    });
+                    }]);
                 } catch (e) {
                     console.error("Logging error:", e);
                 }
@@ -530,8 +531,8 @@ export function AIAssistant() {
                             <div>
                                 <CardTitle className="text-lg">Assistant IA Teranga</CardTitle>
                                 <div className="flex items-center gap-1.5 text-[10px] opacity-90">
-                                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                                    <span>En ligne • Premium AI</span>
+                                    <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isEnabled ? "bg-green-400" : "bg-blue-400")} />
+                                    <span>{isEnabled ? "En ligne • Premium AI" : "En ligne • Mode Conseil (L1)"}</span>
                                 </div>
                             </div>
                         </div>

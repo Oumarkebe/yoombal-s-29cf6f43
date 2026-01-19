@@ -35,16 +35,16 @@ const formatDownloadUrl = (url: string) => {
 
 // Schema based on actual profiles table columns
 const profileSchema = z.object({
-  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  first_name: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
+  last_name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   phone: z.string().optional(),
-  businessName: z.string().optional(),
-  businessType: z.string().optional(),
-  vehicleType: z.string().optional(),
+  business_name: z.string().optional(),
+  business_type: z.string().optional(),
+  vehicle_type: z.string().optional(),
   zone: z.string().optional(),
-  merchantName: z.string().optional(),
-  deliveryName: z.string().optional(),
-  clientName: z.string().optional(),
+  merchant_name: z.string().optional(),
+  delivery_name: z.string().optional(),
+  client_name: z.string().optional(),
 });
 
 function getBackPath(role) {
@@ -77,32 +77,32 @@ const Profile = () => {
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      first_name: "",
+      last_name: "",
       phone: "",
-      businessName: "",
-      businessType: "",
-      vehicleType: "",
+      business_name: "",
+      business_type: "",
+      vehicle_type: "",
       zone: "",
-      merchantName: "",
-      deliveryName: "",
-      clientName: "",
+      merchant_name: "",
+      delivery_name: "",
+      client_name: "",
     },
   });
 
   useEffect(() => {
     if (profile) {
       form.reset({
-        firstName: profile.firstName || "",
-        lastName: profile.lastName || "",
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
         phone: profile.phone || "",
-        businessName: profile.businessName || "",
-        businessType: profile.businessType || "",
-        vehicleType: profile.vehicleType || "",
+        business_name: profile.business_name || "",
+        business_type: profile.business_type || "",
+        vehicle_type: profile.vehicle_type || "",
         zone: profile.zone || "",
-        merchantName: profile.merchantName || "",
-        deliveryName: profile.deliveryName || "",
-        clientName: profile.clientName || "",
+        merchant_name: profile.merchant_name || "",
+        delivery_name: profile.delivery_name || "",
+        client_name: profile.client_name || "",
       });
     }
   }, [profile, form]);
@@ -215,16 +215,16 @@ const Profile = () => {
     if (!user?.id) return;
 
     updateProfile({
-      firstName: values.firstName,
-      lastName: values.lastName,
+      first_name: values.first_name,
+      last_name: values.last_name,
       phone: values.phone,
-      businessName: values.businessName,
-      businessType: values.businessType,
-      vehicleType: values.vehicleType,
+      business_name: values.business_name,
+      business_type: values.business_type,
+      vehicle_type: values.vehicle_type,
       zone: values.zone,
-      merchantName: values.merchantName,
-      deliveryName: values.deliveryName,
-      clientName: values.clientName,
+      merchant_name: values.merchant_name,
+      delivery_name: values.delivery_name,
+      client_name: values.client_name,
     });
   };
 
@@ -264,17 +264,17 @@ const Profile = () => {
         <Card className="bg-white p-6 shadow-sm mb-6 border-none">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-bold">
-              {profile?.firstName?.[0]}{profile?.lastName?.[0]}
+              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
             </div>
 
             <div className="flex-1 text-center md:text-left space-y-2">
               <h1 className="text-2xl font-bold text-gray-900">
-                {profile?.firstName} {profile?.lastName}
+                {profile?.first_name} {profile?.last_name}
               </h1>
               <p className="text-gray-500">{user?.email}</p>
 
               <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-2">
-                {profile?.businessName && (
+                {profile?.business_name && (
                   <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                     PRO
                   </span>
@@ -289,10 +289,10 @@ const Profile = () => {
                     {profile.phone}
                   </div>
                 )}
-                {profile?.businessName && (
+                {profile?.business_name && (
                   <div className="flex items-center text-sm text-gray-500 ml-2">
                     <Briefcase className="h-3 w-3 mr-1" />
-                    {profile.businessName}
+                    {profile.business_name}
                   </div>
                 )}
                 {profile?.zone && (
@@ -326,17 +326,17 @@ const Profile = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
+                  <Label htmlFor="first_name">Prénom</Label>
                   <Input
-                    id="firstName"
-                    {...form.register("firstName")}
+                    id="first_name"
+                    {...form.register("first_name")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
+                  <Label htmlFor="last_name">Nom</Label>
                   <Input
-                    id="lastName"
-                    {...form.register("lastName")}
+                    id="last_name"
+                    {...form.register("last_name")}
                   />
                 </div>
                 <div className="space-y-2">
@@ -364,24 +364,24 @@ const Profile = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="businessName">Nom de l'entreprise</Label>
+                    <Label htmlFor="business_name">Nom de l'entreprise</Label>
                     <Input
-                      id="businessName"
-                      {...form.register("businessName")}
+                      id="business_name"
+                      {...form.register("business_name")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="businessType">Type d'entreprise</Label>
+                    <Label htmlFor="business_type">Type d'entreprise</Label>
                     <Input
-                      id="businessType"
-                      {...form.register("businessType")}
+                      id="business_type"
+                      {...form.register("business_type")}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="vehicleType">Type de véhicule (livreurs)</Label>
+                    <Label htmlFor="vehicle_type">Type de véhicule (livreurs)</Label>
                     <Input
-                      id="vehicleType"
-                      {...form.register("vehicleType")}
+                      id="vehicle_type"
+                      {...form.register("vehicle_type")}
                     />
                   </div>
                 </div>
@@ -396,27 +396,27 @@ const Profile = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="clientName">Nom Public (Client)</Label>
+                      <Label htmlFor="client_name">Nom Public (Client)</Label>
                       <Input
-                        id="clientName"
+                        id="client_name"
                         placeholder="Ex: Client VIP"
-                        {...form.register("clientName")}
+                        {...form.register("client_name")}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="merchantName">Nom de Boutique (Marchand)</Label>
+                      <Label htmlFor="merchant_name">Nom de Boutique (Marchand)</Label>
                       <Input
-                        id="merchantName"
+                        id="merchant_name"
                         placeholder="Ex: Ma Super Boutique"
-                        {...form.register("merchantName")}
+                        {...form.register("merchant_name")}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="deliveryName">Nom de Service (Livreur)</Label>
+                      <Label htmlFor="delivery_name">Nom de Service (Livreur)</Label>
                       <Input
-                        id="deliveryName"
+                        id="delivery_name"
                         placeholder="Ex: Livraison Rapide Dakar"
-                        {...form.register("deliveryName")}
+                        {...form.register("delivery_name")}
                       />
                     </div>
                   </div>
@@ -448,8 +448,8 @@ const Profile = () => {
             {/* KYC Section */}
             <div className="mb-6">
               <KYCUpload
-                currentStatus={profile?.kycStatus}
-                rejectionReason={profile?.rejectionReason}
+                currentStatus={profile?.kyc_status}
+                rejectionReason={profile?.kyc_rejection_reason}
                 onSuccess={() => window.location.reload()}
               />
             </div>

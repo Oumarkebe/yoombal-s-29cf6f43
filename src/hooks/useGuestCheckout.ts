@@ -5,13 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 import { type Database } from '@/integrations/supabase/types';
 
 export interface GuestOrderData {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   address: string;
   city: string;
-  postalCode: string;
+  postal_code: string;
   notes?: string;
 }
 
@@ -36,7 +36,7 @@ export const useGuestCheckout = () => {
     }
 
     setIsLoading(true);
-    
+
     try {
       const merchantId = items[0].merchant_id;
       const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -51,13 +51,13 @@ export const useGuestCheckout = () => {
           status: 'pending',
           payment_method: paymentMethod,
           payment_status: 'pending',
-          delivery_address: `${guestData.address}, ${guestData.city} ${guestData.postalCode}`,
+          delivery_address: `${guestData.address}, ${guestData.city} ${guestData.postal_code}`,
           delivery_phone: guestData.phone,
-          delivery_notes: `Invité: ${guestData.firstName} ${guestData.lastName} - Email: ${guestData.email}${guestData.notes ? ` - Notes: ${guestData.notes}` : ''}`,
+          delivery_notes: `Invité: ${guestData.first_name} ${guestData.last_name} - Email: ${guestData.email}${guestData.notes ? ` - Notes: ${guestData.notes}` : ''}`,
         })
         .select()
         .single();
-      
+
       if (orderError) throw orderError;
 
       // Ajouter les items de la commande
@@ -67,7 +67,7 @@ export const useGuestCheckout = () => {
         quantity: item.quantity,
         price: item.price
       }));
-      
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItemsData);

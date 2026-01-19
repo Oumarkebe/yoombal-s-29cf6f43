@@ -28,15 +28,15 @@ interface AuthContextType {
 }
 
 interface RegisterData {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone: string;
   password: string;
   role: AppRole;
-  businessName?: string;
-  businessType?: string;
-  vehicleType?: string;
+  business_name?: string;
+  business_type?: string;
+  vehicle_type?: string;
   zone?: string;
 }
 
@@ -142,8 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: authUser.id,
           email: authUser.email || '',
-          firstName: authUser.user_metadata?.first_name || '',
-          lastName: authUser.user_metadata?.last_name || '',
+          first_name: authUser.user_metadata?.first_name || '',
+          last_name: authUser.user_metadata?.last_name || '',
           phone: authUser.user_metadata?.phone || '',
           role: 'user',
           roles: ['user'],
@@ -183,15 +183,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: profileData.id,
           email: authUser.email || '',
-          firstName: profileData.first_name || '',
-          lastName: profileData.last_name || '',
+          first_name: profileData.first_name || '',
+          last_name: profileData.last_name || '',
           phone: profileData.phone || '',
           role: primaryRole,
           roles: allRoles,
           status: userStatus,
-          businessName: profileData.business_name,
-          businessType: profileData.business_type,
-          vehicleType: profileData.vehicle_type,
+          business_name: profileData.business_name,
+          business_type: profileData.business_type,
+          vehicle_type: profileData.vehicle_type,
           zone: profileData.zone,
           merchant_name: profileData.merchant_name,
           delivery_name: profileData.delivery_name,
@@ -217,8 +217,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser({
           id: authUser.id,
           email: authUser.email || '',
-          firstName: authUser.user_metadata?.first_name || '',
-          lastName: authUser.user_metadata?.last_name || '',
+          first_name: authUser.user_metadata?.first_name || '',
+          last_name: authUser.user_metadata?.last_name || '',
           phone: authUser.user_metadata?.phone || '',
           role: 'user',
           roles: ['user'],
@@ -272,13 +272,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            first_name: userData.firstName,
-            last_name: userData.lastName,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
             phone: userData.phone,
             role: userData.role,
-            business_name: userData.businessName,
-            business_type: userData.businessType,
-            vehicle_type: userData.vehicleType,
+            business_name: userData.business_name,
+            business_type: userData.business_type,
+            vehicle_type: userData.vehicle_type,
             zone: userData.zone
           }
         }
@@ -296,12 +296,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { error: profileError } = await supabase.from('profiles').insert([
           {
             id: data.user.id,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
             phone: userData.phone,
-            business_name: userData.businessName,
-            business_type: userData.businessType,
-            vehicle_type: userData.vehicleType,
+            business_name: userData.business_name,
+            business_type: userData.business_type,
+            vehicle_type: userData.vehicle_type,
             zone: userData.zone,
             status: 'active',
           }

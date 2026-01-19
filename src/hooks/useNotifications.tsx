@@ -4,16 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-interface Notification {
-  id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  data: any;
-  is_read: boolean;
-  created_at: string;
-}
+import { Database } from '@/integrations/supabase/types';
+
+export type Notification = Database['public']['Tables']['notifications']['Row'];
 
 export const useNotifications = () => {
   const { user } = useAuth();
@@ -31,7 +24,7 @@ export const useNotifications = () => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setNotifications(data as Notification[]);
+      setNotifications(data);
     }
     setIsLoading(false);
   }, [user]);

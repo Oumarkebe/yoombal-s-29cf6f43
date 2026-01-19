@@ -80,15 +80,15 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
 export interface UserProfile {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   phone: string;
   role: AppRole;
   roles: AppRole[];
   status?: UserStatus;
-  businessName?: string;
-  businessType?: string;
-  vehicleType?: string;
+  business_name?: string;
+  business_type?: string;
+  vehicle_type?: string;
   zone?: string;
   merchant_name?: string;
   delivery_name?: string;

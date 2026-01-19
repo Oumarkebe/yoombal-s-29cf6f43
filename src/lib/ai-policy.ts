@@ -103,9 +103,15 @@ export function evaluateAIPolicy(ctx: AIContext): AIPolicyDecision {
     }
 
     // 🔴 Règle 4 : Abonnement / Features Premium
-    if (!ctx.user.subscriptionActive && ['add_cart', 'compare'].includes(ctx.intent.type)) {
-        // Optionnel : On peut limiter certaines actions métier aux premium
-        // Pour l'instant on laisse passer mais on pourrait forcer L2
+    if (!ctx.user.subscriptionActive) {
+        // Pour les non-premium, on force TOUJOURS L1 (Conseil uniquement)
+        // Aucune confirmation L2 ou action L3 autorisée
+        return {
+            allowed: false,
+            requiredLevel: AIActionLevel.L1,
+            reason: 'Subscription required for direct actions (L2/L3)',
+            requireConfirmation: false
+        };
     }
 
     // ✅ Autorisation par défaut

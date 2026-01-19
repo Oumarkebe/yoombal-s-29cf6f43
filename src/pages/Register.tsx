@@ -26,16 +26,16 @@ const Register = () => {
   const defaultRole = getDefaultRole(searchParams.get('role'));
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     phone: '',
     password: '',
     confirmPassword: '',
     role: defaultRole as AppRole,
-    businessName: '',
-    businessType: '',
-    vehicleType: ''
+    business_name: '',
+    business_type: '',
+    vehicle_type: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -82,15 +82,15 @@ const Register = () => {
 
     try {
       const result = await register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
         role: formData.role,
-        businessName: formData.businessName,
-        businessType: formData.businessType,
-        vehicleType: formData.vehicleType
+        business_name: formData.business_name,
+        business_type: formData.business_type,
+        vehicle_type: formData.vehicle_type
       });
 
       if (result.error) {
@@ -142,8 +142,8 @@ const Register = () => {
                       key={option.value}
                       onClick={() => handleRoleChange(option.value)}
                       className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col items-center justify-center gap-2 text-center transition-all hover:bg-slate-50 ${formData.role === option.value
-                          ? 'border-amber-500 bg-amber-50 text-amber-900'
-                          : 'border-slate-200 text-slate-500'
+                        ? 'border-amber-500 bg-amber-50 text-amber-900'
+                        : 'border-slate-200 text-slate-500'
                         }`}
                     >
                       {option.icon}
@@ -155,12 +155,12 @@ const Register = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">Prénom</Label>
-                  <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Moussa" />
+                  <Label htmlFor="first_name">Prénom</Label>
+                  <Input id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} required placeholder="Moussa" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Nom</Label>
-                  <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Diop" />
+                  <Label htmlFor="last_name">Nom</Label>
+                  <Input id="last_name" name="last_name" value={formData.last_name} onChange={handleChange} required placeholder="Diop" />
                 </div>
               </div>
 
@@ -179,12 +179,12 @@ const Register = () => {
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4 animate-in slide-in-from-top-2">
                   <h4 className="font-bold text-sm text-slate-700 flex items-center gap-2"><Store className="h-4 w-4" /> Détails Boutique</h4>
                   <div className="space-y-2">
-                    <Label htmlFor="businessName">Nom de l'entreprise</Label>
-                    <Input id="businessName" name="businessName" value={formData.businessName} onChange={handleChange} placeholder="Ex: Diop Couture" />
+                    <Label htmlFor="business_name">Nom de l'entreprise</Label>
+                    <Input id="business_name" name="business_name" value={formData.business_name} onChange={handleChange} placeholder="Ex: Diop Couture" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="businessType">Secteur d'activité</Label>
-                    <Input id="businessType" name="businessType" value={formData.businessType} onChange={handleChange} placeholder="Ex: Mode & Accessoires" />
+                    <Label htmlFor="business_type">Secteur d'activité</Label>
+                    <Input id="business_type" name="business_type" value={formData.business_type} onChange={handleChange} placeholder="Ex: Mode & Accessoires" />
                   </div>
                 </div>
               )}
@@ -193,8 +193,8 @@ const Register = () => {
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4 animate-in slide-in-from-top-2">
                   <h4 className="font-bold text-sm text-slate-700 flex items-center gap-2"><Truck className="h-4 w-4" /> Détails Véhicule</h4>
                   <div className="space-y-2">
-                    <Label htmlFor="vehicleType">Type de véhicule</Label>
-                    <Select value={formData.vehicleType} onValueChange={(value) => setFormData(prev => ({ ...prev, vehicleType: value }))}>
+                    <Label htmlFor="vehicle_type">Type de véhicule</Label>
+                    <Select value={formData.vehicle_type} onValueChange={(value) => setFormData(prev => ({ ...prev, vehicle_type: value }))}>
                       <SelectTrigger className="bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="moto">Moto</SelectItem>

@@ -3,28 +3,16 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export interface Warehouse {
-    id: string;
-    name: string;
-    location: string;
-    capacity?: number;
-    manager_id?: string;
-    is_active: boolean;
-}
+import { Database } from '@/integrations/supabase/types';
 
-export interface InventoryItem {
-    id: string;
-    warehouse_id: string;
-    product_id: string;
-    quantity: number;
-    min_threshold: number;
-    zone_id?: string;
+export type Warehouse = Database['public']['Tables']['warehouses']['Row'];
+export type InventoryItem = Database['public']['Tables']['warehouse_inventory']['Row'] & {
     product?: {
         name: string;
         image_url?: string;
         sku?: string;
     };
-}
+};
 
 export const useWarehouse = () => {
     const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -40,7 +28,7 @@ export const useWarehouse = () => {
                 .eq('is_active', true);
 
             if (error) throw error;
-            setWarehouses((data || []) as Warehouse[]);
+            setWarehouses(data || []);
         } catch (error) {
             console.error('Error fetching warehouses:', error);
             toast({ title: "Erreur", description: "Impossible de charger les entrepôts", variant: "destructive" });
@@ -61,7 +49,7 @@ export const useWarehouse = () => {
             if (error) throw error;
 
             // Transform to match interface
-            const formattedData = (data as any[]).map((item: any) => ({
+            const formattedData = (data || []).map((item) => ({
                 ...item,
                 product: item.product
             }));

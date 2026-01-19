@@ -4,16 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-export interface AdCampaign {
-    id: string;
-    merchant_id: string;
-    product_id: string;
-    start_date: string;
-    end_date: string;
-    daily_budget: number;
-    status: 'active' | 'paused' | 'completed' | 'pending_payment';
-    current_spend: number;
-    created_at: string;
+import { Database } from '@/integrations/supabase/types';
+
+export type AdCampaign = Database['public']['Tables']['ads_campaigns']['Row'] & {
     product?: {
         name: string;
         image_url?: string;
@@ -23,7 +16,7 @@ export interface AdCampaign {
         views: number;
         clicks: number;
     };
-}
+};
 
 export const useAds = () => {
     const { user } = useAuth();
@@ -88,7 +81,7 @@ export const useAds = () => {
                 };
             }));
 
-            setCampaigns(campaignsWithStats as AdCampaign[]);
+            setCampaigns(campaignsWithStats);
             setDailyStats(daily);
         } catch (error) {
             console.error('Error fetching campaigns:', error);
@@ -108,6 +101,7 @@ export const useAds = () => {
             const { error } = await (supabase as any).from('ads_campaigns').insert([{
                 merchant_id: user.id,
                 product_id: productId,
+                name: `Campagne ${productId.slice(0, 5)}`, // Added name field
                 start_date: startDate.toISOString(),
                 end_date: endDate.toISOString(),
                 daily_budget: dailyBudget,
