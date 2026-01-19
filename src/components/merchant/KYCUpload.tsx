@@ -46,7 +46,7 @@ export function KYCUpload({ onSuccess, currentStatus, rejectionReason }: KYCUplo
                 .getPublicUrl(filePath);
 
             // 2. Update profile
-            const { error: updateError } = await supabase
+            const { error: updateError } = await (supabase as any)
                 .from('profiles')
                 .update({
                     kyc_document_url: publicUrl,

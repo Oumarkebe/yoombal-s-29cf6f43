@@ -74,12 +74,7 @@ export function useSubscription() {
     const { data: plans = [] } = useQuery({
         queryKey: ['premiumPlans'],
         queryFn: async () => {
-            // Using 'premium_plans' as per existing code, assuming the table exists even if not in types
-            // If it fails, I'll need to check the DB schema names again.
-            // Earlier logs showed: "Could not find the table 'public.user_ai_settings'".
-            // I will assume 'premium_plans' exists.
-
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('premium_plans')
                 .select('*')
                 .eq('is_active', true)
@@ -97,7 +92,7 @@ export function useSubscription() {
         queryFn: async () => {
             if (!user) return null;
 
-            const { data: subData, error } = await supabase
+            const { data: subData, error } = await (supabase as any)
                 .from('user_subscriptions')
                 .select('*')
                 .eq('user_id', user.id)
@@ -109,10 +104,8 @@ export function useSubscription() {
                 return null;
             }
 
-            // subData might be null even if no error (if no rows matches maybeSingle)
             if (!subData) return null;
 
-            // Manual join
             const plan = plans.find((p: any) => p.id === (subData as any).plan_id);
 
             return {
@@ -433,7 +426,7 @@ export function useSubscription() {
         mutationFn: async (input: CancelSubscriptionInput) => {
             if (!user || !subscription) throw new Error('Aucun abonnement actif');
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('user_subscriptions')
                 .update({
                     status: input.immediate ? 'cancelled' : 'active',
@@ -460,18 +453,17 @@ export function useSubscription() {
         mutationFn: async (amount: number) => {
             if (!user || !subscription) throw new Error('Aucun abonnement actif');
 
-            // Determine new expiry
             const currentExpiry = subscription.expires_at ? new Date(subscription.expires_at) : new Date();
             const duration = subscription.billing_period === 'yearly' ? 365 : 30;
             const newExpiry = new Date(currentExpiry.setDate(currentExpiry.getDate() + duration));
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('user_subscriptions')
                 .update({
                     status: 'active',
                     expires_at: newExpiry.toISOString(),
                     amount_paid: amount,
-                    payment_method: 'mobile_money', // Default update
+                    payment_method: 'mobile_money',
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', subscription.id)
@@ -495,7 +487,7 @@ export function useSubscription() {
         mutationFn: async (featureId: string) => {
             if (!user) throw new Error('Non authentifié');
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('user_premium_subscriptions')
                 .insert({
                     user_id: user.id,
@@ -522,7 +514,7 @@ export function useSubscription() {
         mutationFn: async (featureId: string) => {
             if (!user) throw new Error('Non authentifié');
 
-            const { data, error } = await supabase
+            const { data, error } = await (supabase as any)
                 .from('user_premium_subscriptions')
                 .update({ status: 'cancelled' })
                 .eq('user_id', user.id)

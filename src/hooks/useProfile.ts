@@ -47,22 +47,23 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
     throw error;
   }
 
-  return data ? {
-    id: data.id,
-    firstName: data.first_name || undefined,
-    lastName: data.last_name || undefined,
-    phone: data.phone || undefined,
-    businessName: data.business_name || undefined,
-    businessType: data.business_type || undefined,
-    avatarUrl: data.avatar_url || undefined,
-    vehicleType: data.vehicle_type || undefined,
-    zone: data.zone || undefined,
-    role: data.role || undefined,
-    merchantName: data.merchant_name || undefined,
-    deliveryName: data.delivery_name || undefined,
-    clientName: data.client_name || undefined,
-    kycStatus: data.kyc_status || undefined,
-    rejectionReason: data.kyc_rejection_reason || undefined,
+  const profileData = data as any;
+  return profileData ? {
+    id: profileData.id,
+    firstName: profileData.first_name || undefined,
+    lastName: profileData.last_name || undefined,
+    phone: profileData.phone || undefined,
+    businessName: profileData.business_name || undefined,
+    businessType: profileData.business_type || undefined,
+    avatarUrl: profileData.avatar_url || undefined,
+    vehicleType: profileData.vehicle_type || undefined,
+    zone: profileData.zone || undefined,
+    role: profileData.role || undefined,
+    merchantName: profileData.merchant_name || undefined,
+    deliveryName: profileData.delivery_name || undefined,
+    clientName: profileData.client_name || undefined,
+    kycStatus: profileData.kyc_status || undefined,
+    rejectionReason: profileData.kyc_rejection_reason || undefined,
   } : null;
 };
 
