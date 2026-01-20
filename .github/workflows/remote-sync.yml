@@ -21,7 +21,7 @@ jobs:
         
       - name: Run Remote Sync
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           # On suppose que pour le sync, on n'a pas besoin de la base locale car c'est un push de schéma
           # Mais le script actuel se connecte à la locale. 

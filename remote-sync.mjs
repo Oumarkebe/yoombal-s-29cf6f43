@@ -35,7 +35,7 @@ async function syncRemote() {
         const migrationSQL = readFileSync(absolutePath, 'utf-8')
 
         const { error } = await supabase.rpc('exec_sql', {
-            sql: migrationSQL
+            sql_query: migrationSQL
         })
 
         if (error) {

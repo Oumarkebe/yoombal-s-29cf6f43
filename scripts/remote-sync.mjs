@@ -13,8 +13,8 @@ if (fs.existsSync('.env.local')) {
     dotenv.config({ path: '.env' });
 }
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://lqchbfhlldvhqqyvzxkg.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxY2hiZmhsbGR2aHFxeXZ6eGtnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NzgxODY2MCwiZXhwIjoyMDgzMzk0NjYwfQ.J1lQRiwOUIx-w1DTZuCF-59XaMsXzpBrUh_8mqo_w4Y';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://lqchbfhlldvhqqyvzxkg.supabase.co';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const localClient = new Client({
     connectionString: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
