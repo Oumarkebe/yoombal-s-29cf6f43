@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 interface LoginFormEmailProps {
-  formData: { email: string; password: string; };
+  formData: { email: string; password: string };
   setFormData: (f: any) => void;
   isLoading: boolean;
 }
@@ -16,9 +15,9 @@ export function LoginFormEmail({ formData, setFormData, isLoading }: LoginFormEm
     <>
       <div className="space-y-2">
         <Label htmlFor="email">Adresse email</Label>
-        <Input 
-          id="email" 
-          type="email" 
+        <Input
+          id="email"
+          type="email"
           placeholder="exemple@email.com"
           value={formData.email}
           onChange={(e) => setFormData((f: any) => ({ ...f, email: e.target.value }))}
@@ -27,9 +26,9 @@ export function LoginFormEmail({ formData, setFormData, isLoading }: LoginFormEm
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Mot de passe</Label>
-        <Input 
-          id="password" 
-          type="password" 
+        <Input
+          id="password"
+          type="password"
           placeholder="Votre mot de passe"
           value={formData.password}
           onChange={(e) => setFormData((f: any) => ({ ...f, password: e.target.value }))}
@@ -45,7 +44,7 @@ export function LoginFormEmail({ formData, setFormData, isLoading }: LoginFormEm
           Mot de passe oublié ?
         </Link>
       </div>
-      <Button 
+      <Button
         type="submit"
         className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 mb-4"
         disabled={isLoading}

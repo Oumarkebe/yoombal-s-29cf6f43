@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useAiModuleSettings } from './useAiModuleSettings';
 import { useUserAiSettings, AiFeatureKey } from './useUserAiSettings';
@@ -6,7 +5,9 @@ import { useUserAiSettings, AiFeatureKey } from './useUserAiSettings';
 export function useUserAiFeature(featureKey: AiFeatureKey) {
   const { user } = useAuth();
   const { settings: moduleSettings, isLoading: isLoadingModuleSettings } = useAiModuleSettings();
-  const { settings: userSettings, isLoading: isLoadingUserSettings } = useUserAiSettings({ userId: user?.id });
+  const { settings: userSettings, isLoading: isLoadingUserSettings } = useUserAiSettings({
+    userId: user?.id,
+  });
 
   const isLoading = isLoadingModuleSettings || isLoadingUserSettings;
 
@@ -27,13 +28,13 @@ export function useUserAiFeature(featureKey: AiFeatureKey) {
     }
 
     // 2. Check user-specific legacy settings (if any)
-    const userSetting = userSettings.find(s => s.feature_key === featureKey);
+    const userSetting = userSettings.find((s) => s.feature_key === featureKey);
     if (userSetting !== undefined) {
       return userSetting.is_enabled;
     }
 
     // 3. Fallback to platform-wide module setting (Free or Controlled by Admin)
-    const moduleSetting = moduleSettings.find(m => m.key === featureKey);
+    const moduleSetting = moduleSettings.find((m) => m.key === featureKey);
     return moduleSetting?.is_enabled ?? false;
   };
 

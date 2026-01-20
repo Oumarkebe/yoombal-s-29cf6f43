@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,14 +19,14 @@ async function fetchPublicStats(): Promise<PublicStats> {
     .from('user_roles')
     .select('*', { count: 'exact', head: true })
     .eq('role', 'merchant');
-  
+
   if (merchantError) throw new Error(merchantError.message);
 
   const { count: driverCount, error: driverError } = await supabase
     .from('user_roles')
     .select('*', { count: 'exact', head: true })
     .eq('role', 'driver');
-  
+
   if (driverError) throw new Error(driverError.message);
 
   // Calculate client count as total minus merchants and drivers

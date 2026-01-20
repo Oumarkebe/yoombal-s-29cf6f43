@@ -52,25 +52,33 @@ BEGIN
         -- Ajouter les politiques RLS
         ALTER TABLE public.user_ai_settings ENABLE ROW LEVEL SECURITY;
         
-        CREATE POLICY "Users can read their own AI settings" 
-            ON public.user_ai_settings 
-            FOR SELECT 
-            USING (auth.uid() = user_id);
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can read their own AI settings') THEN
+            CREATE POLICY "Users can read their own AI settings" 
+                ON public.user_ai_settings 
+                FOR SELECT 
+                USING (auth.uid() = user_id);
+        END IF;
         
-        CREATE POLICY "Users can insert their own AI settings" 
-            ON public.user_ai_settings 
-            FOR INSERT 
-            WITH CHECK (auth.uid() = user_id);
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can insert their own AI settings') THEN
+            CREATE POLICY "Users can insert their own AI settings" 
+                ON public.user_ai_settings 
+                FOR INSERT 
+                WITH CHECK (auth.uid() = user_id);
+        END IF;
         
-        CREATE POLICY "Users can update their own AI settings" 
-            ON public.user_ai_settings 
-            FOR UPDATE 
-            USING (auth.uid() = user_id);
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update their own AI settings') THEN
+            CREATE POLICY "Users can update their own AI settings" 
+                ON public.user_ai_settings 
+                FOR UPDATE 
+                USING (auth.uid() = user_id);
+        END IF;
         
-        CREATE POLICY "Admins can manage all AI settings" 
-            ON public.user_ai_settings 
-            USING (public.is_admin()) 
-            WITH CHECK (public.is_admin());
+        IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Admins can manage all AI settings') THEN
+            CREATE POLICY "Admins can manage all AI settings" 
+                ON public.user_ai_settings 
+                USING (public.is_admin()) 
+                WITH CHECK (public.is_admin());
+        END IF;
         
         -- Ajouter le trigger pour updated_at
         CREATE TRIGGER handle_user_ai_settings_updated_at 

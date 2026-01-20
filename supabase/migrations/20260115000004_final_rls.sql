@@ -59,12 +59,15 @@ DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 
 -- Re-apply clean ones
+DROP POLICY IF EXISTS "user_view_self" ON public.profiles;
 CREATE POLICY "user_view_self" ON public.profiles
     FOR SELECT TO authenticated USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "user_update_self" ON public.profiles;
 CREATE POLICY "user_update_self" ON public.profiles
     FOR UPDATE TO authenticated USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "admin_all" ON public.profiles;
 CREATE POLICY "admin_all" ON public.profiles
     FOR ALL TO authenticated USING (public.is_admin());
 

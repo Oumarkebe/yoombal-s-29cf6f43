@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,9 +23,11 @@ async function getChatbotResponse(messages: Message[]) {
 
   if (error) {
     console.error('Error invoking chatbot function:', error);
-    throw new Error("Désolé, une erreur de communication avec l'assistant s'est produite. Veuillez réessayer.");
+    throw new Error(
+      "Désolé, une erreur de communication avec l'assistant s'est produite. Veuillez réessayer."
+    );
   }
-  
+
   if (data.error) {
     console.error('Chatbot function returned an error:', data.error);
     throw new Error(data.error);
@@ -60,17 +61,17 @@ export default function Chatbot() {
     },
     onError: (error: Error) => {
       setMessages((prev) => [...prev, { role: 'assistant', content: error.message }]);
-    }
+    },
   });
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-        setTimeout(() => {
-            const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-            if (viewport) {
-                viewport.scrollTop = viewport.scrollHeight;
-            }
-        }, 100);
+      setTimeout(() => {
+        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+        }
+      }, 100);
     }
   }, [messages]);
 
@@ -84,7 +85,7 @@ export default function Chatbot() {
 
     mutation.mutate(newMessages.slice(-5));
   };
-  
+
   if (isStatusLoading || !isEnabled) {
     return null;
   }
@@ -142,7 +143,7 @@ export default function Chatbot() {
                     >
                       {message.content}
                     </div>
-                     {message.role === 'user' && (
+                    {message.role === 'user' && (
                       <div className="p-2 bg-blue-100 rounded-full">
                         <User className="w-5 h-5 text-blue-600" />
                       </div>
@@ -151,11 +152,11 @@ export default function Chatbot() {
                 ))}
                 {mutation.isPending && (
                   <div className="flex items-center gap-3 justify-start">
-                     <div className="p-2 bg-gray-100 rounded-full">
-                        <Bot className="w-5 h-5 text-gray-600" />
-                      </div>
+                    <div className="p-2 bg-gray-100 rounded-full">
+                      <Bot className="w-5 h-5 text-gray-600" />
+                    </div>
                     <div className="p-3 bg-gray-100 rounded-lg">
-                       <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     </div>
                   </div>
                 )}
@@ -167,7 +168,9 @@ export default function Chatbot() {
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder={!user && !authLoading ? "Connectez-vous pour discuter" : "Posez votre question..."}
+                placeholder={
+                  !user && !authLoading ? 'Connectez-vous pour discuter' : 'Posez votre question...'
+                }
                 disabled={isChatDisabled}
                 className="bg-white"
               />

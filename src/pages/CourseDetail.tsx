@@ -1,13 +1,12 @@
-
-import React from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
-import { useCourses } from "@/hooks/useCourses";
+import React from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { useCourses } from '@/hooks/useCourses';
 
 const statusLabel: Record<string, string> = {
-  pending: "En attente",
-  active: "En cours",
-  completed: "Terminée",
+  pending: 'En attente',
+  active: 'En cours',
+  completed: 'Terminée',
 };
 
 const CourseDetail = () => {
@@ -56,10 +55,10 @@ const CourseDetail = () => {
             <strong>Identifiant livraison :</strong> {course.delivery_id}
           </div>
           <div>
-            <strong>Service :</strong> {course.service_id ?? "N/A"}
+            <strong>Service :</strong> {course.service_id ?? 'N/A'}
           </div>
           <div>
-            <strong>Livreur :</strong> {course.driver_id ?? "Aucun"}
+            <strong>Livreur :</strong> {course.driver_id ?? 'Aucun'}
           </div>
         </Card>
       </main>

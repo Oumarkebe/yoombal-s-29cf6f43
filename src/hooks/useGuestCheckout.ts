@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -61,16 +60,14 @@ export const useGuestCheckout = () => {
       if (orderError) throw orderError;
 
       // Ajouter les items de la commande
-      const orderItemsData = items.map(item => ({
+      const orderItemsData = items.map((item) => ({
         order_id: newOrder.id,
         product_id: item.product_id,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItemsData);
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItemsData);
 
       if (itemsError) {
         // Tentative de rollback
@@ -80,11 +77,11 @@ export const useGuestCheckout = () => {
 
       toast({
         title: 'Commande créée',
-        description: 'Votre commande a été créée avec succès. Vous recevrez un email de confirmation.',
+        description:
+          'Votre commande a été créée avec succès. Vous recevrez un email de confirmation.',
       });
 
       return { data: newOrder };
-
     } catch (err: any) {
       toast({
         title: 'Erreur',

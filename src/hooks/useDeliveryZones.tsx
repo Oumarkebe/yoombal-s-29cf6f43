@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -23,7 +22,7 @@ export const useDeliveryZones = () => {
   const fetchZones = async () => {
     try {
       setIsLoading(true);
-      
+
       const { data, error } = await supabase
         .from('delivery_zones')
         .select('*')
@@ -39,9 +38,9 @@ export const useDeliveryZones = () => {
     } catch (error) {
       console.error('Error fetching delivery zones:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les zones de livraison",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de charger les zones de livraison',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -49,17 +48,18 @@ export const useDeliveryZones = () => {
   };
 
   const calculateDeliveryFee = (zoneId: string, distance?: number) => {
-    const zone = zones.find(z => z.id === zoneId);
+    const zone = zones.find((z) => z.id === zoneId);
     if (!zone) return 0;
-    
+
     return zone.base_fee + (distance ? distance * zone.price_per_km : 0);
   };
 
   const getZoneByArea = (area: string) => {
-    return zones.find(zone => 
-      zone.areas.some(zoneArea => 
-        zoneArea.toLowerCase().includes(area.toLowerCase()) ||
-        area.toLowerCase().includes(zoneArea.toLowerCase())
+    return zones.find((zone) =>
+      zone.areas.some(
+        (zoneArea) =>
+          zoneArea.toLowerCase().includes(area.toLowerCase()) ||
+          area.toLowerCase().includes(zoneArea.toLowerCase())
       )
     );
   };
@@ -73,6 +73,6 @@ export const useDeliveryZones = () => {
     isLoading,
     fetchZones,
     calculateDeliveryFee,
-    getZoneByArea
+    getZoneByArea,
   };
 };

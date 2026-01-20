@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useCart } from '@/contexts/CartContext';
-import CartHeader from "@/components/CartHeader";
+import CartHeader from '@/components/CartHeader';
 
 const CartPage = () => {
   const { items, updateQuantity, removeItem, getTotalPrice, clearCart } = useCart();
@@ -19,7 +19,9 @@ const CartPage = () => {
           <div className="max-w-md w-full text-center bg-white/80 rounded-xl shadow-lg p-10">
             <div className="text-6xl mb-4">🛒</div>
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Votre panier est vide</h1>
-            <p className="text-gray-600 mb-8">Découvrez nos produits et ajoutez-les à votre panier</p>
+            <p className="text-gray-600 mb-8">
+              Découvrez nos produits et ajoutez-les à votre panier
+            </p>
             <Button asChild className="bg-gradient-to-r from-blue-600 to-violet-600 w-full">
               <Link to="/marketplace">Continuer les achats</Link>
             </Button>
@@ -39,7 +41,10 @@ const CartPage = () => {
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => (
-                <Card key={item.id} className="p-4 flex items-center gap-4 bg-white/90 border-0 shadow-md rounded-xl">
+                <Card
+                  key={item.id}
+                  className="p-4 flex items-center gap-4 bg-white/90 border-0 shadow-md rounded-xl"
+                >
                   <img
                     src={item.products?.image_url || '/placeholder.svg'}
                     alt={item.products?.name || 'Image produit'}
@@ -47,7 +52,9 @@ const CartPage = () => {
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900 truncate">{item.products?.name}</h3>
-                    <p className="text-lg font-bold text-blue-600">{(item.products?.price ?? 0).toLocaleString()} CFA</p>
+                    <p className="text-lg font-bold text-blue-600">
+                      {(item.products?.price ?? 0).toLocaleString()} CFA
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -102,17 +109,29 @@ const CartPage = () => {
                 </div>
                 <div className="space-y-3">
                   <div className="mb-4">
-                    <label htmlFor="discount-code" className="block text-sm font-medium text-gray-700">Code de réduction</label>
+                    <label
+                      htmlFor="discount-code"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Code de réduction
+                    </label>
                     <input
                       type="text"
                       id="discount-code"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       placeholder="Entrez votre code"
                     />
-                    <Button className="mt-2 w-full bg-gradient-to-r from-blue-600 to-violet-600">Appliquer</Button>
+                    <Button className="mt-2 w-full bg-gradient-to-r from-blue-600 to-violet-600">
+                      Appliquer
+                    </Button>
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="delivery-options" className="block text-sm font-medium text-gray-700">Options de livraison</label>
+                    <label
+                      htmlFor="delivery-options"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Options de livraison
+                    </label>
                     <select
                       id="delivery-options"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
@@ -125,10 +144,13 @@ const CartPage = () => {
                     <Link to="/checkout">Commander maintenant</Link>
                   </Button>
                   <Button className="w-full bg-gradient-to-r from-violet-600 to-purple-600" asChild>
-                    <Link to="/bnpl" state={{
-                      cartTotal: getTotalPrice(),
-                      cartItems: items
-                    }}>
+                    <Link
+                      to="/bnpl"
+                      state={{
+                        cartTotal: getTotalPrice(),
+                        cartItems: items,
+                      }}
+                    >
                       Paiement échelonné BNPL
                     </Link>
                   </Button>

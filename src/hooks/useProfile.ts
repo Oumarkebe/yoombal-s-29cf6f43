@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -36,11 +35,7 @@ export interface UpdateProfileData {
 }
 
 const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
   if (error) {
     console.error('Error fetching profile:', error);
@@ -48,23 +43,25 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => 
   }
 
   const profileData = data as any;
-  return profileData ? {
-    id: profileData.id,
-    firstName: profileData.first_name || undefined,
-    lastName: profileData.last_name || undefined,
-    phone: profileData.phone || undefined,
-    businessName: profileData.business_name || undefined,
-    businessType: profileData.business_type || undefined,
-    avatarUrl: profileData.avatar_url || undefined,
-    vehicleType: profileData.vehicle_type || undefined,
-    zone: profileData.zone || undefined,
-    role: profileData.role || undefined,
-    merchantName: profileData.merchant_name || undefined,
-    deliveryName: profileData.delivery_name || undefined,
-    clientName: profileData.client_name || undefined,
-    kycStatus: profileData.kyc_status || undefined,
-    rejectionReason: profileData.kyc_rejection_reason || undefined,
-  } : null;
+  return profileData
+    ? {
+        id: profileData.id,
+        firstName: profileData.first_name || undefined,
+        lastName: profileData.last_name || undefined,
+        phone: profileData.phone || undefined,
+        businessName: profileData.business_name || undefined,
+        businessType: profileData.business_type || undefined,
+        avatarUrl: profileData.avatar_url || undefined,
+        vehicleType: profileData.vehicle_type || undefined,
+        zone: profileData.zone || undefined,
+        role: profileData.role || undefined,
+        merchantName: profileData.merchant_name || undefined,
+        deliveryName: profileData.delivery_name || undefined,
+        clientName: profileData.client_name || undefined,
+        kycStatus: profileData.kyc_status || undefined,
+        rejectionReason: profileData.kyc_rejection_reason || undefined,
+      }
+    : null;
 };
 
 const updateUserProfile = async (userId: string, profileData: UpdateProfileData) => {
@@ -111,17 +108,17 @@ export const useProfile = (userId?: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', userId] });
       toast({
-        title: "Succès",
-        description: "Profil mis à jour avec succès",
+        title: 'Succès',
+        description: 'Profil mis à jour avec succès',
       });
     },
     onError: (error: unknown) => {
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       console.error('Error updating profile:', error);
       toast({
-        title: "Erreur",
-        description: "Erreur lors de la mise à jour du profil: " + errorMessage,
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Erreur lors de la mise à jour du profil: ' + errorMessage,
+        variant: 'destructive',
       });
     },
   });

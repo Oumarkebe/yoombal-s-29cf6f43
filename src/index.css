@@ -119,7 +119,7 @@
 }
 
 .animate-fade-in {
-  animation: fade-in 0.7s cubic-bezier(.4, 0, .2, 1);
+  animation: fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   /* Ajout pour garantir que l'élément est visible pendant l'animation */
   will-change: opacity, transform;
 }
@@ -149,12 +149,12 @@
 }
 
 .animate-fade-in-up {
-  animation: yoombal-fade-in-up 0.8s cubic-bezier(.4, 0, .2, 1);
+  animation: yoombal-fade-in-up 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
 }
 
 .animate-fade-in-left {
-  animation: yoombal-fade-in-left 0.8s cubic-bezier(.4, 0, .2, 1);
+  animation: yoombal-fade-in-left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: opacity, transform;
 }
 

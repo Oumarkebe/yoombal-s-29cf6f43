@@ -2,8 +2,21 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useAuth, AppRole } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -35,7 +48,7 @@ const Register = () => {
     role: defaultRole as AppRole,
     business_name: '',
     business_type: '',
-    vehicle_type: ''
+    vehicle_type: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,22 +57,37 @@ const Register = () => {
   const navigate = useNavigate();
 
   const roleOptions = [
-    { value: 'user' as AppRole, label: 'Client', icon: <User className="h-4 w-4" />, description: 'Acheter des produits' },
-    { value: 'merchant' as AppRole, label: 'Marchand', icon: <Store className="h-4 w-4" />, description: 'Vendre des produits' },
-    { value: 'driver' as AppRole, label: 'Livreur', icon: <Truck className="h-4 w-4" />, description: 'Livrer des commandes' }
+    {
+      value: 'user' as AppRole,
+      label: 'Client',
+      icon: <User className="h-4 w-4" />,
+      description: 'Acheter des produits',
+    },
+    {
+      value: 'merchant' as AppRole,
+      label: 'Marchand',
+      icon: <Store className="h-4 w-4" />,
+      description: 'Vendre des produits',
+    },
+    {
+      value: 'driver' as AppRole,
+      label: 'Livreur',
+      icon: <Truck className="h-4 w-4" />,
+      description: 'Livrer des commandes',
+    },
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
   const handleRoleChange = (value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      role: value as AppRole
+      role: value as AppRole,
     }));
   };
 
@@ -90,7 +118,7 @@ const Register = () => {
         role: formData.role,
         business_name: formData.business_name,
         business_type: formData.business_type,
-        vehicle_type: formData.vehicle_type
+        vehicle_type: formData.vehicle_type,
       });
 
       if (result.error) {
@@ -101,7 +129,7 @@ const Register = () => {
         else navigate('/profile');
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue lors de l\'inscription');
+      setError(err.message || "Une erreur est survenue lors de l'inscription");
     } finally {
       setIsLoading(false);
     }
@@ -119,7 +147,9 @@ const Register = () => {
             <div className="mx-auto bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
               <UserPlus className="h-8 w-8 text-amber-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">Créer un compte Yoombal</CardTitle>
+            <CardTitle className="text-2xl font-bold text-slate-900">
+              Créer un compte Yoombal
+            </CardTitle>
             <CardDescription className="text-slate-500">
               Rejoignez l'écosystème de commerce digital n°1
             </CardDescription>
@@ -141,10 +171,11 @@ const Register = () => {
                     <div
                       key={option.value}
                       onClick={() => handleRoleChange(option.value)}
-                      className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col items-center justify-center gap-2 text-center transition-all hover:bg-slate-50 ${formData.role === option.value
-                        ? 'border-amber-500 bg-amber-50 text-amber-900'
-                        : 'border-slate-200 text-slate-500'
-                        }`}
+                      className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col items-center justify-center gap-2 text-center transition-all hover:bg-slate-50 ${
+                        formData.role === option.value
+                          ? 'border-amber-500 bg-amber-50 text-amber-900'
+                          : 'border-slate-200 text-slate-500'
+                      }`}
                     >
                       {option.icon}
                       <span className="text-xs font-bold">{option.label}</span>
@@ -156,46 +187,98 @@ const Register = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">Prénom</Label>
-                  <Input id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} required placeholder="Moussa" />
+                  <Input
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
+                    required
+                    placeholder="Moussa"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">Nom</Label>
-                  <Input id="last_name" name="last_name" value={formData.last_name} onChange={handleChange} required placeholder="Diop" />
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                    required
+                    placeholder="Diop"
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email professionnel ou personnel</Label>
-                <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required placeholder="moussa.diop@exemple.com" />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="moussa.diop@exemple.com"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="phone">Numéro de téléphone</Label>
-                <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} placeholder="+221 77 000 00 00" />
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+221 77 000 00 00"
+                />
               </div>
 
               {/* Dynamic Fields based on Role */}
               {formData.role === 'merchant' && (
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4 animate-in slide-in-from-top-2">
-                  <h4 className="font-bold text-sm text-slate-700 flex items-center gap-2"><Store className="h-4 w-4" /> Détails Boutique</h4>
+                  <h4 className="font-bold text-sm text-slate-700 flex items-center gap-2">
+                    <Store className="h-4 w-4" /> Détails Boutique
+                  </h4>
                   <div className="space-y-2">
                     <Label htmlFor="business_name">Nom de l'entreprise</Label>
-                    <Input id="business_name" name="business_name" value={formData.business_name} onChange={handleChange} placeholder="Ex: Diop Couture" />
+                    <Input
+                      id="business_name"
+                      name="business_name"
+                      value={formData.business_name}
+                      onChange={handleChange}
+                      placeholder="Ex: Diop Couture"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="business_type">Secteur d'activité</Label>
-                    <Input id="business_type" name="business_type" value={formData.business_type} onChange={handleChange} placeholder="Ex: Mode & Accessoires" />
+                    <Input
+                      id="business_type"
+                      name="business_type"
+                      value={formData.business_type}
+                      onChange={handleChange}
+                      placeholder="Ex: Mode & Accessoires"
+                    />
                   </div>
                 </div>
               )}
 
               {formData.role === 'driver' && (
                 <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-4 animate-in slide-in-from-top-2">
-                  <h4 className="font-bold text-sm text-slate-700 flex items-center gap-2"><Truck className="h-4 w-4" /> Détails Véhicule</h4>
+                  <h4 className="font-bold text-sm text-slate-700 flex items-center gap-2">
+                    <Truck className="h-4 w-4" /> Détails Véhicule
+                  </h4>
                   <div className="space-y-2">
                     <Label htmlFor="vehicle_type">Type de véhicule</Label>
-                    <Select value={formData.vehicle_type} onValueChange={(value) => setFormData(prev => ({ ...prev, vehicle_type: value }))}>
-                      <SelectTrigger className="bg-white"><SelectValue placeholder="Choisir..." /></SelectTrigger>
+                    <Select
+                      value={formData.vehicle_type}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, vehicle_type: value }))
+                      }
+                    >
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Choisir..." />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="moto">Moto</SelectItem>
                         <SelectItem value="scooter">Scooter</SelectItem>
@@ -210,24 +293,55 @@ const Register = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">Mot de passe</Label>
-                  <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} required placeholder="••••••••" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="••••••••"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirmer</Label>
-                  <Input id="confirmPassword" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required placeholder="••••••••" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    placeholder="••••••••"
+                  />
                 </div>
               </div>
               <p className="text-xs text-slate-500">Au moins 6 caractères.</p>
 
-              <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-lg" disabled={isLoading}>
-                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Création...</> : <><CheckCircle2 className="mr-2 h-5 w-5" /> Créer mon compte</>}
+              <Button
+                type="submit"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white h-12 text-lg"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Création...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-2 h-5 w-5" /> Créer mon compte
+                  </>
+                )}
               </Button>
             </form>
           </CardContent>
           <CardFooter className="justify-center border-t border-slate-100 pt-6">
             <p className="text-sm text-slate-600">
               Vous avez déjà un compte ?{' '}
-              <Link to="/login" className="font-bold text-amber-600 hover:text-amber-700 underline underline-offset-4">
+              <Link
+                to="/login"
+                className="font-bold text-amber-600 hover:text-amber-700 underline underline-offset-4"
+              >
                 Se connecter
               </Link>
             </p>

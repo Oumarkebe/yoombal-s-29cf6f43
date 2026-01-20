@@ -10,12 +10,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Star, Heart, Share2, ShoppingCart, Truck, Shield, ArrowLeft, MapPin, UserPlus, Loader2 } from 'lucide-react';
+import {
+  Star,
+  Heart,
+  Share2,
+  ShoppingCart,
+  Truck,
+  Shield,
+  ArrowLeft,
+  MapPin,
+  UserPlus,
+  Loader2,
+} from 'lucide-react';
 import { useMarketplaceProducts } from '@/hooks/useMarketplaceProducts';
 import { useMarketplaceProduct } from '@/hooks/useMarketplaceProduct';
-import ProductReviews from "@/components/ProductReviews";
-import BNPLApplicationForm from "@/components/BNPLApplicationForm";
-import { AIRecommendations } from "@/components/ai/AIRecommendations";
+import ProductReviews from '@/components/ProductReviews';
+import BNPLApplicationForm from '@/components/BNPLApplicationForm';
+import { AIRecommendations } from '@/components/ai/AIRecommendations';
+import { ProductImageGallery } from '@/components/product/ProductImageGallery';
+import { StockIndicator } from '@/components/product/StockIndicator';
+import { ProductSEO } from '@/components/seo/ProductSEO';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -26,7 +40,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showBNPLForm, setShowBNPLForm] = useState(false);
-  const [activeTab, setActiveTab] = useState("specs");
+  const [activeTab, setActiveTab] = useState('specs');
 
   // Récupération directe du produit par id
   const { product, isLoading, error } = useMarketplaceProduct(id);
@@ -50,7 +64,8 @@ const ProductDetail = () => {
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 inline-block">
             <h2 className="text-2xl font-bold text-slate-800 mb-4">Oups ! Produit introuvable</h2>
             <p className="text-slate-600 mb-8 max-w-md mx-auto">
-              Désolé, nous ne parvenons pas à charger les détails de ce produit. Il a peut-être été retiré ou n'est plus disponible.
+              Désolé, nous ne parvenons pas à charger les détails de ce produit. Il a peut-être été
+              retiré ou n'est plus disponible.
             </p>
             <Button asChild className="bg-blue-600 hover:bg-blue-700">
               <Link to="/marketplace">
@@ -79,9 +94,10 @@ const ProductDetail = () => {
     stockCount: product.stock,
     category: product.categories?.name || 'Catégorie',
     specs: product.specs || {},
-    features: product.features && product.features.length > 0
-      ? product.features
-      : ['Livraison gratuite', 'Garantie 2 ans', 'Échange 30 jours', 'Paiement BNPL disponible'],
+    features:
+      product.features && product.features.length > 0
+        ? product.features
+        : ['Livraison gratuite', 'Garantie 2 ans', 'Échange 30 jours', 'Paiement BNPL disponible'],
     bnpl_enabled: product.bnpl_enabled || false,
   };
 
@@ -94,7 +110,7 @@ const ProductDetail = () => {
     return new Intl.NumberFormat('fr-SN', {
       style: 'currency',
       currency: 'XOF',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(value);
   };
 
@@ -119,9 +135,13 @@ const ProductDetail = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
-            <Link to="/" className="hover:text-blue-600">Accueil</Link>
+            <Link to="/" className="hover:text-blue-600">
+              Accueil
+            </Link>
             <span>/</span>
-            <Link to="/marketplace" className="hover:text-blue-600">Marketplace</Link>
+            <Link to="/marketplace" className="hover:text-blue-600">
+              Marketplace
+            </Link>
             <span>/</span>
             <span className="text-gray-900">{productData.category}</span>
             <span>/</span>
@@ -138,25 +158,19 @@ const ProductDetail = () => {
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Images du produit */}
             <div className="space-y-4">
-              <Card className="p-4">
-                <img
-                  src={productData.images[selectedImage]}
-                  alt={productData.name}
-                  className="w-full h-96 object-cover rounded-lg"
-                />
-              </Card>
-              <div className="grid grid-cols-4 gap-2">
-                {productData.images.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`border-2 rounded-lg overflow-hidden ${selectedImage === index ? 'border-blue-500' : 'border-gray-200'
-                      }`}
-                  >
-                    <img src={image} alt={`Vue ${index + 1}`} className="w-full h-20 object-cover" />
-                  </button>
-                ))}
-              </div>
+              <ProductImageGallery
+                images={
+                  product.images && product.images.length > 0
+                    ? product.images
+                    : product.gallery && product.gallery.length > 0
+                      ? product.gallery
+                      : product.image_url
+                        ? [product.image_url]
+                        : []
+                }
+                productName={productData.name}
+                videoUrl={product.video_url}
+              />
             </div>
 
             {/* Informations du produit */}
@@ -170,7 +184,9 @@ const ProductDetail = () => {
                       size="icon"
                       onClick={() => setIsFavorite(!isFavorite)}
                     >
-                      <Heart className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                      <Heart
+                        className={`h-4 w-4 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`}
+                      />
                     </Button>
                     <Button variant="outline" size="icon">
                       <Share2 className="h-4 w-4" />
@@ -179,9 +195,7 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="flex items-center gap-1">
-                    {renderStars(productData.rating)}
-                  </div>
+                  <div className="flex items-center gap-1">{renderStars(productData.rating)}</div>
                   <span className="text-sm text-gray-600">
                     {productData.rating} ({productData.reviewCount} avis)
                   </span>
@@ -221,9 +235,7 @@ const ProductDetail = () => {
                     </div>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link to={`/merchant-store/${product.merchant_id}`}>
-                      Voir boutique
-                    </Link>
+                    <Link to={`/merchant-store/${product.merchant_id}`}>Voir boutique</Link>
                   </Button>
                 </div>
               </Card>
@@ -231,17 +243,11 @@ const ProductDetail = () => {
               {/* Stock et quantité */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  {productData.inStock ? (
-                    <>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-green-700">En stock ({productData.stockCount} disponibles)</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span className="text-red-700">Rupture de stock</span>
-                    </>
-                  )}
+                  <StockIndicator
+                    stock={productData.stockCount}
+                    productId={productData.id}
+                    minStock={5}
+                  />
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -290,7 +296,12 @@ const ProductDetail = () => {
 
           {/* Onglets détails */}
           <div className="mt-12">
-            <Tabs defaultValue="specs" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <Tabs
+              defaultValue="specs"
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="space-y-6"
+            >
               <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="specs">Caractéristiques</TabsTrigger>
                 <TabsTrigger value="bnpl">Paiement BNPL</TabsTrigger>
@@ -334,7 +345,7 @@ const ProductDetail = () => {
                         id: productData.id,
                         name: productData.name,
                         price: productData.price,
-                        merchant_id: productData.merchant_id
+                        merchant_id: productData.merchant_id,
                       }}
                       onSuccess={() => {
                         setShowBNPLForm(false);
@@ -356,10 +367,7 @@ const ProductDetail = () => {
           </div>
 
           {/* AI Recommendations Section */}
-          <AIRecommendations
-            currentProductId={productData.id}
-            categoryId={product.category_id}
-          />
+          <AIRecommendations currentProductId={productData.id} categoryId={product.category_id} />
         </div>
       </div>
       <Footer />

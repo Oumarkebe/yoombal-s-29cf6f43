@@ -1,7 +1,12 @@
-
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ToneSelectProps {
   value: string;
@@ -23,6 +28,8 @@ export const ToneSelect: React.FC<ToneSelectProps> = ({ value, onChange, disable
         <SelectItem value="creatif">Créatif</SelectItem>
       </SelectContent>
     </Select>
-    <p className="text-xs text-gray-500 mt-1">Définit le style d'écriture pour la génération de contenu.</p>
+    <p className="text-xs text-gray-500 mt-1">
+      Définit le style d'écriture pour la génération de contenu.
+    </p>
   </div>
 );

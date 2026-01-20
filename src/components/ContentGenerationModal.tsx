@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -21,14 +20,18 @@ interface ContentGenerationModalProps {
   onInsert?: (text: string) => void;
 }
 
-const ContentGenerationModal: React.FC<ContentGenerationModalProps> = ({ isOpen, onClose, onInsert }) => {
+const ContentGenerationModal: React.FC<ContentGenerationModalProps> = ({
+  isOpen,
+  onClose,
+  onInsert,
+}) => {
   const [prompt, setPrompt] = useState('');
   const [generatedText, setGeneratedText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerate = async () => {
     if (!prompt) {
-      toast.error("Veuillez entrer une description de base pour le produit.");
+      toast.error('Veuillez entrer une description de base pour le produit.');
       return;
     }
     setIsLoading(true);
@@ -47,7 +50,7 @@ const ContentGenerationModal: React.FC<ContentGenerationModalProps> = ({ isOpen,
       setGeneratedText(data.generated_text);
     } catch (err: any) {
       console.error(err);
-      toast.error("Erreur lors de la génération de contenu", { description: err.message });
+      toast.error('Erreur lors de la génération de contenu', { description: err.message });
     } finally {
       setIsLoading(false);
     }
@@ -55,13 +58,13 @@ const ContentGenerationModal: React.FC<ContentGenerationModalProps> = ({ isOpen,
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedText);
-    toast.success("Texte copié dans le presse-papiers !");
+    toast.success('Texte copié dans le presse-papiers !');
   };
 
   const handleInsert = () => {
     if (onInsert) {
       onInsert(generatedText);
-      toast.success("Description insérée !");
+      toast.success('Description insérée !');
     }
     onClose();
   };
@@ -72,7 +75,8 @@ const ContentGenerationModal: React.FC<ContentGenerationModalProps> = ({ isOpen,
         <DialogHeader>
           <DialogTitle>Générateur de Description de Produit</DialogTitle>
           <DialogDescription>
-            Décrivez brièvement votre produit (ex: "T-shirt rouge en coton pour homme"), et l'IA créera une description commerciale.
+            Décrivez brièvement votre produit (ex: "T-shirt rouge en coton pour homme"), et l'IA
+            créera une description commerciale.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -96,29 +100,31 @@ const ContentGenerationModal: React.FC<ContentGenerationModalProps> = ({ isOpen,
           </Button>
           {generatedText && (
             <div className="grid gap-2 pt-4">
-                <Label htmlFor="result">Description générée</Label>
-                <Textarea
-                    id="result"
-                    readOnly
-                    value={generatedText}
-                    rows={8}
-                    className="bg-gray-100 dark:bg-gray-800"
-                />
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={handleCopy} className="w-fit">
-                      Copier le texte
+              <Label htmlFor="result">Description générée</Label>
+              <Textarea
+                id="result"
+                readOnly
+                value={generatedText}
+                rows={8}
+                className="bg-gray-100 dark:bg-gray-800"
+              />
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button variant="outline" size="sm" onClick={handleCopy} className="w-fit">
+                  Copier le texte
+                </Button>
+                {onInsert && (
+                  <Button size="sm" onClick={handleInsert} className="w-fit">
+                    Utiliser ce texte
                   </Button>
-                  {onInsert && (
-                    <Button size="sm" onClick={handleInsert} className="w-fit">
-                      Utiliser ce texte
-                    </Button>
-                  )}
-                </div>
+                )}
+              </div>
             </div>
           )}
         </div>
         <DialogFooter>
-          <Button variant="secondary" onClick={onClose}>Fermer</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Fermer
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,7 +1,12 @@
-
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ProviderSelectProps {
   value: string;
@@ -10,7 +15,12 @@ interface ProviderSelectProps {
   id: string;
 }
 
-export const ProviderSelect: React.FC<ProviderSelectProps> = ({ value, onChange, disabled, id }) => (
+export const ProviderSelect: React.FC<ProviderSelectProps> = ({
+  value,
+  onChange,
+  disabled,
+  id,
+}) => (
   <div>
     <Label htmlFor={id}>Fournisseur IA</Label>
     <Select value={value} onValueChange={onChange} disabled={disabled}>

@@ -73,40 +73,30 @@ export const useWarehouse = () => {
         performedBy?: string
     ) => {
         try {
-            // 1. Log movement
-            const { error: moveError } = await (supabase as any).from('warehouse_movements').insert([{
-                type,
-                quantity,
-                item_id: productId,
-                from_warehouse_id: type === 'OUT' || type === 'TRANSFER' ? warehouseId : null,
-                to_warehouse_id: type === 'IN' || type === 'TRANSFER' ? (targetWarehouseId || warehouseId) : null,
-                performed_by: performedBy,
-                notes
-            }]);
+            // Log movement - Trigger will handle everything else (warehouse inventory & product stock update)
+            const { error: moveError } = await (supabase as any).from('warehouse_movements').insert([
+                {
+                    type,
+                    quantity,
+                    item_id: productId,
+                    from_warehouse_id: type === 'OUT' || type === 'TRANSFER' ? warehouseId : null,
+                    to_warehouse_id:
+                        type === 'IN' || type === 'TRANSFER' ? targetWarehouseId || warehouseId : null,
+                    performed_by: performedBy,
+                    notes,
+                },
+            ]);
             if (moveError) throw moveError;
 
-            // 2. Update Inventory
-            if (type === 'IN') {
-                const { data: existing } = await (supabase as any).from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
-                if (existing) {
-                    await (supabase as any).from('warehouse_inventory').update({ quantity: (existing as any).quantity + quantity }).eq('id', (existing as any).id);
-                } else {
-                    await (supabase as any).from('warehouse_inventory').insert([{ warehouse_id: warehouseId, product_id: productId, quantity }]);
-                }
-            }
-            // OUT: Decrease stock
-            else if (type === 'OUT') {
-                const { data: existing } = await (supabase as any).from('warehouse_inventory').select('*').eq('warehouse_id', warehouseId).eq('product_id', productId).maybeSingle();
-                if (!existing || (existing as any).quantity < quantity) throw new Error("Stock insuffisant");
-                await (supabase as any).from('warehouse_inventory').update({ quantity: (existing as any).quantity - quantity }).eq('id', (existing as any).id);
-            }
-
-            toast({ title: "Succès", description: "Mouvement enregistré" });
+            toast({ title: 'Succès', description: 'Mouvement enregistré et stock mis à jour' });
             fetchInventory(warehouseId);
-
         } catch (error: any) {
-            console.error("Movement error:", error);
-            toast({ title: "Erreur", description: error.message || "Erreur lors du mouvement", variant: "destructive" });
+            console.error('Movement error:', error);
+            toast({
+                title: 'Erreur',
+                description: error.message || 'Erreur lors du mouvement',
+                variant: 'destructive',
+            });
         }
     };
 

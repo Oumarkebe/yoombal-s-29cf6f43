@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,7 +33,7 @@ interface CartContextType {
   getTotalPrice: () => number;
   getTotalItems: () => number;
   isUpdating: boolean;
-  triggerAnimation: (startCoords: { x: number, y: number }, productImage?: string) => void;
+  triggerAnimation: (startCoords: { x: number; y: number }, productImage?: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -43,25 +42,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [flyingItems, setFlyingItems] = React.useState<{ id: number, start: { x: number, y: number }, end: { x: number, y: number }, image?: string }[]>([]);
+  const [flyingItems, setFlyingItems] = React.useState<
+    { id: number; start: { x: number; y: number }; end: { x: number; y: number }; image?: string }[]
+  >([]);
 
-  const triggerAnimation = useCallback((startCoords: { x: number, y: number }, productImage?: string) => {
-    const cartIcon = document.getElementById('navbar-cart-icon');
-    if (!cartIcon) return;
+  const triggerAnimation = useCallback(
+    (startCoords: { x: number; y: number }, productImage?: string) => {
+      const cartIcon = document.getElementById('navbar-cart-icon');
+      if (!cartIcon) return;
 
-    const rect = cartIcon.getBoundingClientRect();
-    const endCoords = {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2
-    };
+      const rect = cartIcon.getBoundingClientRect();
+      const endCoords = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
 
-    const newItem = { id: Date.now(), start: startCoords, end: endCoords, image: productImage };
-    setFlyingItems(prev => [...prev, newItem]);
+      const newItem = { id: Date.now(), start: startCoords, end: endCoords, image: productImage };
+      setFlyingItems((prev) => [...prev, newItem]);
 
-    setTimeout(() => {
-      setFlyingItems(prev => prev.filter(item => item.id !== newItem.id));
-    }, 1500); // Durée de l'animation synchronisée avec le CSS
-  }, []);
+      setTimeout(() => {
+        setFlyingItems((prev) => prev.filter((item) => item.id !== newItem.id));
+      }, 1500); // Durée de l'animation synchronisée avec le CSS
+    },
+    []
+  );
 
   const playSuccessSound = useCallback(() => {
     try {
@@ -83,7 +87,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 0.1);
     } catch (e) {
-      console.warn("Audio Context not supported or interaction required for sound", e);
+      console.warn('Audio Context not supported or interaction required for sound', e);
     }
   }, []);
 
@@ -115,18 +119,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const fetchCartItems = async () => {
     if (!user) return [];
     const { data, error } = await (supabase.from('cart' as any) as any)
-      .select(`
+      .select(
+        `
         *,
         products:product_id (*)
-      `)
+      `
+      )
       .eq('user_id', user.id);
     if (error) {
-      console.error("Error fetching cart:", error);
+      console.error('Error fetching cart:', error);
       throw new Error(error.message);
     }
     return (data || []) as CartItem[];
   };
-
 
   const { data: dbItems = [], isLoading } = useQuery<CartItem[]>({
     queryKey: ['cart', user?.id],
@@ -168,10 +173,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addItemMutation = useMutation({
-    mutationFn: async ({ productId, quantity = 1 }: { productId: string, quantity?: number }) => {
+    mutationFn: async ({ productId, quantity = 1 }: { productId: string; quantity?: number }) => {
       if (user) {
         // Utilisateur connecté - sauvegarder en DB
-        const existingItem = dbItems.find(item => item.product_id === productId);
+        const existingItem = dbItems.find((item) => item.product_id === productId);
 
         if (existingItem) {
           const { error } = await (supabase.from('cart' as any) as any)
@@ -179,13 +184,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             .eq('id', existingItem.id);
           if (error) throw error;
         } else {
-          const { error } = await (supabase.from('cart' as any) as any)
-            .insert({ user_id: user.id, product_id: productId, quantity });
+          const { error } = await (supabase.from('cart' as any) as any).insert({
+            user_id: user.id,
+            product_id: productId,
+            quantity,
+          });
           if (error) throw error;
         }
       } else {
         // Utilisateur non connecté - sauvegarder localement
-        const existingItemIndex = localCart.findIndex(item => item.product_id === productId);
+        const existingItemIndex = localCart.findIndex((item) => item.product_id === productId);
         const productDetails = await fetchProductDetails(productId);
 
         if (existingItemIndex >= 0) {
@@ -197,7 +205,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             id: `local-${Date.now()}-${Math.random()}`,
             product_id: productId,
             quantity,
-            products: productDetails
+            products: productDetails,
           };
           saveLocalCart([...localCart, newItem]);
         }
@@ -209,9 +217,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: '🛒 Produit ajouté !',
         description: 'Votre article a été ajouté au panier.',
-        className: "bg-amber-600 text-white border-none shadow-lg",
+        className: 'bg-amber-600 text-white border-none shadow-lg',
       });
-    }
+    },
   });
 
   const removeItemMutation = useMutation({
@@ -220,7 +228,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const { error } = await (supabase.from('cart' as any) as any).delete().eq('id', cartItemId);
         if (error) throw error;
       } else {
-        const updatedCart = localCart.filter(item => item.id !== cartItemId);
+        const updatedCart = localCart.filter((item) => item.id !== cartItemId);
         saveLocalCart(updatedCart);
       }
     },
@@ -230,7 +238,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
       }
       toast({ title: 'Succès', description: 'Produit retiré du panier' });
-    }
+    },
   });
 
   const updateQuantityMutation = useMutation({
@@ -240,10 +248,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (user) {
-        const { error } = await (supabase.from('cart' as any) as any).update({ quantity }).eq('id', cartItemId);
+        const { error } = await (supabase.from('cart' as any) as any)
+          .update({ quantity })
+          .eq('id', cartItemId);
         if (error) throw error;
       } else {
-        const updatedCart = localCart.map(item =>
+        const updatedCart = localCart.map((item) =>
           item.id === cartItemId ? { ...item, quantity } : item
         );
         saveLocalCart(updatedCart);
@@ -255,7 +265,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearCartMutation = useMutation({
     mutationFn: async () => {
       if (user) {
-        const { error } = await (supabase.from('cart' as any) as any).delete().eq('user_id', user.id);
+        const { error } = await (supabase.from('cart' as any) as any)
+          .delete()
+          .eq('user_id', user.id);
         if (error) throw error;
       } else {
         saveLocalCart([]);
@@ -267,7 +279,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         queryClient.invalidateQueries({ queryKey: ['cart', user?.id] });
       }
       toast({ title: 'Succès', description: 'Panier vidé' });
-    }
+    },
   });
 
   const getTotalPrice = useCallback(() => {
@@ -281,7 +293,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return items.reduce((total, item) => total + item.quantity, 0);
   }, [items]);
 
-  const isUpdating = addItemMutation.isPending || removeItemMutation.isPending || updateQuantityMutation.isPending || clearCartMutation.isPending;
+  const isUpdating =
+    addItemMutation.isPending ||
+    removeItemMutation.isPending ||
+    updateQuantityMutation.isPending ||
+    clearCartMutation.isPending;
 
   // Migrer le panier local vers la DB quand l'utilisateur se connecte
   React.useEffect(() => {
@@ -289,15 +305,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (user && localCart.length > 0) {
         try {
           for (const item of localCart) {
-            const existingItem = dbItems.find(dbItem => dbItem.product_id === item.product_id);
+            const existingItem = dbItems.find((dbItem) => dbItem.product_id === item.product_id);
 
             if (existingItem) {
               await (supabase.from('cart' as any) as any)
                 .update({ quantity: existingItem.quantity + item.quantity })
                 .eq('id', existingItem.id);
             } else {
-              await (supabase.from('cart' as any) as any)
-                .insert({ user_id: user.id, product_id: item.product_id, quantity: item.quantity });
+              await (supabase.from('cart' as any) as any).insert({
+                user_id: user.id,
+                product_id: item.product_id,
+                quantity: item.quantity,
+              });
             }
           }
 
@@ -307,7 +326,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
           toast({
             title: 'Panier synchronisé',
-            description: 'Vos articles ont été ajoutés à votre compte'
+            description: 'Vos articles ont été ajoutés à votre compte',
           });
         } catch (error) {
           console.error('Error migrating cart:', error);
@@ -319,33 +338,38 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [user, localCart, dbItems, queryClient, toast, saveLocalCart]);
 
   return (
-    <CartContext.Provider value={{
-      items,
-      isLoading: user ? isLoading : false,
-      addItem: (productId, quantity) => addItemMutation.mutate({ productId, quantity }),
-      removeItem: (cartItemId) => removeItemMutation.mutate(cartItemId),
-      updateQuantity: (cartItemId, quantity) => updateQuantityMutation.mutate({ cartItemId, quantity }),
-      clearCart: () => clearCartMutation.mutate(),
-      getTotalPrice,
-      getTotalItems,
-      isUpdating,
-      triggerAnimation
-    }}>
+    <CartContext.Provider
+      value={{
+        items,
+        isLoading: user ? isLoading : false,
+        addItem: (productId, quantity) => addItemMutation.mutate({ productId, quantity }),
+        removeItem: (cartItemId) => removeItemMutation.mutate(cartItemId),
+        updateQuantity: (cartItemId, quantity) =>
+          updateQuantityMutation.mutate({ cartItemId, quantity }),
+        clearCart: () => clearCartMutation.mutate(),
+        getTotalPrice,
+        getTotalItems,
+        isUpdating,
+        triggerAnimation,
+      }}
+    >
       {children}
       {/* Animation Layer */}
       <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
-        {flyingItems.map(item => (
+        {flyingItems.map((item) => (
           <div
             key={item.id}
             className="fixed w-14 h-14 rounded-full bg-amber-600 flex items-center justify-center shadow-lg border-2 border-white animate-fly-to-cart overflow-hidden"
-            style={{
-              "--start-x": `${item.start.x}px`,
-              "--start-y": `${item.start.y}px`,
-              "--end-x": `${item.end.x}px`,
-              "--end-y": `${item.end.y}px`,
-              left: 0,
-              top: 0
-            } as React.CSSProperties}
+            style={
+              {
+                '--start-x': `${item.start.x}px`,
+                '--start-y': `${item.start.y}px`,
+                '--end-x': `${item.end.x}px`,
+                '--end-y': `${item.end.y}px`,
+                left: 0,
+                top: 0,
+              } as React.CSSProperties
+            }
           >
             {item.image ? (
               <img src={item.image} className="w-full h-full object-cover" alt="" />
@@ -355,7 +379,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           </div>
         ))}
       </div>
-    </CartContext.Provider >
+    </CartContext.Provider>
   );
 };
 

@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type BNPLPlan = {
   id: string;
@@ -21,7 +20,7 @@ export type BNPLPlan = {
     name: string;
     image_url: string;
   };
-}
+};
 
 export function useBNPLPlans() {
   const { user } = useAuth();
@@ -36,12 +35,12 @@ export function useBNPLPlans() {
     const fetchPlans = () => {
       setIsLoading(true);
       (supabase as any)
-        .from("bnpl_plans")
-        .select("*, products(name, image_url)")
-        .eq("client_id", user.id)
-        .order("created_at", { ascending: false })
+        .from('bnpl_plans')
+        .select('*, products(name, image_url)')
+        .eq('client_id', user.id)
+        .order('created_at', { ascending: false })
         .then(({ data, error }: any) => {
-          if (error) setError("Erreur lors de la récupération des plans BNPL");
+          if (error) setError('Erreur lors de la récupération des plans BNPL');
           else setPlans((data || []) as BNPLPlan[]);
           setIsLoading(false);
         });
@@ -57,18 +56,24 @@ export function useBNPLPlans() {
     const timeoutId = setTimeout(() => {
       channel = supabase
         .channel(channelName)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'bnpl_plans',
-          filter: `client_id=eq.${user.id}`
-        }, (payload) => {
-          // Refresh full list
-          fetchPlans();
-        })
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bnpl_plans',
+            filter: `client_id=eq.${user.id}`,
+          },
+          (payload) => {
+            // Refresh full list
+            fetchPlans();
+          }
+        )
         .subscribe((status) => {
           if (status === 'CHANNEL_ERROR') {
-            console.warn(`Realtime connection failed for ${channelName}. Server might be unreachable.`);
+            console.warn(
+              `Realtime connection failed for ${channelName}. Server might be unreachable.`
+            );
           }
         });
     }, 500);
@@ -76,10 +81,32 @@ export function useBNPLPlans() {
     return () => {
       clearTimeout(timeoutId);
       if (channel) {
-        supabase.removeChannel(channel).catch(err => console.debug("Error cleaning up channel:", err));
+        supabase
+          .removeChannel(channel)
+          .catch((err) => console.debug('Error cleaning up channel:', err));
       }
     };
   }, [user]);
 
-  return { plans, isLoading, error };
+  const processPayment = async (planId: string, amount: number) => {
+    try {
+      const { data, error } = await supabase.rpc('process_bnpl_payment', {
+        p_plan_id: planId,
+        p_amount: amount,
+        p_payment_method: 'wallet',
+      });
+
+      if (error) throw error;
+
+      const result = data as any;
+      if (!result.success) throw new Error(result.error);
+
+      return result;
+    } catch (err: any) {
+      console.error('BNPL Payment error:', err);
+      throw err;
+    }
+  };
+
+  return { plans, isLoading, error, processPayment };
 }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,33 +16,42 @@ interface LoyaltyTier {
 
 const loyaltyTiers: LoyaltyTier[] = [
   {
-    name: "Bronze",
+    name: 'Bronze',
     icon: <Award className="w-5 h-5" />,
     pointsRequired: 0,
-    benefits: ["1 point par 100 CFA", "Accès aux promotions"],
-    color: "text-amber-600"
+    benefits: ['1 point par 100 CFA', 'Accès aux promotions'],
+    color: 'text-amber-600',
   },
   {
-    name: "Argent",
+    name: 'Argent',
     icon: <Star className="w-5 h-5" />,
     pointsRequired: 1000,
-    benefits: ["1.5 points par 100 CFA", "Livraison gratuite > 10K CFA", "Accès prioritaire aux nouveautés"],
-    color: "text-gray-600"
+    benefits: [
+      '1.5 points par 100 CFA',
+      'Livraison gratuite > 10K CFA',
+      'Accès prioritaire aux nouveautés',
+    ],
+    color: 'text-gray-600',
   },
   {
-    name: "Or",
+    name: 'Or',
     icon: <Crown className="w-5 h-5" />,
     pointsRequired: 5000,
-    benefits: ["2 points par 100 CFA", "Livraison gratuite", "Support prioritaire", "Réductions exclusives"],
-    color: "text-yellow-600"
-  }
+    benefits: [
+      '2 points par 100 CFA',
+      'Livraison gratuite',
+      'Support prioritaire',
+      'Réductions exclusives',
+    ],
+    color: 'text-yellow-600',
+  },
 ];
 
 const rewards = [
-  { name: "Réduction 5%", points: 500, type: "discount" },
-  { name: "Livraison gratuite", points: 200, type: "shipping" },
-  { name: "Réduction 10%", points: 1000, type: "discount" },
-  { name: "Produit gratuit", points: 2000, type: "product" }
+  { name: 'Réduction 5%', points: 500, type: 'discount' },
+  { name: 'Livraison gratuite', points: 200, type: 'shipping' },
+  { name: 'Réduction 10%', points: 1000, type: 'discount' },
+  { name: 'Produit gratuit', points: 2000, type: 'product' },
 ];
 
 export const LoyaltyProgram = () => {
@@ -68,12 +76,12 @@ export const LoyaltyProgram = () => {
   const getProgressToNextTier = () => {
     const nextTier = getNextTier();
     if (!nextTier) return 100;
-    
+
     const currentTierPoints = loyaltyTiers[getCurrentTier()].pointsRequired;
     const nextTierPoints = nextTier.pointsRequired;
     const progressPoints = userPoints - currentTierPoints;
     const totalNeeded = nextTierPoints - currentTierPoints;
-    
+
     return (progressPoints / totalNeeded) * 100;
   };
 
@@ -110,12 +118,14 @@ export const LoyaltyProgram = () => {
               {loyaltyTiers[getCurrentTier()].name}
             </Badge>
           </div>
-          
+
           {getNextTier() && (
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Progression vers {getNextTier()?.name}</span>
-                <span>{userPoints}/{getNextTier()?.pointsRequired} points</span>
+                <span>
+                  {userPoints}/{getNextTier()?.pointsRequired} points
+                </span>
               </div>
               <Progress value={getProgressToNextTier()} className="h-2" />
             </div>
@@ -130,7 +140,7 @@ export const LoyaltyProgram = () => {
         <CardContent>
           <div className="space-y-4">
             {loyaltyTiers.map((tier, index) => (
-              <div 
+              <div
                 key={tier.name}
                 className={`p-4 rounded-lg border ${
                   index === getCurrentTier() ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'
@@ -142,9 +152,7 @@ export const LoyaltyProgram = () => {
                   <span className="text-sm text-gray-600">
                     {tier.pointsRequired === 0 ? 'Niveau de base' : `${tier.pointsRequired} points`}
                   </span>
-                  {index === getCurrentTier() && (
-                    <Badge variant="secondary">Niveau actuel</Badge>
-                  )}
+                  {index === getCurrentTier() && <Badge variant="secondary">Niveau actuel</Badge>}
                 </div>
                 <ul className="text-sm text-gray-600 space-y-1">
                   {tier.benefits.map((benefit, i) => (
@@ -172,11 +180,7 @@ export const LoyaltyProgram = () => {
                   <h4 className="font-medium">{reward.name}</h4>
                   <span className="text-yellow-600 font-semibold">{reward.points} pts</span>
                 </div>
-                <Button 
-                  size="sm" 
-                  disabled={userPoints < reward.points}
-                  className="w-full"
-                >
+                <Button size="sm" disabled={userPoints < reward.points} className="w-full">
                   {userPoints < reward.points ? 'Points insuffisants' : 'Échanger'}
                 </Button>
               </div>

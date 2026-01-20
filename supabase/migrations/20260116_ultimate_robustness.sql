@@ -82,14 +82,14 @@ BEGIN
   -- Identifier le destinataire
   INSERT INTO notifications (user_id, type, title, message, data)
   SELECT 
-    CASE WHEN NEW.sender_id = bp.client_id THEN p.merchant_id ELSE bp.client_id END,
+    CASE WHEN NEW.sender_id = ba.user_id THEN p.merchant_id ELSE ba.user_id END,
     'chat',
     'Nouveau message BNPL 💬',
     LEFT(NEW.content, 100),
     jsonb_build_object('application_id', NEW.application_id, 'message_id', NEW.id)
-  FROM bnpl_plans bp
-  JOIN products p ON bp.product_id = p.id
-  WHERE bp.id = NEW.application_id;
+  FROM public.bnpl_applications ba
+  JOIN public.products p ON ba.product_id = p.id
+  WHERE ba.id = NEW.application_id;
 
   RETURN NEW;
 END;

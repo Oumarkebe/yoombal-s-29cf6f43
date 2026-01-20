@@ -1,7 +1,6 @@
-
-import { useState, useCallback, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Review {
   id: string;
@@ -10,6 +9,9 @@ export interface Review {
   rating: number;
   comment: string | null;
   created_at: string;
+  photos?: string[];
+  helpful_count?: number;
+  is_verified_purchase?: boolean;
 }
 
 export function useProductReviews(productId: string | undefined) {
@@ -24,21 +26,21 @@ export function useProductReviews(productId: string | undefined) {
     if (!productId) return [];
     setIsLoading(true);
     const { data, error } = await supabase
-      .from("reviews")
-      .select("*")
-      .eq("product_id", productId)
-      .order("created_at", { ascending: false });
+      .from('reviews')
+      .select('*')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching reviews:', error);
-      setError("Erreur lors de la récupération des avis.");
+      setError('Erreur lors de la récupération des avis.');
       setReviews([]);
     } else {
       setError(null);
       const typedData = (data || []) as Review[];
       setReviews(typedData);
       if (user) {
-        const mine = typedData.find(r => r.user_id === user.id) || null;
+        const mine = typedData.find((r) => r.user_id === user.id) || null;
         setMyReview(mine);
       }
     }
@@ -51,15 +53,16 @@ export function useProductReviews(productId: string | undefined) {
 
   // Ajouter ou éditer un avis pour ce produit
   const submitReview = useCallback(
-    async (rating: number, comment: string) => {
-      if (!user || !productId) return { error: "Vous devez être connecté." };
+    async (rating: number, comment: string, photos: string[] = []) => {
+      if (!user || !productId) return { error: 'Vous devez être connecté.' };
 
-      // Upsert = ajoute ou modifie si existe 
-      const { error } = await supabase.from("reviews").upsert({
+      // Upsert = ajoute ou modifie si existe
+      const { error } = await supabase.from('reviews' as any).upsert({
         user_id: user.id,
         product_id: productId,
         rating,
         comment,
+        photos,
       });
       await fetchReviews();
       if (error) return { error: error.message };

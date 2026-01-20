@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,7 +66,7 @@ const StockManagement = () => {
   };
 
   const getLowStockProducts = () => {
-    return products.filter(product => product.stock <= 5);
+    return products.filter((product) => product.stock <= 5);
   };
 
   if (isLoading) {
@@ -95,9 +94,7 @@ const StockManagement = () => {
               {lowStockProducts.map((product) => (
                 <div key={product.id} className="flex justify-between items-center">
                   <span className="text-orange-700">{product.name}</span>
-                  <span className="text-orange-600 font-medium">
-                    Stock: {product.stock}
-                  </span>
+                  <span className="text-orange-600 font-medium">Stock: {product.stock}</span>
                 </div>
               ))}
             </div>
@@ -117,18 +114,23 @@ const StockManagement = () => {
                     <p className="text-sm text-gray-500">ID: {product.id.substring(0, 8)}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="text-center">
                     <Label className="text-sm text-gray-500">Stock actuel</Label>
-                    <div className={`text-2xl font-bold ${
-                      product.stock <= 5 ? 'text-orange-600' : 
-                      product.stock <= 10 ? 'text-yellow-600' : 'text-green-600'
-                    }`}>
+                    <div
+                      className={`text-2xl font-bold ${
+                        product.stock <= 5
+                          ? 'text-orange-600'
+                          : product.stock <= 10
+                            ? 'text-yellow-600'
+                            : 'text-green-600'
+                      }`}
+                    >
                       {product.stock}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
@@ -137,7 +139,7 @@ const StockManagement = () => {
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="outline"

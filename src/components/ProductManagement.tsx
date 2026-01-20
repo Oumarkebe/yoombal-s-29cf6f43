@@ -5,8 +5,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import ProductBNPLToggle from "./ProductBNPLToggle";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import ProductBNPLToggle from './ProductBNPLToggle';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
 import { ProductFormUltimate } from './admin/ProductFormUltimate';
 import { ProductFormData } from '@/types/product';
 import { useProducts, Product, Category } from '@/hooks/useProducts';
@@ -19,10 +25,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 const ProductManagement = () => {
-  const { products, categories, isLoading, deleteProduct, createProduct, updateProduct, refreshProducts } = useProducts();
+  const {
+    products,
+    categories,
+    isLoading,
+    deleteProduct,
+    createProduct,
+    updateProduct,
+    refreshProducts,
+  } = useProducts();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -32,7 +46,7 @@ const ProductManagement = () => {
   const { user } = useAuth();
 
   const toggleExpanded = (productId: string) => {
-    setExpandedProducts(prev => {
+    setExpandedProducts((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(productId)) {
         newSet.delete(productId);
@@ -74,31 +88,31 @@ const ProductManagement = () => {
         const { new_tags, gallery_files, ...dbData } = productData as any;
         await updateProduct(selectedProduct.id, dbData);
         toast({
-          title: "Succès",
-          description: "Le produit a été mis à jour avec succès",
+          title: 'Succès',
+          description: 'Le produit a été mis à jour avec succès',
         });
       } else {
         // En mode création
-        if (!user) throw new Error("Utilisateur non connecté");
+        if (!user) throw new Error('Utilisateur non connecté');
 
         const { new_tags, gallery_files, ...dbData } = productData as any;
         await createProduct({
           ...dbData,
-          merchant_id: user.id
+          merchant_id: user.id,
         });
         toast({
-          title: "Succès",
-          description: "Le produit a été créé avec succès",
+          title: 'Succès',
+          description: 'Le produit a été créé avec succès',
         });
       }
       setIsFormOpen(false);
       refreshProducts(); // Rafraîchir la liste
     } catch (error: any) {
-      console.error("Error submitting product:", error);
+      console.error('Error submitting product:', error);
       toast({
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue",
-        variant: "destructive"
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue',
+        variant: 'destructive',
       });
     }
   };
@@ -151,7 +165,10 @@ const ProductManagement = () => {
             const gradient = gradients[index % gradients.length];
 
             return (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-200">
+              <Card
+                key={product.id}
+                className="overflow-hidden hover:shadow-lg transition-all duration-300 border-2 border-transparent hover:border-blue-200"
+              >
                 {/* Header - Always Visible */}
                 <div
                   className={`bg-gradient-to-r ${gradient} p-4 cursor-pointer`}
@@ -179,9 +196,21 @@ const ProductManagement = () => {
                         <p className="text-sm font-medium">Stock: {product.stock}</p>
                         <p className="text-xs opacity-90 capitalize">{product.status}</p>
                       </div>
-                      <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <div
+                        className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                      >
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </div>
                     </div>
@@ -206,7 +235,10 @@ const ProductManagement = () => {
                             <h4 className="text-sm font-semibold text-gray-700 mb-2">Avantages</h4>
                             <div className="flex flex-wrap gap-2">
                               {product.features.map((feature, idx) => (
-                                <span key={idx} className={`text-xs bg-gradient-to-r ${gradient} text-white px-3 py-1 rounded-full shadow-sm`}>
+                                <span
+                                  key={idx}
+                                  className={`text-xs bg-gradient-to-r ${gradient} text-white px-3 py-1 rounded-full shadow-sm`}
+                                >
                                   ✓ {feature}
                                 </span>
                               ))}
@@ -216,7 +248,9 @@ const ProductManagement = () => {
 
                         {product.specs && Object.keys(product.specs).length > 0 && (
                           <div>
-                            <h4 className="text-sm font-semibold text-gray-700 mb-2">Spécifications</h4>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                              Spécifications
+                            </h4>
                             <div className="grid grid-cols-2 gap-2">
                               {Object.entries(product.specs).map(([key, value]) => (
                                 <div key={key} className="text-sm">
@@ -245,13 +279,17 @@ const ProductManagement = () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">Stock:</span>
-                              <span className={`font-medium ${product.stock < 10 ? 'text-orange-600' : 'text-green-600'}`}>
+                              <span
+                                className={`font-medium ${product.stock < 10 ? 'text-orange-600' : 'text-green-600'}`}
+                              >
                                 {product.stock} unités
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600">ID:</span>
-                              <span className="font-mono text-xs text-gray-500">{product.id.substring(0, 8)}</span>
+                              <span className="font-mono text-xs text-gray-500">
+                                {product.id.substring(0, 8)}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -261,7 +299,9 @@ const ProductManagement = () => {
                           productName={product.name}
                           currentBNPLStatus={(product as any).bnpl_enabled || false}
                           onStatusChange={(newStatus) => {
-                            console.log(`BNPL ${newStatus ? 'enabled' : 'disabled'} for ${product.name}`);
+                            console.log(
+                              `BNPL ${newStatus ? 'enabled' : 'disabled'} for ${product.name}`
+                            );
                           }}
                         />
 
@@ -297,9 +337,13 @@ const ProductManagement = () => {
         <SheetContent className="w-full sm:max-w-4xl overflow-y-auto p-0" side="right">
           <div className="h-full flex flex-col">
             <SheetHeader className="px-6 py-4 border-b">
-              <SheetTitle>{selectedProduct ? "Modifier le produit" : "Ajouter un produit"}</SheetTitle>
+              <SheetTitle>
+                {selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
+              </SheetTitle>
               <SheetDescription>
-                {selectedProduct ? "Modifiez les informations ci-dessous." : "Remplissez le formulaire pour créer un nouveau produit."}
+                {selectedProduct
+                  ? 'Modifiez les informations ci-dessous.'
+                  : 'Remplissez le formulaire pour créer un nouveau produit.'}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-hidden">
@@ -322,12 +366,16 @@ const ProductManagement = () => {
               Confirmer la suppression
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible et retirera le produit de votre boutique.
+              Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible et
+              retirera le produit de votre boutique.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700 text-white">
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
               Supprimer définitivement
             </AlertDialogAction>
           </AlertDialogFooter>

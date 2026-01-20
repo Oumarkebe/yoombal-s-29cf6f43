@@ -20,7 +20,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ error?: string }>;
   register: (userData: RegisterData) => Promise<{ error?: string }>;
   logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error?: string, message?: string }>;
+  resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
   updatePassword: (password: string) => Promise<{ error?: string }>;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -69,32 +69,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
 
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
 
-        console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
+      console.log('Auth state changed:', event, session?.user?.email);
+      setSession(session);
 
-        if (session?.user) {
-          // Use setTimeout to avoid potential recursive issues and correctly handle loading state
-          setTimeout(async () => {
-            if (mounted) {
-              await fetchUserProfile(session.user);
-              setIsLoading(false);
-            }
-          }, 0);
-        } else {
-          setUser(null);
-          setIsLoading(false);
-        }
+      if (session?.user) {
+        // Use setTimeout to avoid potential recursive issues and correctly handle loading state
+        setTimeout(async () => {
+          if (mounted) {
+            await fetchUserProfile(session.user);
+            setIsLoading(false);
+          }
+        }, 0);
+      } else {
+        setUser(null);
+        setIsLoading(false);
       }
-    );
+    });
 
     // Check for existing session
     const initializeAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
         if (error) {
           console.error('Error getting session:', error);
           setIsLoading(false);
@@ -130,7 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const [profileRes, rolesRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(),
-        supabase.from('user_roles').select('role').eq('user_id', authUser.id)
+        supabase.from('user_roles').select('role').eq('user_id', authUser.id),
       ]);
 
       const { data: profile, error: profileError } = profileRes;
@@ -160,22 +163,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const profileData = profile as any;
 
         // Get all roles from the user_roles table
-        const allRolesFromDB: AppRole[] = (userRolesData?.map(r => r.role) || []).filter(isValidRole);
+        const allRolesFromDB: AppRole[] = (userRolesData?.map((r) => r.role) || []).filter(
+          isValidRole
+        );
 
         // Determine primary role (highest privilege)
-        const primaryRole = allRolesFromDB.length > 0
-          ? getHighestRole(allRolesFromDB)
-          : 'user';
+        const primaryRole = allRolesFromDB.length > 0 ? getHighestRole(allRolesFromDB) : 'user';
 
         // Combine all roles (ensure at least 'user' role)
-        const allRoles: AppRole[] = allRolesFromDB.length > 0
-          ? [...new Set(allRolesFromDB)]
-          : ['user'];
+        const allRoles: AppRole[] =
+          allRolesFromDB.length > 0 ? [...new Set(allRolesFromDB)] : ['user'];
 
         // Parse status with validation
-        const userStatus: UserStatus = profileData.status && isValidStatus(profileData.status)
-          ? profileData.status
-          : 'active';
+        const userStatus: UserStatus =
+          profileData.status && isValidStatus(profileData.status) ? profileData.status : 'active';
 
         // Parse KYC status
         const kycStatus: KycStatus = profileData.kyc_status || 'none';
@@ -209,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           roles: allRoles,
           primaryRole,
           status: userStatus,
-          email: authUser.email
+          email: authUser.email,
         });
       } else {
         console.warn('Profile not found for user:', authUser.id);
@@ -242,7 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
       if (error) {
@@ -279,9 +280,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             business_name: userData.business_name,
             business_type: userData.business_type,
             vehicle_type: userData.vehicle_type,
-            zone: userData.zone
-          }
-        }
+            zone: userData.zone,
+          },
+        },
       });
 
       if (error) {
@@ -304,7 +305,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             vehicle_type: userData.vehicle_type,
             zone: userData.zone,
             status: 'active',
-          }
+          },
         ]);
 
         if (profileError) {
@@ -314,9 +315,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Also add the role to user_roles
-        const { error: roleError } = await supabase.from('user_roles').insert([
-          { user_id: data.user.id, role: userData.role }
-        ]);
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([{ user_id: data.user.id, role: userData.role }]);
 
         if (roleError) {
           console.warn('User role insertion error:', roleError);
@@ -328,7 +329,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       console.error('Registration error:', error);
       setIsLoading(false);
-      return { error: 'Une erreur est survenue lors de l\'inscription' };
+      return { error: "Une erreur est survenue lors de l'inscription" };
     }
   };
 
@@ -353,7 +354,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 1. Check if email exists via RPC
       try {
         console.log('Calling RPC check_email_exists...');
-        const { data: exists, error: rpcError } = await (supabase as any).rpc('check_email_exists', { email_arg: cleanEmail });
+        const { data: exists, error: rpcError } = await (supabase as any).rpc(
+          'check_email_exists',
+          { email_arg: cleanEmail }
+        );
 
         if (rpcError) {
           console.error('❌ RPC Error:', rpcError.message);
@@ -376,7 +380,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) throw error;
 
-      return { message: 'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.' };
+      return {
+        message: 'Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.',
+      };
     } catch (error: any) {
       console.error('Reset password error:', error);
       return { error: error.message || 'Erreur lors de la demande de réinitialisation' };
@@ -408,11 +414,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshProfile,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // ============ Utility Hooks ============
@@ -427,13 +429,16 @@ export function useRole(requiredRoles: AppRole | AppRole[]) {
   if (!user) return false;
 
   const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
-  return user.roles.some(role => roles.includes(role));
+  return user.roles.some((role) => roles.includes(role));
 }
 
 /**
  * Hook to check if the current user has a specific permission
  */
-export function useHasPermission(resource: string, action: 'create' | 'read' | 'update' | 'delete' | 'manage') {
+export function useHasPermission(
+  resource: string,
+  action: 'create' | 'read' | 'update' | 'delete' | 'manage'
+) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) return false;
@@ -445,11 +450,12 @@ export function useHasPermission(resource: string, action: 'create' | 'read' | '
   // Import and check ROLE_PERMISSIONS dynamically to avoid circular deps
   const { ROLE_PERMISSIONS } = require('@/types/auth');
 
-  return user.roles.some(role => {
+  return user.roles.some((role) => {
     const permissions = ROLE_PERMISSIONS[role] || [];
-    return permissions.some((p: any) =>
-      (p.resource === '*' || p.resource === resource) &&
-      (p.action === 'manage' || p.action === action)
+    return permissions.some(
+      (p: any) =>
+        (p.resource === '*' || p.resource === resource) &&
+        (p.action === 'manage' || p.action === action)
     );
   });
 }

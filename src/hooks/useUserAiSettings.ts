@@ -53,7 +53,7 @@ async function upsertUserAiSetting({
   userId,
   featureKey,
   isEnabled,
-  configuration
+  configuration,
 }: {
   userId: string;
   featureKey: AiFeatureKey;
@@ -75,7 +75,7 @@ async function upsertUserAiSetting({
       .update({
         is_enabled: isEnabled,
         configuration: configuration || {},
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', existing.id)
       .select();
@@ -90,7 +90,7 @@ async function upsertUserAiSetting({
         user_id: userId,
         feature_key: featureKey,
         is_enabled: isEnabled,
-        configuration: configuration || {}
+        configuration: configuration || {},
       })
       .select();
 
@@ -102,7 +102,11 @@ async function upsertUserAiSetting({
 export function useUserAiSettings({ userId }: { userId?: string }) {
   const queryClient = useQueryClient();
 
-  const { data: settings = [], isLoading, error } = useQuery({
+  const {
+    data: settings = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['userAiSettings', userId],
     queryFn: () => {
       if (!userId) return Promise.resolve([]);

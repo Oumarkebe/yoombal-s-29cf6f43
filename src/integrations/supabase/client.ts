@@ -6,13 +6,18 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error('Les variables VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY doivent être définies dans .env');
+  throw new Error(
+    'Les variables VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY doivent être définies dans .env'
+  );
 }
 
 if (import.meta.env.DEV) {
   console.log('--- SUPABASE CLIENT CONFIG (DEV) ---');
   console.log('URL:', SUPABASE_URL);
-  console.log('Mode:', SUPABASE_URL.includes('localhost') || SUPABASE_URL.includes('127.0.0.1') ? 'LOCAL' : 'CLOUD');
+  console.log(
+    'Mode:',
+    SUPABASE_URL.includes('localhost') || SUPABASE_URL.includes('127.0.0.1') ? 'LOCAL' : 'CLOUD'
+  );
   console.log('------------------------------------');
 }
 

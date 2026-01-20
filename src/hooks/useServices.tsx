@@ -1,6 +1,5 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // Service interface
 export interface Service {
@@ -21,11 +20,11 @@ export const useServices = () => {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ["services"],
+    queryKey: ['services'],
     queryFn: async (): Promise<Service[]> => {
       const { data, error } = await (supabase.from('services' as any) as any)
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       return (data || []) as Service[];
@@ -43,7 +42,7 @@ export const useServices = () => {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["services"]});
+      queryClient.invalidateQueries({ queryKey: ['services'] });
     },
   });
 
@@ -52,26 +51,26 @@ export const useServices = () => {
     mutationFn: async ({ id, ...update }: Partial<Service>) => {
       const { data, error } = await (supabase.from('services' as any) as any)
         .update(update)
-        .eq("id", id)
+        .eq('id', id)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["services"]});
+      queryClient.invalidateQueries({ queryKey: ['services'] });
     },
   });
 
   // Mutation: delete service (admin only)
   const deleteService = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase.from('services' as any) as any).delete().eq("id", id);
+      const { error } = await (supabase.from('services' as any) as any).delete().eq('id', id);
       if (error) throw error;
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey: ["services"]});
+      queryClient.invalidateQueries({ queryKey: ['services'] });
     },
   });
 

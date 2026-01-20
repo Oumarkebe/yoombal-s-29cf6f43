@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Filter, Mic } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,8 @@ const SearchBar = () => {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   const handleVoiceSearch = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();

@@ -1,8 +1,15 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, DollarSign, Users, ShoppingCart, CreditCard, Truck, Percent } from 'lucide-react';
+import {
+  TrendingUp,
+  DollarSign,
+  Users,
+  ShoppingCart,
+  CreditCard,
+  Truck,
+  Percent,
+} from 'lucide-react';
 
 interface RevenueMetric {
   title: string;
@@ -14,60 +21,60 @@ interface RevenueMetric {
 
 const revenueMetrics: RevenueMetric[] = [
   {
-    title: "Commission Marketplace",
-    value: "1.2M CFA",
-    change: "+15%",
+    title: 'Commission Marketplace',
+    value: '1.2M CFA',
+    change: '+15%',
     icon: <Percent className="w-5 h-5" />,
-    color: "text-green-600"
+    color: 'text-green-600',
   },
   {
-    title: "Revenus BNPL",
-    value: "850K CFA",
-    change: "+45%",
+    title: 'Revenus BNPL',
+    value: '850K CFA',
+    change: '+45%',
     icon: <CreditCard className="w-5 h-5" />,
-    color: "text-blue-600"
+    color: 'text-blue-600',
   },
   {
-    title: "Frais de livraison",
-    value: "320K CFA",
-    change: "+12%",
+    title: 'Frais de livraison',
+    value: '320K CFA',
+    change: '+12%',
     icon: <Truck className="w-5 h-5" />,
-    color: "text-orange-600"
+    color: 'text-orange-600',
   },
   {
-    title: "Abonnements",
-    value: "180K CFA",
-    change: "+25%",
+    title: 'Abonnements',
+    value: '180K CFA',
+    change: '+25%',
     icon: <Users className="w-5 h-5" />,
-    color: "text-purple-600"
-  }
+    color: 'text-purple-600',
+  },
 ];
 
 const upcomingRevenue = [
   {
-    name: "Programme de fidélité",
-    description: "Augmentation de la rétention client",
-    estimatedIncrease: "+15% revenus totaux",
-    timeline: "Q1 2025"
+    name: 'Programme de fidélité',
+    description: 'Augmentation de la rétention client',
+    estimatedIncrease: '+15% revenus totaux',
+    timeline: 'Q1 2025',
   },
   {
-    name: "Assurance livraison",
-    description: "Protection des colis et revenus additionnels",
-    estimatedIncrease: "+200K CFA/mois",
-    timeline: "Q1 2025"
+    name: 'Assurance livraison',
+    description: 'Protection des colis et revenus additionnels',
+    estimatedIncrease: '+200K CFA/mois',
+    timeline: 'Q1 2025',
   },
   {
-    name: "Marketplace B2B",
-    description: "Transactions inter-entreprises",
-    estimatedIncrease: "+300% volume",
-    timeline: "Q2 2025"
+    name: 'Marketplace B2B',
+    description: 'Transactions inter-entreprises',
+    estimatedIncrease: '+300% volume',
+    timeline: 'Q2 2025',
   },
   {
-    name: "API monétisée",
-    description: "Revenus récurrents des intégrations",
-    estimatedIncrease: "+150K CFA/mois",
-    timeline: "Q3 2025"
-  }
+    name: 'API monétisée',
+    description: 'Revenus récurrents des intégrations',
+    estimatedIncrease: '+150K CFA/mois',
+    timeline: 'Q3 2025',
+  },
 ];
 
 export const RevenueDashboard = () => {
@@ -87,9 +94,7 @@ export const RevenueDashboard = () => {
                     </Badge>
                   </div>
                 </div>
-                <div className={`p-3 rounded-full bg-gray-100 ${metric.color}`}>
-                  {metric.icon}
-                </div>
+                <div className={`p-3 rounded-full bg-gray-100 ${metric.color}`}>{metric.icon}</div>
               </div>
             </CardContent>
           </Card>
@@ -139,7 +144,7 @@ export const RevenueDashboard = () => {
                 <div className="text-sm text-green-600">des revenus totaux</div>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
               <div>
                 <h4 className="font-semibold text-blue-800">BNPL & Fintech</h4>
@@ -150,7 +155,7 @@ export const RevenueDashboard = () => {
                 <div className="text-sm text-blue-600">des revenus totaux</div>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center p-4 bg-orange-50 rounded-lg">
               <div>
                 <h4 className="font-semibold text-orange-800">Services & Logistique</h4>

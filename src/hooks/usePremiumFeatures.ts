@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -32,7 +31,7 @@ async function fetchPremiumFeatures(): Promise<PremiumFeature[]> {
   // Map data to ensure is_free has a default value
   return (data || []).map((item: any) => ({
     ...item,
-    is_free: item.is_free ?? false
+    is_free: item.is_free ?? false,
   }));
 }
 
@@ -40,7 +39,7 @@ async function updatePremiumFeature({
   feature_key,
   is_enabled,
   is_free,
-  configuration
+  configuration,
 }: {
   feature_key: string;
   is_enabled?: boolean;
@@ -48,7 +47,7 @@ async function updatePremiumFeature({
   configuration?: any;
 }) {
   const updatePayload: any = {
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
 
   if (is_enabled !== undefined) {
@@ -81,7 +80,11 @@ async function updatePremiumFeature({
 export function usePremiumFeatures() {
   const queryClient = useQueryClient();
 
-  const { data: features = [], isLoading, error } = useQuery({
+  const {
+    data: features = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['premiumFeatures'],
     queryFn: fetchPremiumFeatures,
   });
@@ -106,13 +109,16 @@ export function usePremiumFeatures() {
   });
 
   // Grouper les fonctionnalités par catégorie
-  const featuresByCategory = features.reduce((acc, feature) => {
-    if (!acc[feature.category]) {
-      acc[feature.category] = [];
-    }
-    acc[feature.category].push(feature);
-    return acc;
-  }, {} as Record<string, PremiumFeature[]>);
+  const featuresByCategory = features.reduce(
+    (acc, feature) => {
+      if (!acc[feature.category]) {
+        acc[feature.category] = [];
+      }
+      acc[feature.category].push(feature);
+      return acc;
+    },
+    {} as Record<string, PremiumFeature[]>
+  );
 
   return {
     features,

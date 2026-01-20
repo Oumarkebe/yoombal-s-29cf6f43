@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 
 const Marketplace: React.FC = () => {
@@ -30,23 +29,23 @@ const Marketplace: React.FC = () => {
     setSortBy,
     isFetchingMore,
     hasMore,
-    loadMoreProducts
+    loadMoreProducts,
   } = useMarketplaceProducts();
-  
+
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
   const sortOptions: { label: string; value: SortByOption }[] = [
-    { label: "Plus récents", value: { field: "created_at", ascending: false } },
-    { label: "Prix: Croissant", value: { field: "price", ascending: true } },
-    { label: "Prix: Décroissant", value: { field: "price", ascending: false } },
+    { label: 'Plus récents', value: { field: 'created_at', ascending: false } },
+    { label: 'Prix: Croissant', value: { field: 'price', ascending: true } },
+    { label: 'Prix: Décroissant', value: { field: 'price', ascending: false } },
   ];
 
   const handleSortChange = (value: string) => {
     try {
-        const parsedValue = JSON.parse(value);
-        setSortBy(parsedValue);
+      const parsedValue = JSON.parse(value);
+      setSortBy(parsedValue);
     } catch (e) {
-        console.error("Failed to parse sort option", e);
+      console.error('Failed to parse sort option', e);
     }
   };
 
@@ -64,7 +63,7 @@ const Marketplace: React.FC = () => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
-  
+
   useEffect(() => {
     const debounce = setTimeout(() => {
       setProductsSearchTerm(searchTerm);
@@ -75,18 +74,17 @@ const Marketplace: React.FC = () => {
   useEffect(() => {
     setProductsSelectedCategory(selectedCategory || '');
   }, [selectedCategory, setProductsSelectedCategory]);
-  
+
   const handleClearSearch = () => {
     setSearchTerm('');
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(prev => prev === categoryId ? null : categoryId);
-  }
+    setSelectedCategory((prev) => (prev === categoryId ? null : categoryId));
+  };
 
   return (
     <div className="bg-white dark:bg-gray-950 transition-colors duration-300">
-      
       {/* HERO SECTION */}
       <div className="relative bg-gray-900 text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-800 via-gray-900 to-blue-900/50"></div>
@@ -99,13 +97,14 @@ const Marketplace: React.FC = () => {
               Bienvenue sur la Marketplace
             </h1>
             <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto animate-fade-in-up animation-delay-200">
-              Découvrez des milliers de produits de nos vendeurs partenaires et profitez du paiement en plusieurs fois.
+              Découvrez des milliers de produits de nos vendeurs partenaires et profitez du paiement
+              en plusieurs fois.
             </p>
-            
+
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
               <form
                 className="flex w-full sm:w-auto max-w-md gap-2"
-                onSubmit={e => {
+                onSubmit={(e) => {
                   e.preventDefault();
                   // Déjà géré par le useEffect debounced sur searchTerm
                   // Mais on update tout de même pour UX
@@ -123,7 +122,10 @@ const Marketplace: React.FC = () => {
                     className="h-12 w-full pl-12 pr-10 rounded-md bg-white/5 border-white/20 text-white placeholder-gray-400 focus:bg-white/10 focus:ring-2 focus:ring-blue-400"
                   />
                   {searchTerm && (
-                    <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-white"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-white"
                       type="button"
                       onClick={handleClearSearch}
                       aria-label="Effacer la recherche"
@@ -149,10 +151,10 @@ const Marketplace: React.FC = () => {
                 variant="outline"
                 className="w-full sm:w-auto whitespace-nowrap rounded-xl border-2 border-violet-500 text-violet-100 bg-gradient-to-r from-violet-800/80 to-blue-900/60 hover:from-violet-900 hover:to-blue-900 shadow-lg transition hover:-translate-y-1 hover:scale-105"
                 style={{
-                  fontSize: "1.15rem",
-                  padding: "0.9rem 2.25rem",
+                  fontSize: '1.15rem',
+                  padding: '0.9rem 2.25rem',
                   fontWeight: 700,
-                  letterSpacing: "0.02em"
+                  letterSpacing: '0.02em',
                 }}
               >
                 <Link to="/platform" className="flex items-center gap-2">
@@ -174,7 +176,7 @@ const Marketplace: React.FC = () => {
             categories?.map((category: Category) => (
               <Button
                 key={category.id}
-                variant={selectedCategory === category.id ? "secondary" : "ghost"}
+                variant={selectedCategory === category.id ? 'secondary' : 'ghost'}
                 onClick={() => handleCategoryClick(category.id)}
                 className="rounded-full"
               >
@@ -187,13 +189,18 @@ const Marketplace: React.FC = () => {
         <div>
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {searchTerm ? `Résultats pour "${searchTerm}"` : (selectedCategory ? categories?.find(c => c.id === selectedCategory)?.name : 'Tous les produits')}
+              {searchTerm
+                ? `Résultats pour "${searchTerm}"`
+                : selectedCategory
+                  ? categories?.find((c) => c.id === selectedCategory)?.name
+                  : 'Tous les produits'}
             </h2>
             <div className="flex items-center gap-4">
               <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                {products.length} produit{products.length !== 1 ? 's' : ''} trouvé{products.length !== 1 ? 's' : ''}
+                {products.length} produit{products.length !== 1 ? 's' : ''} trouvé
+                {products.length !== 1 ? 's' : ''}
               </span>
-               <Select onValueChange={handleSortChange} defaultValue={JSON.stringify(sortBy)}>
+              <Select onValueChange={handleSortChange} defaultValue={JSON.stringify(sortBy)}>
                 <SelectTrigger className="w-auto md:w-[180px] dark:bg-gray-800 dark:border-gray-700">
                   <SelectValue placeholder="Trier par" />
                 </SelectTrigger>
@@ -206,14 +213,14 @@ const Marketplace: React.FC = () => {
                 </SelectContent>
               </Select>
               <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                    aria-label="Changer le thème"
-                    className="dark:bg-gray-800 dark:border-gray-700"
-                >
-                    {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                </Button>
+                variant="outline"
+                size="icon"
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                aria-label="Changer le thème"
+                className="dark:bg-gray-800 dark:border-gray-700"
+              >
+                {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              </Button>
             </div>
           </div>
 
@@ -230,15 +237,15 @@ const Marketplace: React.FC = () => {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Essayez d'ajuster votre recherche ou vos filtres.
               </p>
-              <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory(null);
-                  }}
-                >
-                  Réinitialiser les filtres
-                </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory(null);
+                }}
+              >
+                Réinitialiser les filtres
+              </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -248,7 +255,7 @@ const Marketplace: React.FC = () => {
                   id={product.id}
                   name={product.name}
                   price={product.price}
-                  image={product.image_url || "/placeholder.svg"}
+                  image={product.image_url || '/placeholder.svg'}
                   merchant={getMerchantName(product)}
                   bnplAvailable={product.price >= 50000}
                 />
@@ -277,15 +284,17 @@ const Marketplace: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* FLOATING ILLUSTRATION SECTION */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 text-center animate-fade-in-up animation-delay-600">
-          <img src="/img/bnpl-illustration.png" alt="Illustration Yoombal" className="inline-block max-w-full h-auto md:max-w-3xl" />
+        <img
+          src="/img/bnpl-illustration.png"
+          alt="Illustration Yoombal"
+          className="inline-block max-w-full h-auto md:max-w-3xl"
+        />
       </div>
-
     </div>
   );
 };
 
 export default Marketplace;
-

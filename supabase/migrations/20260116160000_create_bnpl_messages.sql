@@ -14,37 +14,41 @@ CREATE TABLE IF NOT EXISTS public.application_messages (
 
 ALTER TABLE public.application_messages ENABLE ROW LEVEL SECURITY;
 
--- SELECT: Participants can see messages
+-- SELECT: Les participants voient les messages
 DROP POLICY IF EXISTS "Participants can view messages" ON public.application_messages;
-CREATE POLICY "Participants can view messages" ON public.application_messages
-FOR SELECT USING (
-  auth.uid() IN (
-    SELECT user_id FROM public.bnpl_applications WHERE id = application_id
-    UNION
-    SELECT merchant_id FROM public.bnpl_applications WHERE id = application_id
-  )
-  OR 
-  auth.uid() = sender_id -- Fallback for sender
-);
+DROP POLICY IF EXISTS "Les participants peuvent voir les messages" ON public.application_messages;
+CREATE POLICY "Les participants peuvent voir les messages" ON public.application_messages
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.bnpl_applications 
+      WHERE id = application_id 
+      AND (user_id = auth.uid() OR merchant_id = auth.uid())
+    )
+  );
 
--- INSERT: Participants can send messages
+-- INSERT: Les participants insèrent des messages
 DROP POLICY IF EXISTS "Participants can insert messages" ON public.application_messages;
-CREATE POLICY "Participants can insert messages" ON public.application_messages
-FOR INSERT WITH CHECK (
-  auth.uid() IN (
-    SELECT user_id FROM public.bnpl_applications WHERE id = application_id
-    UNION
-    SELECT merchant_id FROM public.bnpl_applications WHERE id = application_id
-  )
-);
+DROP POLICY IF EXISTS "Les participants peuvent insérer des messages" ON public.application_messages;
+CREATE POLICY "Les participants peuvent insérer des messages" ON public.application_messages
+  FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.bnpl_applications 
+      WHERE id = application_id 
+      AND (user_id = auth.uid() OR merchant_id = auth.uid())
+    )
+  );
 
--- UPDATE: Only participants can update (e.g. mark as read)
+-- UPDATE: Les participants mettent à jour (marquer comme lu)
 DROP POLICY IF EXISTS "Participants can update messages" ON public.application_messages;
-CREATE POLICY "Participants can update messages" ON public.application_messages
-FOR UPDATE USING (
-    auth.uid() IN (
-    SELECT user_id FROM public.bnpl_applications WHERE id = application_id
-    UNION
-    SELECT merchant_id FROM public.bnpl_applications WHERE id = application_id
-  )
-);
+DROP POLICY IF EXISTS "Les participants peuvent mettre à jour les messages" ON public.application_messages;
+CREATE POLICY "Les participants peuvent mettre à jour les messages" ON public.application_messages
+  FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.bnpl_applications 
+      WHERE id = application_id 
+      AND (user_id = auth.uid() OR merchant_id = auth.uid())
+    )
+  );

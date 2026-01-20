@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -30,7 +29,7 @@ const CheckoutPage = () => {
   const [deliveryInfo, setDeliveryInfo] = useState({
     address: '',
     phone: '',
-    notes: ''
+    notes: '',
   });
 
   const [guestInfo, setGuestInfo] = useState({
@@ -41,7 +40,7 @@ const CheckoutPage = () => {
     address: '',
     city: '',
     postal_code: '',
-    notes: ''
+    notes: '',
   });
 
   const [paymentMethod, setPaymentMethod] = useState('card');
@@ -63,11 +62,11 @@ const CheckoutPage = () => {
     try {
       if (user) {
         // Utilisateur connecté
-        const orderItems = items.map(item => ({
+        const orderItems = items.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           price: item.products?.price || 0,
-          merchant_id: item.products?.merchant_id || ''
+          merchant_id: item.products?.merchant_id || '',
         }));
 
         const result = await createOrder(orderItems, deliveryInfo, finalPaymentMethod);
@@ -78,11 +77,11 @@ const CheckoutPage = () => {
         }
       } else {
         // Utilisateur invité
-        const orderItems = items.map(item => ({
+        const orderItems = items.map((item) => ({
           product_id: item.product_id,
           quantity: item.quantity,
           price: item.products?.price || 0,
-          merchant_id: item.products?.merchant_id || ''
+          merchant_id: item.products?.merchant_id || '',
         }));
 
         const result = await createGuestOrder(guestInfo, orderItems, finalPaymentMethod);
@@ -132,7 +131,7 @@ const CheckoutPage = () => {
     // BNPL Checks
     if (paymentMethod === 'bnpl') {
       if (!user) {
-        alert("Vous devez être connecté pour utiliser le paiement en plusieurs fois.");
+        alert('Vous devez être connecté pour utiliser le paiement en plusieurs fois.');
         navigate('/login?redirect=/checkout');
         return;
       }
@@ -148,8 +147,10 @@ const CheckoutPage = () => {
       const debt = user.current_debt || 0;
       const limit = user.credit_limit || 0;
 
-      if ((debt + total) > limit) {
-        alert(`Plafond de crédit dépassé. Votre limite est de ${limit} FCFA et votre dette actuelle est de ${debt} FCFA.`);
+      if (debt + total > limit) {
+        alert(
+          `Plafond de crédit dépassé. Votre limite est de ${limit} FCFA et votre dette actuelle est de ${debt} FCFA.`
+        );
         return;
       }
     }
@@ -177,7 +178,9 @@ const CheckoutPage = () => {
                 <Card className="p-6 bg-blue-50 border-blue-200">
                   <div className="flex items-center gap-3 mb-4">
                     <User className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-blue-900">Informations personnelles</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Informations personnelles
+                    </h3>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -216,9 +219,11 @@ const CheckoutPage = () => {
                 <h3 className="text-lg font-semibold mb-4">Informations de livraison</h3>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor={user ? "address" : "guestAddress"}>Adresse de livraison *</Label>
+                    <Label htmlFor={user ? 'address' : 'guestAddress'}>
+                      Adresse de livraison *
+                    </Label>
                     <Input
-                      id={user ? "address" : "guestAddress"}
+                      id={user ? 'address' : 'guestAddress'}
                       required
                       value={user ? deliveryInfo.address : guestInfo.address}
                       onChange={(e) => {
@@ -248,16 +253,18 @@ const CheckoutPage = () => {
                           id="postal_code"
                           required
                           value={guestInfo.postal_code}
-                          onChange={(e) => setGuestInfo({ ...guestInfo, postal_code: e.target.value })}
+                          onChange={(e) =>
+                            setGuestInfo({ ...guestInfo, postal_code: e.target.value })
+                          }
                         />
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <Label htmlFor={user ? "phone" : "guestPhone"}>Téléphone *</Label>
+                    <Label htmlFor={user ? 'phone' : 'guestPhone'}>Téléphone *</Label>
                     <Input
-                      id={user ? "phone" : "guestPhone"}
+                      id={user ? 'phone' : 'guestPhone'}
                       required
                       value={user ? deliveryInfo.phone : guestInfo.phone}
                       onChange={(e) => {
@@ -271,9 +278,9 @@ const CheckoutPage = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor={user ? "notes" : "guestNotes"}>Notes de livraison</Label>
+                    <Label htmlFor={user ? 'notes' : 'guestNotes'}>Notes de livraison</Label>
                     <Textarea
-                      id={user ? "notes" : "guestNotes"}
+                      id={user ? 'notes' : 'guestNotes'}
                       placeholder="Instructions spéciales pour la livraison..."
                       value={user ? deliveryInfo.notes : guestInfo.notes}
                       onChange={(e) => {
@@ -314,7 +321,9 @@ const CheckoutPage = () => {
                   </div>
 
                   {/* Option BNPL */}
-                  <div className={`flex items-start space-x-2 p-3 rounded-lg border ${paymentMethod === 'bnpl' ? 'border-purple-500 bg-purple-50' : 'border-transparent'}`}>
+                  <div
+                    className={`flex items-start space-x-2 p-3 rounded-lg border ${paymentMethod === 'bnpl' ? 'border-purple-500 bg-purple-50' : 'border-transparent'}`}
+                  >
                     <RadioGroupItem value="bnpl" id="bnpl" className="mt-1" />
                     <div className="grid gap-1.5">
                       <Label htmlFor="bnpl" className="flex items-center gap-2 font-semibold">
@@ -323,7 +332,9 @@ const CheckoutPage = () => {
                       </Label>
                       <p className="text-xs text-slate-500">
                         Payez 33% aujourd'hui, le reste sur 2 mois. <br />
-                        <span className="text-purple-600 font-medium">Inscription et validation d'identité requises.</span>
+                        <span className="text-purple-600 font-medium">
+                          Inscription et validation d'identité requises.
+                        </span>
                       </p>
                     </div>
                   </div>

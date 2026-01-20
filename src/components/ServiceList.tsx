@@ -1,23 +1,16 @@
-
-import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { useServices } from "@/hooks/useServices";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import ServiceForm from "./ServiceForm";
-import { toast } from "sonner";
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { useServices } from '@/hooks/useServices';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import ServiceForm from './ServiceForm';
+import { toast } from 'sonner';
 
 const ServiceList = () => {
-  const {
-    services,
-    isLoading,
-    addService,
-    updateService,
-    deleteService,
-  } = useServices();
+  const { services, isLoading, addService, updateService, deleteService } = useServices();
   const { user } = useAuth();
-  const isAdmin = user?.roles?.includes("admin");
-  const [editing, setEditing] = useState<{ id: string, mode: "edit"|"new" } | null>(null);
+  const isAdmin = user?.roles?.includes('admin');
+  const [editing, setEditing] = useState<{ id: string; mode: 'edit' | 'new' } | null>(null);
 
   if (isLoading) {
     return <div>Chargement des prestations…</div>;
@@ -27,7 +20,9 @@ const ServiceList = () => {
     <div>
       {isAdmin && (
         <div className="mb-4">
-          <Button onClick={() => setEditing({ id: "", mode: "new" })}>Ajouter une prestation</Button>
+          <Button onClick={() => setEditing({ id: '', mode: 'new' })}>
+            Ajouter une prestation
+          </Button>
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -38,24 +33,38 @@ const ServiceList = () => {
               <div className="text-gray-600">{s.description}</div>
             </div>
             <div className="mt-1">
-              {s.is_active
-                ? <span className="text-xs text-green-500 font-semibold">Disponible</span>
-                : <span className="text-xs text-gray-400">Non active</span>}
+              {s.is_active ? (
+                <span className="text-xs text-green-500 font-semibold">Disponible</span>
+              ) : (
+                <span className="text-xs text-gray-400">Non active</span>
+              )}
             </div>
             {isAdmin && (
               <div className="absolute right-3 top-3 flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditing({ id: s.id, mode: "edit" })}>Éditer</Button>
-                <Button size="sm" variant="destructive" onClick={async () => {
-                  try {
-                    await deleteService.mutateAsync(s.id);
-                    toast.success("Service supprimé");
-                  } catch {
-                    toast.error("Erreur lors de la suppression");
-                  }
-                }}>Supprimer</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditing({ id: s.id, mode: 'edit' })}
+                >
+                  Éditer
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={async () => {
+                    try {
+                      await deleteService.mutateAsync(s.id);
+                      toast.success('Service supprimé');
+                    } catch {
+                      toast.error('Erreur lors de la suppression');
+                    }
+                  }}
+                >
+                  Supprimer
+                </Button>
               </div>
             )}
-            {editing && editing.id === s.id && editing.mode === "edit" && (
+            {editing && editing.id === s.id && editing.mode === 'edit' && (
               <ServiceForm
                 service={s}
                 mode="edit"
@@ -63,10 +72,10 @@ const ServiceList = () => {
                 onSubmit={async (data) => {
                   try {
                     await updateService.mutateAsync({ ...data, id: s.id });
-                    toast.success("Service modifié !");
+                    toast.success('Service modifié !');
                     setEditing(null);
                   } catch {
-                    toast.error("Erreur modification");
+                    toast.error('Erreur modification');
                   }
                 }}
               />
@@ -74,18 +83,18 @@ const ServiceList = () => {
           </Card>
         ))}
       </div>
-      {editing && editing.mode === "new" && (
+      {editing && editing.mode === 'new' && (
         <ServiceForm
-          service={{ name: "", description: "", is_active: true }}
+          service={{ name: '', description: '', is_active: true }}
           mode="new"
           onClose={() => setEditing(null)}
           onSubmit={async (data) => {
             try {
               await addService.mutateAsync(data);
-              toast.success("Service ajouté !");
+              toast.success('Service ajouté !');
               setEditing(null);
             } catch {
-              toast.error("Erreur création");
+              toast.error('Erreur création');
             }
           }}
         />

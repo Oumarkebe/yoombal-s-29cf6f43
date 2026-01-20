@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export type BNPLApplication = {
   id: string;
@@ -23,7 +22,7 @@ export type BNPLApplication = {
   merchant_decision_date: string | null;
   created_at: string;
   updated_at: string;
-}
+};
 
 export function useBNPLApplications() {
   const { user } = useAuth();
@@ -41,15 +40,15 @@ export function useBNPLApplications() {
     try {
       setIsLoading(true);
       const { data, error } = await (supabase.from('bnpl_applications' as any) as any)
-        .select("*")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setApplications((data || []) as BNPLApplication[]);
     } catch (err) {
-      setError("Erreur lors de la récupération des demandes BNPL");
-      console.error("Error fetching BNPL applications:", err);
+      setError('Erreur lors de la récupération des demandes BNPL');
+      console.error('Error fetching BNPL applications:', err);
     } finally {
       setIsLoading(false);
     }
@@ -86,14 +85,14 @@ export function useBNPLApplications() {
         type: 'bnpl',
         title: 'Nouvelle demande BNPL 💳',
         message: `Vous avez reçu une nouvelle demande de paiement échelonné pour le montant de ${applicationData.requested_amount.toLocaleString()} CFA.`,
-        data: { application_id: data.id, product_id: applicationData.product_id }
+        data: { application_id: data.id, product_id: applicationData.product_id },
       });
 
       await fetchApplications();
       return { success: true, data };
     } catch (err) {
-      console.error("Error creating BNPL application:", err);
-      return { success: false, error: "Erreur lors de la création de la demande" };
+      console.error('Error creating BNPL application:', err);
+      return { success: false, error: 'Erreur lors de la création de la demande' };
     }
   };
 
@@ -102,6 +101,6 @@ export function useBNPLApplications() {
     isLoading,
     error,
     createApplication,
-    refetch: fetchApplications
+    refetch: fetchApplications,
   };
 }

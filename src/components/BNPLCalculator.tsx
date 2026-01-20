@@ -1,10 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Calculator, Calendar, CreditCard, AlertCircle } from 'lucide-react';
 
 interface PaymentPlan {
@@ -30,10 +35,10 @@ const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply 
       { duration: 3, feeRate: 0.05 },
       { duration: 6, feeRate: 0.08 },
       { duration: 12, feeRate: 0.12 },
-      { duration: 24, feeRate: 0.18 }
+      { duration: 24, feeRate: 0.18 },
     ];
 
-    return plans.map(plan => {
+    return plans.map((plan) => {
       const fees = baseAmount * plan.feeRate;
       const totalAmount = baseAmount + fees;
       const monthlyPayment = totalAmount / plan.duration;
@@ -42,7 +47,7 @@ const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply 
         duration: plan.duration,
         monthlyPayment,
         totalAmount,
-        fees
+        fees,
       };
     });
   };
@@ -60,7 +65,7 @@ const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply 
     return new Intl.NumberFormat('fr-SN', {
       style: 'currency',
       currency: 'XOF',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(value);
   };
 
@@ -103,10 +108,11 @@ const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply 
                 {paymentPlans.map((plan, index) => (
                   <Card
                     key={plan.duration}
-                    className={`p-4 cursor-pointer transition-all ${selectedPlan === index
-                      ? 'border-amber-500 bg-amber-50'
-                      : 'hover:border-amber-300'
-                      }`}
+                    className={`p-4 cursor-pointer transition-all ${
+                      selectedPlan === index
+                        ? 'border-amber-500 bg-amber-50'
+                        : 'hover:border-amber-300'
+                    }`}
                     onClick={() => setSelectedPlan(index)}
                   >
                     <div className="flex justify-between items-start">
@@ -121,9 +127,7 @@ const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply 
                       </div>
                       <div className="text-right space-y-1">
                         <p className="font-medium">{formatCurrency(plan.totalAmount)}</p>
-                        <p className="text-sm text-gray-600">
-                          Frais: {formatCurrency(plan.fees)}
-                        </p>
+                        <p className="text-sm text-gray-600">Frais: {formatCurrency(plan.fees)}</p>
                       </div>
                     </div>
                   </Card>
@@ -144,7 +148,9 @@ const BNPLCalculator: React.FC<BNPLCalculatorProps> = ({ initialAmount, onApply 
                     </div>
                     <div className="flex justify-between">
                       <span>Paiement mensuel :</span>
-                      <span className="font-medium">{formatCurrency(paymentPlans[selectedPlan].monthlyPayment)}</span>
+                      <span className="font-medium">
+                        {formatCurrency(paymentPlans[selectedPlan].monthlyPayment)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Frais de service :</span>

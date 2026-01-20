@@ -435,8 +435,7 @@ CREATE TABLE IF NOT EXISTS "public"."profiles" (
     "business_postal_code" "text",
     "business_tax_id" "text",
     "permissions" "jsonb" DEFAULT '{}'::"jsonb",
-    CONSTRAINT "profiles_role_check" CHECK (("role" = ANY (ARRAY['client'::"text", 'livreur'::"text", 'admin'::"text", 'marchand'::"text"]))),
-    CONSTRAINT "profiles_rôle_check" CHECK (("role" = ANY (ARRAY['client'::"text", 'merchant'::"text", 'delivery'::"text", 'admin'::"text"])))
+    CONSTRAINT "profiles_role_check" CHECK (("role" = ANY (ARRAY['client'::"text", 'marchand'::"text", 'livreur'::"text", 'admin'::"text"])))
 );
 
 
@@ -822,21 +821,12 @@ ALTER TABLE ONLY "public"."user_ai_feature_settings"
 
 
 
-CREATE POLICY "Admin full manage" ON "public"."courses" USING ((EXISTS ( SELECT 1
+DROP POLICY IF EXISTS "Admin full manage" ON "public"."courses";
+CREATE POLICY "Les administrateurs peuvent tout gérer" ON "public"."courses" USING ((EXISTS ( SELECT 1
    FROM "public"."profiles" "p"
   WHERE (("p"."id" = "auth"."uid"()) AND ("p"."role" = 'admin'::"text")))));
 
 
-
-CREATE POLICY "Admins can delete user roles" ON "public"."user_roles" FOR DELETE USING ("public"."is_admin"());
-
-
-
-CREATE POLICY "Admins can insert user roles" ON "public"."user_roles" FOR INSERT WITH CHECK ("public"."is_admin"());
-
-
-
-CREATE POLICY "Admins can manage all user AI feature settings" ON "public"."user_ai_feature_settings" USING ("public"."is_admin"()) WITH CHECK ("public"."is_admin"());
 
 
 
@@ -870,23 +860,28 @@ CREATE POLICY "Allow authenticated read access to AI module settings" ON "public
 
 
 
+DROP POLICY IF EXISTS "Allow read to all" ON "public"."services";
 CREATE POLICY "Allow read to all" ON "public"."services" FOR SELECT USING (true);
 
 
 
+DROP POLICY IF EXISTS "Anyone can view active delivery zones" ON "public"."delivery_zones";
 CREATE POLICY "Anyone can view active delivery zones" ON "public"."delivery_zones" FOR SELECT USING (("is_active" = true));
 
 
 
+DROP POLICY IF EXISTS "Anyone can view active products" ON "public"."products";
 CREATE POLICY "Anyone can view active products" ON "public"."products" FOR SELECT USING ((("status" = 'active'::"text") OR ("merchant_id" = "auth"."uid"())));
 
 
 
+DROP POLICY IF EXISTS "Anyone can view categories" ON "public"."categories";
 CREATE POLICY "Anyone can view categories" ON "public"."categories" FOR SELECT USING (true);
 
 
 
-CREATE POLICY "Client can read own courses" ON "public"."courses" FOR SELECT USING (((EXISTS ( SELECT 1
+DROP POLICY IF EXISTS "Les clients peuvent lire leurs propres courses" ON "public"."courses";
+CREATE POLICY "Les clients peuvent lire leurs propres courses" ON "public"."courses" FOR SELECT USING (((EXISTS ( SELECT 1
    FROM "public"."deliveries" "d"
   WHERE (("d"."id" = "courses"."delivery_id") AND ("d"."customer_id" = "auth"."uid"())))) OR (EXISTS ( SELECT 1
    FROM "public"."profiles" "p"
@@ -894,7 +889,8 @@ CREATE POLICY "Client can read own courses" ON "public"."courses" FOR SELECT USI
 
 
 
-CREATE POLICY "Drivers can insert tracking updates" ON "public"."delivery_tracking" FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+DROP POLICY IF EXISTS "Les livreurs peuvent insérer des mises à jour de suivi" ON "public"."delivery_tracking";
+CREATE POLICY "Les livreurs peuvent insérer des mises à jour de suivi" ON "public"."delivery_tracking" FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
    FROM "public"."deliveries" "d"
   WHERE (("d"."id" = "delivery_tracking"."delivery_id") AND ("d"."driver_id" = "auth"."uid"())))));
 
@@ -936,31 +932,28 @@ CREATE POLICY "Les utilisateurs peuvent voir leur propre profil" ON "public"."pr
 
 
 
-CREATE POLICY "Merchants and drivers can update deliveries" ON "public"."deliveries" FOR UPDATE USING ((("auth"."uid"() = "merchant_id") OR ("auth"."uid"() = "driver_id")));
+DROP POLICY IF EXISTS "Les marchands et les livreurs peuvent mettre à jour les livraisons" ON "public"."deliveries";
+CREATE POLICY "Les marchands et les livreurs peuvent mettre à jour les livraisons" ON "public"."deliveries" FOR UPDATE USING ((("auth"."uid"() = "merchant_id") OR ("auth"."uid"() = "driver_id")));
+
+DROP POLICY IF EXISTS "Les marchands peuvent créer des livraisons" ON "public"."deliveries";
+CREATE POLICY "Les marchands peuvent créer des livraisons" ON "public"."deliveries" FOR INSERT WITH CHECK (("auth"."uid"() = "merchant_id"));
+
+DROP POLICY IF EXISTS "Les marchands peuvent supprimer leurs propres produits" ON "public"."products";
+CREATE POLICY "Les marchands peuvent supprimer leurs propres produits" ON "public"."products" FOR DELETE USING (("merchant_id" = "auth"."uid"()));
 
 
 
-CREATE POLICY "Merchants can create deliveries" ON "public"."deliveries" FOR INSERT WITH CHECK (("auth"."uid"() = "merchant_id"));
+DROP POLICY IF EXISTS "Les marchands peuvent insérer leurs propres produits" ON "public"."products";
+CREATE POLICY "Les marchands peuvent insérer leurs propres produits" ON "public"."products" FOR INSERT WITH CHECK (("merchant_id" = "auth"."uid"()));
 
+DROP POLICY IF EXISTS "Les marchands peuvent mettre à jour les demandes pour leurs produits" ON "public"."bnpl_applications";
+CREATE POLICY "Les marchands peuvent mettre à jour les demandes pour leurs produits" ON "public"."bnpl_applications" FOR UPDATE USING (("auth"."uid"() = "merchant_id"));
 
+DROP POLICY IF EXISTS "Les marchands peuvent mettre à jour leurs propres produits" ON "public"."products" ;
+CREATE POLICY "Les marchands peuvent mettre à jour leurs propres produits" ON "public"."products" FOR UPDATE USING (("merchant_id" = "auth"."uid"()));
 
-CREATE POLICY "Merchants can delete their own products" ON "public"."products" FOR DELETE USING (("merchant_id" = "auth"."uid"()));
-
-
-
-CREATE POLICY "Merchants can insert their own products" ON "public"."products" FOR INSERT WITH CHECK (("merchant_id" = "auth"."uid"()));
-
-
-
-CREATE POLICY "Merchants can update applications for their products" ON "public"."bnpl_applications" FOR UPDATE USING (("auth"."uid"() = "merchant_id"));
-
-
-
-CREATE POLICY "Merchants can update their own products" ON "public"."products" FOR UPDATE USING (("merchant_id" = "auth"."uid"()));
-
-
-
-CREATE POLICY "Merchants can view applications for their products" ON "public"."bnpl_applications" FOR SELECT USING (("auth"."uid"() = "merchant_id"));
+DROP POLICY IF EXISTS "Les marchands peuvent voir les demandes pour leurs produits" ON "public"."bnpl_applications" ;
+CREATE POLICY "Les marchands peuvent voir les demandes pour leurs produits" ON "public"."bnpl_applications" FOR SELECT USING (("auth"."uid"() = "merchant_id"));
 
 
 
@@ -1048,15 +1041,16 @@ CREATE POLICY "Users can view their own BNPL plans" ON "public"."bnpl_plans" FOR
 
 
 
-CREATE POLICY "Users can view their own deliveries as customer" ON "public"."deliveries" FOR SELECT USING (("auth"."uid"() = "customer_id"));
+DROP POLICY IF EXISTS "Les clients voient leurs livraisons" ON "public"."deliveries";
+CREATE POLICY "Les clients voient leurs livraisons" ON "public"."deliveries" FOR SELECT USING (("auth"."uid"() = "customer_id"));
 
 
+DROP POLICY IF EXISTS "Les livreurs voient leurs livraisons" ON "public"."deliveries";
+CREATE POLICY "Les livreurs voient leurs livraisons" ON "public"."deliveries" FOR SELECT USING (("auth"."uid"() = "driver_id"));
 
-CREATE POLICY "Users can view their own deliveries as driver" ON "public"."deliveries" FOR SELECT USING (("auth"."uid"() = "driver_id"));
 
-
-
-CREATE POLICY "Users can view their own deliveries as merchant" ON "public"."deliveries" FOR SELECT USING (("auth"."uid"() = "merchant_id"));
+DROP POLICY IF EXISTS "Les marchands voient leurs livraisons" ON "public"."deliveries";
+CREATE POLICY "Les marchands voient leurs livraisons" ON "public"."deliveries" FOR SELECT USING (("auth"."uid"() = "merchant_id"));
 
 
 
@@ -1072,7 +1066,8 @@ CREATE POLICY "Users can view their own profile" ON "public"."profiles" FOR SELE
 
 
 
-CREATE POLICY "Users can view tracking for their deliveries" ON "public"."delivery_tracking" FOR SELECT USING ((EXISTS ( SELECT 1
+DROP POLICY IF EXISTS "Les utilisateurs peuvent voir le suivi de leurs livraisons" ON "public"."delivery_tracking";
+CREATE POLICY "Les utilisateurs peuvent voir le suivi de leurs livraisons" ON "public"."delivery_tracking" FOR SELECT USING ((EXISTS ( SELECT 1
    FROM "public"."deliveries" "d"
   WHERE (("d"."id" = "delivery_tracking"."delivery_id") AND (("d"."customer_id" = "auth"."uid"()) OR ("d"."merchant_id" = "auth"."uid"()) OR ("d"."driver_id" = "auth"."uid"()))))));
 

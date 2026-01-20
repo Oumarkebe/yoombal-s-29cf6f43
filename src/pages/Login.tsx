@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -12,7 +19,7 @@ import { LogIn, Loader2 } from 'lucide-react';
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,9 +43,9 @@ const Login = () => {
   }, [user, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -108,7 +115,10 @@ const Login = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="password">Mot de passe</Label>
-                  <Link to="/forgot-password" className="text-xs text-amber-600 hover:text-amber-700 font-medium">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs text-amber-600 hover:text-amber-700 font-medium"
+                  >
                     Mot de passe oublié ?
                   </Link>
                 </div>
@@ -129,7 +139,13 @@ const Login = () => {
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white h-11 text-lg"
                 disabled={isLoading}
               >
-                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connexion...</> : 'Se connecter'}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Connexion...
+                  </>
+                ) : (
+                  'Se connecter'
+                )}
               </Button>
             </form>
           </CardContent>
@@ -137,7 +153,10 @@ const Login = () => {
           <CardFooter className="justify-center border-t border-slate-100 pt-6">
             <p className="text-sm text-slate-600">
               Pas encore de compte ?{' '}
-              <Link to="/register" className="font-bold text-amber-600 hover:text-amber-700 underline underline-offset-4">
+              <Link
+                to="/register"
+                className="font-bold text-amber-600 hover:text-amber-700 underline underline-offset-4"
+              >
                 S'inscrire gratuitement
               </Link>
             </p>

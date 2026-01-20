@@ -1,10 +1,9 @@
-
-import React from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import ServiceList from "@/components/ServiceList";
-import CourseList from "@/components/CourseList";
-import { Card } from "@/components/ui/card";
+import React from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import ServiceList from '@/components/ServiceList';
+import CourseList from '@/components/CourseList';
+import { Card } from '@/components/ui/card';
 
 const CoursesPage = () => {
   return (
@@ -16,7 +15,8 @@ const CoursesPage = () => {
         <Card className="mb-8 p-6">
           <h2 className="text-xl font-semibold mb-2">Prestations proposées</h2>
           <p className="mb-4 text-gray-500 text-sm">
-            Liste des services activés, sélectionnables lors de la création d’une nouvelle livraison.
+            Liste des services activés, sélectionnables lors de la création d’une nouvelle
+            livraison.
           </p>
           <ServiceList />
         </Card>

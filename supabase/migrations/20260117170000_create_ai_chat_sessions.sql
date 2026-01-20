@@ -13,14 +13,17 @@ CREATE TABLE IF NOT EXISTS public.ai_chat_sessions (
 ALTER TABLE public.ai_chat_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view their own sessions" ON public.ai_chat_sessions;
 CREATE POLICY "Users can view their own sessions" 
 ON public.ai_chat_sessions FOR SELECT 
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own sessions" ON public.ai_chat_sessions;
 CREATE POLICY "Users can update their own sessions" 
 ON public.ai_chat_sessions FOR UPDATE 
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own sessions" ON public.ai_chat_sessions;
 CREATE POLICY "Users can insert their own sessions" 
 ON public.ai_chat_sessions FOR INSERT 
 WITH CHECK (auth.uid() = user_id);

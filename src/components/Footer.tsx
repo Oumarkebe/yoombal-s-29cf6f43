@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -16,8 +15,8 @@ const Footer = () => {
               <span className="text-xl font-bold">Yoombal</span>
             </div>
             <p className="text-gray-300 mb-6 max-w-md">
-              La première plateforme e-commerce hors ligne du Sénégal. 
-              Commerce inclusif avec paiement échelonné pour tous.
+              La première plateforme e-commerce hors ligne du Sénégal. Commerce inclusif avec
+              paiement échelonné pour tous.
             </p>
             <div className="flex space-x-4">
               <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors cursor-pointer">
@@ -36,10 +35,35 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Liens rapides</h3>
             <ul className="space-y-2">
-              <li><Link to="/marketplace" className="text-gray-300 hover:text-blue-400 transition-colors">Marketplace</Link></li>
-              <li><Link to="/bnpl" className="text-gray-300 hover:text-blue-400 transition-colors">Paiement échelonné</Link></li>
-              <li><Link to="/merchants" className="text-gray-300 hover:text-blue-400 transition-colors">Devenir marchand</Link></li>
-              <li><Link to="/delivery" className="text-gray-300 hover:text-blue-400 transition-colors">Devenir livreur</Link></li>
+              <li>
+                <Link
+                  to="/marketplace"
+                  className="text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  Marketplace
+                </Link>
+              </li>
+              <li>
+                <Link to="/bnpl" className="text-gray-300 hover:text-blue-400 transition-colors">
+                  Paiement échelonné
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/merchants"
+                  className="text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  Devenir marchand
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/delivery"
+                  className="text-gray-300 hover:text-blue-400 transition-colors"
+                >
+                  Devenir livreur
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -47,19 +71,33 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2">
-              <li><Link to="/help" className="text-gray-300 hover:text-blue-400 transition-colors">Centre d'aide</Link></li>
-              <li><Link to="/contact" className="text-gray-300 hover:text-blue-400 transition-colors">Contact</Link></li>
-              <li><Link to="/privacy" className="text-gray-300 hover:text-blue-400 transition-colors">Confidentialité</Link></li>
-              <li><Link to="/terms" className="text-gray-300 hover:text-blue-400 transition-colors">Conditions</Link></li>
+              <li>
+                <Link to="/help" className="text-gray-300 hover:text-blue-400 transition-colors">
+                  Centre d'aide
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-gray-300 hover:text-blue-400 transition-colors">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-gray-300 hover:text-blue-400 transition-colors">
+                  Confidentialité
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className="text-gray-300 hover:text-blue-400 transition-colors">
+                  Conditions
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 Yoombal. Tous droits réservés.
-            </p>
+            <p className="text-gray-400 text-sm">© 2024 Yoombal. Tous droits réservés.</p>
             <div className="mt-4 md:mt-0">
               <span className="text-gray-400 text-sm">
                 Conforme aux normes BCEAO • GDPR • PCI-DSS

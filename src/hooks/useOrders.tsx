@@ -5,9 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { type Database } from '@/integrations/supabase/types';
 
 export type Order = Database['public']['Tables']['orders']['Row'] & {
-  order_items?: Array<Database['public']['Tables']['order_items']['Row'] & {
-    products?: { name: string; is_digital: boolean };
-  }>;
+  order_items?: Array<
+    Database['public']['Tables']['order_items']['Row'] & {
+      products?: { name: string; is_digital: boolean };
+    }
+  >;
   profiles?: {
     email?: string;
     phone?: string;
@@ -21,7 +23,7 @@ export type OrderItemCreation = {
   quantity: number;
   price: number;
   merchant_id: string;
-}
+};
 
 export const useOrders = (options?: { role?: string; merchantId?: string; driverId?: string }) => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -37,10 +39,12 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
     try {
       let query = supabase
         .from('orders')
-        .select(`
+        .select(
+          `
           *,
           order_items:order_items(*, products(name, is_digital))
-        `)
+        `
+        )
         .order('created_at', { ascending: false });
 
       if (options?.role === 'merchant' && options.merchantId) {
@@ -70,10 +74,7 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
   const deleteOrder = async (id: string) => {
     if (!user) return { error: 'User not authenticated' };
     try {
-      const { error } = await supabase
-        .from('orders')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('orders').delete().eq('id', id);
       if (error) throw error;
       await fetchOrders();
       toast({
@@ -91,7 +92,11 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
     }
   };
 
-  const createOrder = async (items: OrderItemCreation[], deliveryDetails: { address: string; phone: string; notes?: string }, paymentMethod: string) => {
+  const createOrder = async (
+    items: OrderItemCreation[],
+    deliveryDetails: { address: string; phone: string; notes?: string },
+    paymentMethod: string
+  ) => {
     if (!user) return { error: 'User not authenticated' };
     if (!items || items.length === 0) return { error: 'Cart is empty' };
 
@@ -117,16 +122,14 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
 
       if (orderError) throw orderError;
 
-      const orderItemsData = items.map(item => ({
+      const orderItemsData = items.map((item) => ({
         order_id: newOrder.id,
         product_id: item.product_id,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItemsData);
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItemsData);
 
       if (itemsError) {
         await supabase.from('orders').delete().eq('id', newOrder.id); // Tentative de rollback
@@ -139,7 +142,6 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
         description: 'Commande créée avec succès',
       });
       return { data: newOrder };
-
     } catch (err: any) {
       toast({
         title: 'Erreur',
@@ -150,13 +152,13 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
     }
   };
 
-  const updateOrder = async (id: string, orderData: Database['public']['Tables']['orders']['Update']) => {
+  const updateOrder = async (
+    id: string,
+    orderData: Database['public']['Tables']['orders']['Update']
+  ) => {
     if (!user) return { error: 'User not authenticated' };
     try {
-      const { error } = await supabase
-        .from('orders')
-        .update(orderData)
-        .eq('id', id);
+      const { error } = await supabase.from('orders').update(orderData).eq('id', id);
       if (error) throw error;
       await fetchOrders();
       toast({

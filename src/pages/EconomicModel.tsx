@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import RevenueDashboard from '@/components/RevenueDashboard';
 import LoyaltyProgram from '@/components/LoyaltyProgram';
 import InsuranceComponent from '@/components/InsuranceComponent';
-import { 
-  TrendingUp, 
-  Users, 
-  Store, 
-  Truck, 
-  CreditCard, 
+import {
+  TrendingUp,
+  Users,
+  Store,
+  Truck,
+  CreditCard,
   Shield,
   Target,
   BarChart3,
@@ -23,187 +23,187 @@ import {
   Star,
   Gift,
   Settings,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const EconomicModel = () => {
   const currentFeatures = [
     {
-      category: "Marketplace",
+      category: 'Marketplace',
       icon: <Store className="h-6 w-6 text-blue-600" />,
       features: [
-        "Catalogue produits multi-marchands",
-        "Système de recherche et filtrage avancé", 
-        "Gestion des commandes en temps réel",
-        "Interface responsive et accessible",
-        "Support multi-langues (FR/WO)"
+        'Catalogue produits multi-marchands',
+        'Système de recherche et filtrage avancé',
+        'Gestion des commandes en temps réel',
+        'Interface responsive et accessible',
+        'Support multi-langues (FR/WO)',
       ],
-      status: "Opérationnel"
+      status: 'Opérationnel',
     },
     {
-      category: "Paiement BNPL",
+      category: 'Paiement BNPL',
       icon: <CreditCard className="h-6 w-6 text-green-600" />,
       features: [
-        "Paiement échelonné sans frais pour clients",
-        "Évaluation automatique de solvabilité",
-        "Gestion des échéances",
-        "Intégration Wave/Orange Money",
-        "Tableau de bord BNPL pour marchands"
+        'Paiement échelonné sans frais pour clients',
+        'Évaluation automatique de solvabilité',
+        'Gestion des échéances',
+        'Intégration Wave/Orange Money',
+        'Tableau de bord BNPL pour marchands',
       ],
-      status: "Opérationnel"
+      status: 'Opérationnel',
     },
     {
-      category: "Livraison",
+      category: 'Livraison',
       icon: <Truck className="h-6 w-6 text-orange-600" />,
       features: [
-        "Réseau de livreurs partenaires",
-        "Suivi GPS en temps réel",
-        "Zones de livraison configurables",
-        "Calcul automatique des frais",
-        "Application mobile livreurs"
+        'Réseau de livreurs partenaires',
+        'Suivi GPS en temps réel',
+        'Zones de livraison configurables',
+        'Calcul automatique des frais',
+        'Application mobile livreurs',
       ],
-      status: "En développement"
+      status: 'En développement',
     },
     {
-      category: "Gestion",
+      category: 'Gestion',
       icon: <Settings className="h-6 w-6 text-purple-600" />,
       features: [
-        "Tableau de bord admin complet",
-        "Gestion des utilisateurs et rôles",
-        "Analytics et statistiques",
-        "Système de notifications",
-        "Configuration plateforme"
+        'Tableau de bord admin complet',
+        'Gestion des utilisateurs et rôles',
+        'Analytics et statistiques',
+        'Système de notifications',
+        'Configuration plateforme',
       ],
-      status: "Opérationnel"
-    }
+      status: 'Opérationnel',
+    },
   ];
 
   const revenueStreams = [
     {
-      source: "Commission Marchands",
-      percentage: "2.5%",
-      description: "Sur chaque transaction réussie",
-      potential: "80% du CA",
-      icon: <Store className="h-8 w-8 text-blue-600" />
+      source: 'Commission Marchands',
+      percentage: '2.5%',
+      description: 'Sur chaque transaction réussie',
+      potential: '80% du CA',
+      icon: <Store className="h-8 w-8 text-blue-600" />,
     },
     {
-      source: "Commission Livraison",
-      percentage: "15%",
-      description: "Sur les frais de livraison",
-      potential: "15% du CA",
-      icon: <Truck className="h-8 w-8 text-orange-600" />
+      source: 'Commission Livraison',
+      percentage: '15%',
+      description: 'Sur les frais de livraison',
+      potential: '15% du CA',
+      icon: <Truck className="h-8 w-8 text-orange-600" />,
     },
     {
-      source: "Services Premium",
-      percentage: "Fixe",
-      description: "Assurance, support, analytics",
-      potential: "3% du CA",
-      icon: <Star className="h-8 w-8 text-yellow-600" />
+      source: 'Services Premium',
+      percentage: 'Fixe',
+      description: 'Assurance, support, analytics',
+      potential: '3% du CA',
+      icon: <Star className="h-8 w-8 text-yellow-600" />,
     },
     {
-      source: "Programme Fidélité",
-      percentage: "Variable",
-      description: "Partenariats et cashback",
-      potential: "2% du CA",
-      icon: <Gift className="h-8 w-8 text-green-600" />
-    }
+      source: 'Programme Fidélité',
+      percentage: 'Variable',
+      description: 'Partenariats et cashback',
+      potential: '2% du CA',
+      icon: <Gift className="h-8 w-8 text-green-600" />,
+    },
   ];
 
   const roadmapQ1 = [
     {
-      title: "IA et Personnalisation",
+      title: 'IA et Personnalisation',
       items: [
-        "Recommandations produits intelligentes",
-        "Chatbot IA multilingue",
-        "Scoring BNPL automatisé",
-        "Détection fraude avancée"
+        'Recommandations produits intelligentes',
+        'Chatbot IA multilingue',
+        'Scoring BNPL automatisé',
+        'Détection fraude avancée',
       ],
-      priority: "Haute",
-      impact: "Engagement +35%"
+      priority: 'Haute',
+      impact: 'Engagement +35%',
     },
     {
-      title: "Expansion Services",
+      title: 'Expansion Services',
       items: [
-        "Assurance premium étendue",
-        "Programme fidélité gamifié",
-        "Marketplace B2B",
-        "Services financiers micro-crédit"
+        'Assurance premium étendue',
+        'Programme fidélité gamifié',
+        'Marketplace B2B',
+        'Services financiers micro-crédit',
       ],
-      priority: "Haute",
-      impact: "Revenus +25%"
-    }
+      priority: 'Haute',
+      impact: 'Revenus +25%',
+    },
   ];
 
   const roadmapQ2Q3 = [
     {
-      title: "Expansion Géographique",
+      title: 'Expansion Géographique',
       items: [
-        "Mali et Burkina Faso",
+        'Mali et Burkina Faso',
         "Côte d'Ivoire",
-        "Adaptation réglementaire locale",
-        "Partenariats bancaires régionaux"
+        'Adaptation réglementaire locale',
+        'Partenariats bancaires régionaux',
       ],
-      priority: "Moyenne",
-      impact: "Marché x3"
+      priority: 'Moyenne',
+      impact: 'Marché x3',
     },
     {
-      title: "Nouvelles Verticales",
+      title: 'Nouvelles Verticales',
       items: [
-        "Yoombal Food (livraison repas)",
-        "Yoombal Services (artisans)",
-        "Yoombal Auto (pièces détachées)",
-        "Yoombal Éducation (cours en ligne)"
+        'Yoombal Food (livraison repas)',
+        'Yoombal Services (artisans)',
+        'Yoombal Auto (pièces détachées)',
+        'Yoombal Éducation (cours en ligne)',
       ],
-      priority: "Moyenne",
-      impact: "Diversification"
-    }
+      priority: 'Moyenne',
+      impact: 'Diversification',
+    },
   ];
 
   const actionPlan = [
     {
-      phase: "Immédiat (0-3 mois)",
+      phase: 'Immédiat (0-3 mois)',
       actions: [
-        "Finaliser système de livraison",
-        "Lancer programme fidélité",
-        "Implémenter assurance basique",
-        "Optimiser conversion BNPL",
-        "Campagne acquisition marchands"
+        'Finaliser système de livraison',
+        'Lancer programme fidélité',
+        'Implémenter assurance basique',
+        'Optimiser conversion BNPL',
+        'Campagne acquisition marchands',
       ],
-      budget: "500K CFA",
-      kpis: ["100 nouveaux marchands", "1000 commandes/mois", "Taux conversion +20%"]
+      budget: '500K CFA',
+      kpis: ['100 nouveaux marchands', '1000 commandes/mois', 'Taux conversion +20%'],
     },
     {
-      phase: "Court terme (3-6 mois)",
+      phase: 'Court terme (3-6 mois)',
       actions: [
-        "Déployer IA recommandations",
-        "Lancer chatbot multilingue",
-        "Extension zones livraison",
-        "Services premium complets",
-        "Partenariats stratégiques"
+        'Déployer IA recommandations',
+        'Lancer chatbot multilingue',
+        'Extension zones livraison',
+        'Services premium complets',
+        'Partenariats stratégiques',
       ],
-      budget: "1.5M CFA",
-      kpis: ["500 marchands actifs", "5000 utilisateurs", "CA mensuel 10M CFA"]
+      budget: '1.5M CFA',
+      kpis: ['500 marchands actifs', '5000 utilisateurs', 'CA mensuel 10M CFA'],
     },
     {
-      phase: "Moyen terme (6-12 mois)",
+      phase: 'Moyen terme (6-12 mois)',
       actions: [
-        "Expansion Mali/Burkina",
-        "Marketplace B2B",
-        "Services micro-crédit",
-        "Application mobile native",
-        "Levée de fonds Série A"
+        'Expansion Mali/Burkina',
+        'Marketplace B2B',
+        'Services micro-crédit',
+        'Application mobile native',
+        'Levée de fonds Série A',
       ],
-      budget: "5M CFA",
-      kpis: ["Présence 3 pays", "1000 marchands", "CA mensuel 50M CFA"]
-    }
+      budget: '5M CFA',
+      kpis: ['Présence 3 pays', '1000 marchands', 'CA mensuel 50M CFA'],
+    },
   ];
 
   const metrics = [
-    { label: "Marchands actifs", value: "127", trend: "+23%" },
-    { label: "Utilisateurs", value: "2,847", trend: "+45%" },
-    { label: "CA mensuel", value: "3.2M CFA", trend: "+67%" },
-    { label: "Taux conversion BNPL", value: "12.5%", trend: "+8%" }
+    { label: 'Marchands actifs', value: '127', trend: '+23%' },
+    { label: 'Utilisateurs', value: '2,847', trend: '+45%' },
+    { label: 'CA mensuel', value: '3.2M CFA', trend: '+67%' },
+    { label: 'Taux conversion BNPL', value: '12.5%', trend: '+8%' },
   ];
 
   return (
@@ -217,7 +217,8 @@ const EconomicModel = () => {
               Modèle Économique Yoombal
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Écosystème e-commerce inclusif pour l'Afrique de l'Ouest avec paiement échelonné et livraison intégrée
+              Écosystème e-commerce inclusif pour l'Afrique de l'Ouest avec paiement échelonné et
+              livraison intégrée
             </p>
             <div className="flex justify-center mt-6">
               <Badge variant="secondary" className="text-lg px-6 py-2">
@@ -260,9 +261,11 @@ const EconomicModel = () => {
                         {category.icon}
                         <CardTitle className="text-xl">{category.category}</CardTitle>
                       </div>
-                      <Badge 
-                        variant={category.status === "Opérationnel" ? "default" : "secondary"}
-                        className={category.status === "Opérationnel" ? "bg-green-600" : "bg-orange-600"}
+                      <Badge
+                        variant={category.status === 'Opérationnel' ? 'default' : 'secondary'}
+                        className={
+                          category.status === 'Opérationnel' ? 'bg-green-600' : 'bg-orange-600'
+                        }
                       >
                         {category.status}
                       </Badge>
@@ -292,9 +295,7 @@ const EconomicModel = () => {
               {revenueStreams.map((stream, index) => (
                 <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow">
                   <CardHeader className="text-center">
-                    <div className="flex justify-center mb-4">
-                      {stream.icon}
-                    </div>
+                    <div className="flex justify-center mb-4">{stream.icon}</div>
                     <CardTitle className="text-lg">{stream.source}</CardTitle>
                     <div className="text-2xl font-bold text-blue-600">{stream.percentage}</div>
                   </CardHeader>
@@ -326,7 +327,7 @@ const EconomicModel = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
               Roadmap de Développement
             </h2>
-            
+
             {/* Q1 2025 */}
             <div className="mb-8">
               <h3 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
@@ -434,7 +435,9 @@ const EconomicModel = () => {
                           <h4 className="font-semibold text-gray-900 mb-2">KPIs cibles:</h4>
                           <ul className="space-y-1">
                             {phase.kpis.map((kpi, kpiIndex) => (
-                              <li key={kpiIndex} className="text-sm text-gray-600">• {kpi}</li>
+                              <li key={kpiIndex} className="text-sm text-gray-600">
+                                • {kpi}
+                              </li>
                             ))}
                           </ul>
                         </div>
@@ -459,7 +462,8 @@ const EconomicModel = () => {
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Vision 2025</h3>
                   <p className="text-gray-700 mb-4">
-                    Yoombal ambitionne de devenir la référence e-commerce en Afrique de l'Ouest avec :
+                    Yoombal ambitionne de devenir la référence e-commerce en Afrique de l'Ouest avec
+                    :
                   </p>
                   <ul className="space-y-2">
                     <li className="flex items-center space-x-2">
@@ -481,7 +485,9 @@ const EconomicModel = () => {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">Avantages Concurrentiels</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    Avantages Concurrentiels
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex items-start space-x-3">
                       <Shield className="h-5 w-5 text-blue-600 mt-1" />
@@ -494,7 +500,9 @@ const EconomicModel = () => {
                       <Users className="h-5 w-5 text-green-600 mt-1" />
                       <div>
                         <h4 className="font-semibold">Écosystème complet</h4>
-                        <p className="text-sm text-gray-600">Clients, marchands, livreurs unifiés</p>
+                        <p className="text-sm text-gray-600">
+                          Clients, marchands, livreurs unifiés
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-start space-x-3">
@@ -507,11 +515,11 @@ const EconomicModel = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="border-t pt-6 text-center">
                 <p className="text-lg text-gray-700 mb-6">
-                  <strong>Objectif 2025:</strong> Devenir la super-app e-commerce de référence en Afrique de l'Ouest
-                  avec un écosystème intégré de commerce, paiement et livraison.
+                  <strong>Objectif 2025:</strong> Devenir la super-app e-commerce de référence en
+                  Afrique de l'Ouest avec un écosystème intégré de commerce, paiement et livraison.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">

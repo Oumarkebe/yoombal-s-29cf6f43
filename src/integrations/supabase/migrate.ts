@@ -5,7 +5,9 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error('Les variables VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY doivent être définies dans .env');
+  throw new Error(
+    'Les variables VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY doivent être définies dans .env'
+  );
 }
 
 async function applySQLStructure() {
@@ -16,7 +18,7 @@ async function applySQLStructure() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({ sql: sqlContent }),
   });

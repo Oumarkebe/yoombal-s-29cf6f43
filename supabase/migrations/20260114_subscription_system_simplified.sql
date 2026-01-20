@@ -18,19 +18,15 @@ CREATE TABLE IF NOT EXISTS public.premium_plans (
     price_monthly NUMERIC DEFAULT 0 CHECK (price_monthly >= 0),
     price_yearly NUMERIC DEFAULT 0 CHECK (price_yearly >= 0),
     
-    -- Features (JSON array of feature keys)
-    features JSONB DEFAULT '[]'::jsonb,
-    
-    -- Target users
-    target_roles TEXT[], -- ['merchant', 'delivery'] or ['admin'] or NULL (all)
+    -- Features
+    features TEXT[] DEFAULT '{}',
     
     -- Status
     is_active BOOLEAN DEFAULT true,
     display_order INTEGER DEFAULT 0,
     
     -- Badge for UI
-    badge_text TEXT, -- 'Gratuit', 'Populaire', 'Premium'
-    badge_color TEXT, -- 'blue', 'green', 'purple'
+    badge TEXT, -- "Popular", "Best Value", etc.
     
     -- Timestamps
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -123,9 +119,11 @@ CREATE INDEX IF NOT EXISTS idx_audit_action ON public.subscription_audit_log(act
 
 -- Premium Plans - public read
 ALTER TABLE public.premium_plans ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS plans_public_read ON public.premium_plans;
 CREATE POLICY plans_public_read ON public.premium_plans
     FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS admin_manage_plans ON public.premium_plans;
 CREATE POLICY admin_manage_plans ON public.premium_plans
     FOR ALL USING (public.is_admin());
 
@@ -133,23 +131,28 @@ CREATE POLICY admin_manage_plans ON public.premium_plans
 ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Users can only view their own subscription
+DROP POLICY IF EXISTS user_view_own_subscription ON public.user_subscriptions;
 CREATE POLICY user_view_own_subscription ON public.user_subscriptions
     FOR SELECT USING (auth.uid() = user_id);
 
 -- Admins can view all
+DROP POLICY IF EXISTS admin_view_all_subscriptions ON public.user_subscriptions;
 CREATE POLICY admin_view_all_subscriptions ON public.user_subscriptions
     FOR SELECT USING (public.is_admin());
 
 -- Only admins can modify (users go through Edge Functions)
+DROP POLICY IF EXISTS admin_manage_subscriptions ON public.user_subscriptions;
 CREATE POLICY admin_manage_subscriptions ON public.user_subscriptions
     FOR ALL USING (public.is_admin());
 
 -- Audit Log - read-only for users
 ALTER TABLE public.subscription_audit_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS user_view_own_audit_log ON public.subscription_audit_log;
 CREATE POLICY user_view_own_audit_log ON public.subscription_audit_log
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS admin_view_all_audit_logs ON public.subscription_audit_log;
 CREATE POLICY admin_view_all_audit_logs ON public.subscription_audit_log
     FOR SELECT USING (public.is_admin());
 
@@ -158,47 +161,41 @@ CREATE POLICY admin_view_all_audit_logs ON public.subscription_audit_log
 -- ============================================================================
 
 -- Plan 1: Starter (Gratuit)
-INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, target_roles, badge_text, badge_color, display_order)
+INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, badge, display_order)
 VALUES (
     'starter',
     'Yoombal Starter',
     'Formule gratuite pour découvrir Yoombal',
     0,
     0,
-    '["marketplace_access", "basic_order_tracking", "one_delivery_address", "30_days_history"]'::jsonb,
-    NULL, -- Available for all
+    ARRAY['marketplace_access', 'basic_order_tracking', 'one_delivery_address', '30_days_history'],
     'Gratuit',
-    'blue',
     1
 ) ON CONFLICT (slug) DO NOTHING;
 
 -- Plan 2: Pro (Pour Marchands & Livreurs)
-INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, target_roles, badge_text, badge_color, display_order)
+INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, badge, display_order)
 VALUES (
     'pro',
     'Yoombal Pro',
     'Outils professionnels pour marchands et livreurs',
     15000,
     144000, -- -20%
-    '["custom_store", "unlimited_products", "sales_analytics", "customer_notifications", "ai_product_descriptions", "ai_pricing", "delivery_dashboard", "route_optimization", "multi_deliveries", "unlimited_history", "priority_support", "monthly_reports", "api_access"]'::jsonb,
-    ARRAY['merchant', 'delivery'],
+    ARRAY['custom_store', 'unlimited_products', 'sales_analytics', 'customer_notifications', 'ai_product_descriptions', 'ai_pricing', 'delivery_dashboard', 'route_optimization', 'multi_deliveries', 'unlimited_history', 'priority_support', 'monthly_reports', 'api_access'],
     'Populaire',
-    'green',
     2
 ) ON CONFLICT (slug) DO NOTHING;
 
 -- Plan 3: Enterprise (Pour Admins)
-INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, target_roles, badge_text, badge_color, display_order)
+INSERT INTO public.premium_plans (slug, name, description, price_monthly, price_yearly, features, badge, display_order)
 VALUES (
     'enterprise',
     'Yoombal Enterprise',
     'Solution complète pour entreprises',
     50000,
     480000, -- -20%
-    '["all_pro_features", "admin_dashboard", "multi_user_management", "advanced_ai", "demand_prediction", "fraud_detection", "custom_chatbot", "custom_reports", "dedicated_support_24_7", "team_training", "white_label"]'::jsonb,
-    ARRAY['admin'],
+    ARRAY['all_pro_features', 'admin_dashboard', 'multi_user_management', 'advanced_ai', 'demand_prediction', 'fraud_detection', 'custom_chatbot', 'custom_reports', 'dedicated_support_24_7', 'team_training', 'white_label'],
     'Premium',
-    'purple',
     3
 ) ON CONFLICT (slug) DO NOTHING;
 

@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, ShoppingCart, Star, UserPlus } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProductRating } from "@/hooks/useProductRating";
+import { useProductRating } from '@/hooks/useProductRating';
 import { Link } from 'react-router-dom';
 import { CategoryBadge } from './CategoryBadge';
 
@@ -30,7 +29,7 @@ const ProductCard = ({
   merchant,
   bnplAvailable = false,
   isSponsored = false,
-  categoryName
+  categoryName,
 }: ProductCardProps) => {
   const { addItem, triggerAnimation } = useCart();
   const { isAuthenticated } = useAuth();
@@ -41,7 +40,11 @@ const ProductCard = ({
     triggerAnimation({ x: e.clientX, y: e.clientY }, image);
   };
 
-  const formattedPrice = new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(price);
+  const formattedPrice = new Intl.NumberFormat('fr-SN', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0,
+  }).format(price);
 
   return (
     <Card className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 flex flex-col">
@@ -89,20 +92,23 @@ const ProductCard = ({
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex items-center gap-1 mb-2 text-sm">
           <Star
-            className={`h-4 w-4 ${average && average > 0
-              ? "text-yellow-400 fill-yellow-400"
-              : "text-gray-300"
-              }`}
+            className={`h-4 w-4 ${
+              average && average > 0 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+            }`}
           />
           <span className="font-semibold text-gray-800 dark:text-gray-200">
-            {average !== null ? average.toFixed(1) : "N/A"}
+            {average !== null ? average.toFixed(1) : 'N/A'}
           </span>
           <span className="text-gray-500 dark:text-gray-400">({count} avis)</span>
         </div>
 
         {categoryName && (
           <div className="mb-2">
-            <CategoryBadge name={categoryName} showIcon={false} className="text-[10px] py-0 px-2 h-5 opacity-80" />
+            <CategoryBadge
+              name={categoryName}
+              showIcon={false}
+              className="text-[10px] py-0 px-2 h-5 opacity-80"
+            />
           </div>
         )}
 

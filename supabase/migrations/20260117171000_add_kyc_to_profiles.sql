@@ -10,6 +10,7 @@ ADD COLUMN IF NOT EXISTS kyc_rejection_reason TEXT;
 CREATE INDEX IF NOT EXISTS idx_profiles_kyc_status ON public.profiles(kyc_status);
 
 -- RLS Update (optional if already handled, but let's be safe)
+DROP POLICY IF EXISTS "Users can update their OWN kyc fields" ON public.profiles;
 CREATE POLICY "Users can update their OWN kyc fields" 
 ON public.profiles FOR UPDATE 
 USING (auth.uid() = id)

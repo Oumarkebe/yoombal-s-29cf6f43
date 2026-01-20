@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,10 +12,10 @@ const StockManager: React.FC = () => {
   const { products, updateProduct } = useProducts();
   const [stockUpdates, setStockUpdates] = useState<Record<string, number>>({});
 
-  const merchantProducts = products.filter(p => p.merchant_id === user?.id);
+  const merchantProducts = products.filter((p) => p.merchant_id === user?.id);
 
   const handleStockUpdate = (productId: string, newStock: number) => {
-    setStockUpdates(prev => ({ ...prev, [productId]: newStock }));
+    setStockUpdates((prev) => ({ ...prev, [productId]: newStock }));
   };
 
   const saveStockUpdate = async (productId: string) => {
@@ -24,9 +23,9 @@ const StockManager: React.FC = () => {
     if (newStock !== undefined) {
       // Correction: updateProduct attend (productId, updateData)
       await updateProduct(productId, {
-        stock: newStock
+        stock: newStock,
       });
-      setStockUpdates(prev => {
+      setStockUpdates((prev) => {
         const updated = { ...prev };
         delete updated[productId];
         return updated;
@@ -46,20 +45,18 @@ const StockManager: React.FC = () => {
         <Package className="h-5 w-5" />
         <h2 className="text-xl font-semibold">Gestion des Stocks</h2>
       </div>
-      
+
       <div className="grid gap-4">
         {merchantProducts.map((product) => {
           const currentStock = stockUpdates[product.id] ?? product.stock;
           const stockStatus = getStockStatus(currentStock);
-          
+
           return (
             <Card key={product.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{product.name}</CardTitle>
-                  <Badge variant={stockStatus.color as any}>
-                    {stockStatus.label}
-                  </Badge>
+                  <Badge variant={stockStatus.color as any}>{stockStatus.label}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -68,7 +65,7 @@ const StockManager: React.FC = () => {
                     <span className="text-sm font-medium">Stock actuel:</span>
                     <span className="text-lg font-bold">{product.stock}</span>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
@@ -92,7 +89,7 @@ const StockManager: React.FC = () => {
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   {stockUpdates[product.id] !== undefined && (
                     <div className="flex gap-2">
                       <Button
@@ -106,7 +103,7 @@ const StockManager: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          setStockUpdates(prev => {
+                          setStockUpdates((prev) => {
                             const updated = { ...prev };
                             delete updated[product.id];
                             return updated;
@@ -117,7 +114,7 @@ const StockManager: React.FC = () => {
                       </Button>
                     </div>
                   )}
-                  
+
                   {currentStock < 10 && (
                     <div className="flex items-center gap-2 p-2 bg-yellow-50 rounded">
                       <AlertTriangle className="h-4 w-4 text-yellow-600" />

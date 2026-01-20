@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,12 +8,12 @@ import { Truck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function AdminDeliveries() {
-  const [activeTab, setActiveTab] = React.useState("map");
+  const [activeTab, setActiveTab] = React.useState('map');
   const [selectedDeliveryId, setSelectedDeliveryId] = React.useState<string | null>(null);
 
   const handleViewOnMap = (id?: string) => {
     if (id) setSelectedDeliveryId(id);
-    setActiveTab("map");
+    setActiveTab('map');
   };
 
   return (

@@ -14,7 +14,7 @@ import {
   Calendar,
   User,
   CreditCard,
-  Download
+  Download,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useOrders } from '@/hooks/useOrders';
@@ -41,49 +41,53 @@ const OrderManagement = () => {
   useEffect(() => {
     const enrichOrders = async () => {
       // Pour chaque commande, récupérer les items et infos utilisateur
-      const enriched = await Promise.all(orders.map(async (order: any) => {
-        // Récupérer les items de la commande
-        let items = [];
-        try {
-          const { data: orderItems } = await supabase
-            .from('order_items')
-            .select('product_id, quantity, price, products(name, is_digital)')
-            .eq('order_id', order.id);
+      const enriched = await Promise.all(
+        orders.map(async (order: any) => {
+          // Récupérer les items de la commande
+          let items = [];
+          try {
+            const { data: orderItems } = await supabase
+              .from('order_items')
+              .select('product_id, quantity, price, products(name, is_digital)')
+              .eq('order_id', order.id);
 
-          items = (orderItems || []).map((i: any) => ({
-            name: i.products?.name || i.product_id,
-            quantity: i.quantity,
-            price: i.price,
-            is_digital: i.products?.is_digital || false
-          }));
-        } catch (e) {
-          console.error("Error fetching order items:", e);
-        }
-        // Récupérer l'utilisateur
-        let user = null;
-        let userId = order.user_id || order.client_id || order.customer_id || null;
-        try {
-          if (userId) {
-            const { data } = await supabase
-              .from('profiles')
-              .select('email, phone, first_name, last_name')
-              .eq('id', userId)
-              .single();
-            user = data;
+            items = (orderItems || []).map((i: any) => ({
+              name: i.products?.name || i.product_id,
+              quantity: i.quantity,
+              price: i.price,
+              is_digital: i.products?.is_digital || false,
+            }));
+          } catch (e) {
+            console.error('Error fetching order items:', e);
           }
-        } catch { }
-        return {
-          ...order,
-          user_id: userId,
-          items,
-          customer: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : userId || order.id,
-          email: user?.email || '',
-          phone: user?.phone || '',
-          total: items.reduce((sum, i) => sum + (i.price * i.quantity), 0),
-          date: order.created_at || '',
-          is_digital_only: items.length > 0 && items.every(i => i.is_digital)
-        };
-      }));
+          // Récupérer l'utilisateur
+          let user = null;
+          let userId = order.user_id || order.client_id || order.customer_id || null;
+          try {
+            if (userId) {
+              const { data } = await supabase
+                .from('profiles')
+                .select('email, phone, first_name, last_name')
+                .eq('id', userId)
+                .single();
+              user = data;
+            }
+          } catch {}
+          return {
+            ...order,
+            user_id: userId,
+            items,
+            customer: user
+              ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+              : userId || order.id,
+            email: user?.email || '',
+            phone: user?.phone || '',
+            total: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+            date: order.created_at || '',
+            is_digital_only: items.length > 0 && items.every((i) => i.is_digital),
+          };
+        })
+      );
       setEnrichedOrders(enriched);
     };
     if (orders.length > 0) enrichOrders();
@@ -117,7 +121,7 @@ const OrderManagement = () => {
     await deleteOrder(orderId);
   };
 
-  const filteredOrders = enrichedOrders.filter(order => {
+  const filteredOrders = enrichedOrders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.customer && order.customer.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -129,7 +133,7 @@ const OrderManagement = () => {
     return new Intl.NumberFormat('fr-SN', {
       style: 'currency',
       currency: 'XOF',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -150,9 +154,7 @@ const OrderManagement = () => {
               <Package className="h-5 w-5 text-green-600" />
               Gestion des commandes
             </h2>
-            <p className="text-gray-600 text-sm mt-1">
-              {enrichedOrders.length} commandes au total
-            </p>
+            <p className="text-gray-600 text-sm mt-1">{enrichedOrders.length} commandes au total</p>
           </div>
         </div>
 
@@ -172,14 +174,21 @@ const OrderManagement = () => {
             onChange={(e) => setSelectedStatus(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md bg-white"
           >
-            {statusOptions.map(status => (
+            {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {status === 'all' ? 'Tous les statuts' :
-                  status === 'pending' ? 'En attente' :
-                    status === 'processing' ? 'En traitement' :
-                      status === 'shipped' ? 'Expédié' :
-                        status === 'delivered' ? 'Livré' :
-                          status === 'cancelled' ? 'Annulé' : status}
+                {status === 'all'
+                  ? 'Tous les statuts'
+                  : status === 'pending'
+                    ? 'En attente'
+                    : status === 'processing'
+                      ? 'En traitement'
+                      : status === 'shipped'
+                        ? 'Expédié'
+                        : status === 'delivered'
+                          ? 'Livré'
+                          : status === 'cancelled'
+                            ? 'Annulé'
+                            : status}
               </option>
             ))}
           </select>
@@ -215,23 +224,35 @@ const OrderManagement = () => {
 
                 {/* Order Items */}
                 <div className="space-y-2 mb-4">
-                  {order.items && order.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100">
-                      <div className="flex items-center gap-2">
-                        {item.is_digital && <span className="text-blue-600" title="Produit numérique"><Download className="h-3 w-3" /></span>}
-                        <span className="text-sm font-medium">{item.name}</span>
+                  {order.items &&
+                    order.items.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100"
+                      >
+                        <div className="flex items-center gap-2">
+                          {item.is_digital && (
+                            <span className="text-blue-600" title="Produit numérique">
+                              <Download className="h-3 w-3" />
+                            </span>
+                          )}
+                          <span className="text-sm font-medium">{item.name}</span>
+                        </div>
+                        <span className="text-sm text-gray-600">
+                          {item.quantity}x {formatCurrency(item.price)}
+                        </span>
                       </div>
-                      <span className="text-sm text-gray-600">
-                        {item.quantity}x {formatCurrency(item.price)}
-                      </span>
-                    </div>
-                  ))}
+                    ))}
                 </div>
 
                 {/* Customer Info */}
                 <div className="text-sm text-gray-600 space-y-1">
-                  <p><strong>Email:</strong> {order.email}</p>
-                  <p><strong>Téléphone:</strong> {order.phone}</p>
+                  <p>
+                    <strong>Email:</strong> {order.email}
+                  </p>
+                  <p>
+                    <strong>Téléphone:</strong> {order.phone}
+                  </p>
                 </div>
               </div>
 
@@ -244,30 +265,50 @@ const OrderManagement = () => {
                 <Button
                   size="sm"
                   className="bg-green-600 hover:bg-green-700 font-bold shadow-sm"
-                  onClick={() => handleStatusChange(order.id, order.is_digital_only ? 'delivered' : 'processing')}
+                  onClick={() =>
+                    handleStatusChange(order.id, order.is_digital_only ? 'delivered' : 'processing')
+                  }
                 >
                   <Check className="h-4 w-4 mr-1" />
                   {order.is_digital_only ? 'Accepter & Livrer' : 'Accepter'}
                 </Button>
-                <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleStatusChange(order.id, 'cancelled')}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  onClick={() => handleStatusChange(order.id, 'cancelled')}
+                >
                   <X className="h-4 w-4 mr-1" />
                   Refuser
                 </Button>
 
                 {!order.is_digital_only && (
                   <>
-                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => handleStatusChange(order.id, 'shipped')}>
+                    <Button
+                      size="sm"
+                      className="bg-purple-600 hover:bg-purple-700"
+                      onClick={() => handleStatusChange(order.id, 'shipped')}
+                    >
                       <Truck className="h-4 w-4 mr-1" />
                       Expédier
                     </Button>
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(order.id, 'delivered')}>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleStatusChange(order.id, 'delivered')}
+                    >
                       <Package className="h-4 w-4 mr-1" />
                       Marquer livré
                     </Button>
                   </>
                 )}
 
-                <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600" onClick={() => handleDelete(order.id)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-gray-500 hover:text-red-600"
+                  onClick={() => handleDelete(order.id)}
+                >
                   Supprimer
                 </Button>
               </div>
@@ -279,12 +320,8 @@ const OrderManagement = () => {
       {filteredOrders.length === 0 && (
         <Card className="p-12 text-center">
           <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Aucune commande trouvée
-          </h3>
-          <p className="text-gray-600">
-            Aucune commande ne correspond à vos critères de recherche
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune commande trouvée</h3>
+          <p className="text-gray-600">Aucune commande ne correspond à vos critères de recherche</p>
         </Card>
       )}
     </div>

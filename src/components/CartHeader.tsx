@@ -1,14 +1,13 @@
-
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home } from "lucide-react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface CartHeaderProps {
   title?: string;
 }
 
-const CartHeader: React.FC<CartHeaderProps> = ({ title = "Mon Panier" }) => {
+const CartHeader: React.FC<CartHeaderProps> = ({ title = 'Mon Panier' }) => {
   return (
     <div className="flex items-center gap-4 mb-8">
       <Button variant="ghost" size="icon" asChild>
@@ -27,4 +26,3 @@ const CartHeader: React.FC<CartHeaderProps> = ({ title = "Mon Panier" }) => {
 };
 
 export default CartHeader;
-

@@ -13,7 +13,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { OrderDetailsDialog } from '@/components/admin/OrderDetailsDialog';
 
@@ -52,24 +52,34 @@ const fetchAllOrders = async (page: number, pageSize: number, searchTerm: string
   const { data, error, count } = await query;
 
   if (error) {
-    console.error("Error fetching orders:", error);
+    console.error('Error fetching orders:', error);
     throw new Error(error.message);
   }
   return { orders: data, count: count ?? 0 };
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-SN', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat('fr-SN', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0,
+  }).format(amount);
 };
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case 'pending': return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
-    case 'processing': return <Badge className="bg-blue-100 text-blue-800">En traitement</Badge>;
-    case 'shipped': return <Badge className="bg-purple-100 text-purple-800">Expédiée</Badge>;
-    case 'delivered': return <Badge className="bg-green-100 text-green-800">Livrée</Badge>;
-    case 'cancelled': return <Badge className="bg-red-100 text-red-800">Annulée</Badge>;
-    default: return <Badge>{status}</Badge>;
+    case 'pending':
+      return <Badge className="bg-yellow-100 text-yellow-800">En attente</Badge>;
+    case 'processing':
+      return <Badge className="bg-blue-100 text-blue-800">En traitement</Badge>;
+    case 'shipped':
+      return <Badge className="bg-purple-100 text-purple-800">Expédiée</Badge>;
+    case 'delivered':
+      return <Badge className="bg-green-100 text-green-800">Livrée</Badge>;
+    case 'cancelled':
+      return <Badge className="bg-red-100 text-red-800">Annulée</Badge>;
+    default:
+      return <Badge>{status}</Badge>;
   }
 };
 
@@ -91,7 +101,6 @@ export function AdminOrderList() {
     };
   }, [searchTerm]);
 
-
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ['allOrders', currentPage, PAGE_SIZE, debouncedSearchTerm],
     queryFn: () => fetchAllOrders(currentPage, PAGE_SIZE, debouncedSearchTerm),
@@ -103,11 +112,19 @@ export function AdminOrderList() {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   if (isLoading && !data) {
-    return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-amber-600" /></div>;
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500 text-center py-12">Erreur lors du chargement des commandes. {error.message}</div>;
+    return (
+      <div className="text-red-500 text-center py-12">
+        Erreur lors du chargement des commandes. {error.message}
+      </div>
+    );
   }
 
   return (
@@ -141,34 +158,44 @@ export function AdminOrderList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-
-              {orders && orders.map(order => (
-                <TableRow key={order.id} className="hover:bg-gray-50/50">
-                  <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <div>
-                        <div>{(order.client_first_name || "") + " " + (order.client_last_name || "")}</div>
+              {orders &&
+                orders.map((order) => (
+                  <TableRow key={order.id} className="hover:bg-gray-50/50">
+                    <TableCell className="font-mono text-xs">
+                      {order.id.substring(0, 8)}...
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <div>
+                            {(order.client_first_name || '') + ' ' + (order.client_last_name || '')}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Building className="w-4 h-4 text-gray-400" />
-                      {order.merchant_business_name || 'Inconnu'}
-                    </div>
-                  </TableCell>
-                  <TableCell>{new Date(order.created_at).toLocaleDateString('fr-FR')}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(order.total_amount)}</TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedOrderId(order.id)}>
-                      Superviser
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Building className="w-4 h-4 text-gray-400" />
+                        {order.merchant_business_name || 'Inconnu'}
+                      </div>
+                    </TableCell>
+                    <TableCell>{new Date(order.created_at).toLocaleDateString('fr-FR')}</TableCell>
+                    <TableCell className="font-semibold">
+                      {formatCurrency(order.total_amount)}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedOrderId(order.id)}
+                      >
+                        Superviser
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </div>
@@ -176,14 +203,13 @@ export function AdminOrderList() {
           <div className="text-sm text-gray-600">
             {totalCount > 0
               ? `Affiche ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, totalCount)} sur ${totalCount} commandes`
-              : 'Aucune commande trouvée.'
-            }
+              : 'Aucune commande trouvée.'}
           </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage <= 1 || isFetching}
             >
               Précédent
@@ -191,7 +217,7 @@ export function AdminOrderList() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => prev + 1)}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
               disabled={currentPage >= totalPages || isFetching}
             >
               Suivant
@@ -203,19 +229,14 @@ export function AdminOrderList() {
       {orders?.length === 0 && !isFetching && (
         <Card className="p-12 text-center">
           <ShoppingCartIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Aucune commande trouvée
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune commande trouvée</h3>
           <p className="text-gray-600">
             Aucune commande ne correspond à vos critères de recherche.
           </p>
         </Card>
       )}
       {selectedOrderId && (
-        <OrderDetailsDialog
-          orderId={selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
-        />
+        <OrderDetailsDialog orderId={selectedOrderId} onClose={() => setSelectedOrderId(null)} />
       )}
     </div>
   );

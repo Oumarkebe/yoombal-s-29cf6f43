@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 export type Language = 'en' | 'wo';
@@ -12,9 +11,9 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const availableLanguages: { code: Language | null; name: string }[] = [
-    { code: null, name: "Français (Original)"},
-    { code: 'en', name: "English" },
-    { code: 'wo', name: "Wolof" },
+  { code: null, name: 'Français (Original)' },
+  { code: 'en', name: 'English' },
+  { code: 'wo', name: 'Wolof' },
 ];
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
@@ -23,14 +22,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     targetLanguage,
     setTargetLanguage,
-    availableLanguages
+    availableLanguages,
   };
 
-  return (
-    <LanguageContext.Provider value={value}>
-      {children}
-    </LanguageContext.Provider>
-  );
+  return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 };
 
 export const useLanguage = () => {

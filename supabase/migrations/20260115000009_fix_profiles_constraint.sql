@@ -11,7 +11,7 @@ ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
 
 -- 3. Add a new constraint that matches our application's roles
 ALTER TABLE profiles ADD CONSTRAINT profiles_role_check 
-CHECK (role IN ('client', 'merchant', 'delivery', 'admin'));
+CHECK (role IN ('client', 'marchand', 'livreur', 'admin'));
 
 -- 4. Verify RLS is enabled
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;

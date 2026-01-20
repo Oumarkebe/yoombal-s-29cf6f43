@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +15,7 @@ import {
   AlertCircle,
   Navigation,
   Loader2,
-  Download
+  Download,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useToast } from '@/hooks/use-toast';
@@ -36,34 +35,36 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
       onViewOnMap(id);
     } else {
       toast({
-        title: "Info",
-        description: "Voir sur la carte: " + (id || "toutes"),
+        title: 'Info',
+        description: 'Voir sur la carte: ' + (id || 'toutes'),
       });
     }
   };
 
   const exportToExcel = () => {
-    const dataToExport = filteredDeliveries.map(d => ({
+    const dataToExport = filteredDeliveries.map((d) => ({
       ID: d.id,
       'ID Commande': d.order_id,
       Client: d.customer_name,
       Telephone: d.customer_phone,
-      Livreur: d.driver_profile ? `${d.driver_profile.first_name} ${d.driver_profile.last_name}` : 'Non assigné',
+      Livreur: d.driver_profile
+        ? `${d.driver_profile.first_name} ${d.driver_profile.last_name}`
+        : 'Non assigné',
       Statut: d.status,
       'Adresse Depart': d.pickup_address,
       'Adresse Destination': d.delivery_address,
       'Frais (CFA)': d.delivery_fee,
-      'Date Creation': new Date(d.created_at || '').toLocaleString()
+      'Date Creation': new Date(d.created_at || '').toLocaleString(),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Livraisons Yoombal");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Livraisons Yoombal');
     XLSX.writeFile(workbook, `Rapport_Livraisons_${new Date().toLocaleDateString()}.xlsx`);
 
     toast({
-      title: "Export réussi ✅",
-      description: "La liste des livraisons a été exportée en Excel.",
+      title: 'Export réussi ✅',
+      description: 'La liste des livraisons a été exportée en Excel.',
     });
   };
 
@@ -105,10 +106,11 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
     }
   };
 
-  const filteredDeliveries = deliveries.filter(delivery =>
-    delivery.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    delivery.order_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    delivery.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDeliveries = deliveries.filter(
+    (delivery) =>
+      delivery.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      delivery.order_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      delivery.customer_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleStatusUpdate = async (deliveryId: string, newStatus: Delivery['status']) => {
@@ -140,7 +142,11 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline" onClick={exportToExcel} className="text-green-600 border-green-200 hover:bg-green-50">
+          <Button
+            variant="outline"
+            onClick={exportToExcel}
+            className="text-green-600 border-green-200 hover:bg-green-50"
+          >
             <Download className="mr-2 h-4 w-4" />
             Exporter Excel
           </Button>
@@ -165,9 +171,7 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
                       <h3 className="text-lg font-semibold">{delivery.id.slice(0, 8)}</h3>
                       {getStatusBadge(delivery.status)}
                     </div>
-                    <p className="text-sm text-gray-600">
-                      Commande: {delivery.order_id}
-                    </p>
+                    <p className="text-sm text-gray-600">Commande: {delivery.order_id}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Frais</p>
@@ -231,7 +235,11 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
 
               {/* Actions */}
               <div className="flex flex-col gap-3 min-w-[200px]">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleViewOnMap(delivery.id)}>
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => handleViewOnMap(delivery.id)}
+                >
                   <MapPin className="h-4 w-4 mr-1" />
                   Localiser
                 </Button>
@@ -287,9 +295,7 @@ const DeliveryTracking = ({ onViewOnMap }: DeliveryTrackingProps) => {
       {filteredDeliveries.length === 0 && (
         <Card className="p-12 text-center">
           <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Aucune livraison trouvée
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucune livraison trouvée</h3>
           <p className="text-gray-600">
             {searchTerm
               ? 'Aucune livraison ne correspond à vos critères de recherche'

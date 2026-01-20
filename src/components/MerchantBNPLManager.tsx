@@ -1,9 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,12 +18,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import { useMerchantBNPLApplications } from '@/hooks/useMerchantBNPLApplications';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
-import { Loader2, Check, X, User, Package, Calendar, CreditCard, FileText, Download, Eye, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import {
+  Loader2,
+  Check,
+  X,
+  User,
+  Package,
+  Calendar,
+  CreditCard,
+  FileText,
+  Download,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+} from 'lucide-react';
 
 // Sub-component for individual application card to manage local expand state
 const BNPLApplicationCard = ({
@@ -26,21 +45,21 @@ const BNPLApplicationCard = ({
   onViewDocument,
   onApprove,
   onReject,
-  onDelete
+  onDelete,
 }: {
-  application: any,
-  onViewDocument: (path: string, title: string) => void,
-  onApprove: (id: string) => void,
-  onReject: (id: string) => void,
-  onDelete: (id: string) => void
+  application: any;
+  onViewDocument: (path: string, title: string) => void;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onDelete: (id: string) => void;
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const config = {
-      pending: { label: "En attente", variant: "secondary" as const },
-      approved: { label: "Approuvé", variant: "default" as const },
-      rejected: { label: "Rejeté", variant: "destructive" as const }
+      pending: { label: 'En attente', variant: 'secondary' as const },
+      approved: { label: 'Approuvé', variant: 'default' as const },
+      rejected: { label: 'Rejeté', variant: 'destructive' as const },
     };
 
     const statusConfig = config[status as keyof typeof config] || config.pending;
@@ -53,9 +72,7 @@ const BNPLApplicationCard = ({
         <div className="flex items-start justify-between">
           <div className="space-y-1 flex-1">
             <div className="flex items-center justify-between mr-4">
-              <CardTitle className="text-lg">
-                {application.products?.name}
-              </CardTitle>
+              <CardTitle className="text-lg">{application.products?.name}</CardTitle>
               <div className="flex items-center gap-2">
                 {getStatusBadge(application.application_status)}
                 <Button
@@ -64,7 +81,11 @@ const BNPLApplicationCard = ({
                   className="h-8 w-8 p-0"
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -88,7 +109,9 @@ const BNPLApplicationCard = ({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-gray-50 p-3 rounded-lg">
             <div>
               <span className="text-gray-500 text-xs uppercase tracking-wide">Montant</span>
-              <p className="font-semibold text-gray-900">{application.requested_amount.toLocaleString()} CFA</p>
+              <p className="font-semibold text-gray-900">
+                {application.requested_amount.toLocaleString()} CFA
+              </p>
             </div>
             <div>
               <span className="text-gray-500 text-xs uppercase tracking-wide">Durée</span>
@@ -96,11 +119,15 @@ const BNPLApplicationCard = ({
             </div>
             <div>
               <span className="text-gray-500 text-xs uppercase tracking-wide">Mensualité</span>
-              <p className="font-semibold text-gray-900">{application.monthly_payment.toLocaleString()} CFA</p>
+              <p className="font-semibold text-gray-900">
+                {application.monthly_payment.toLocaleString()} CFA
+              </p>
             </div>
             <div>
               <span className="text-gray-500 text-xs uppercase tracking-wide">1er Paiement</span>
-              <p className="font-semibold text-gray-900">{application.first_payment_amount.toLocaleString()} CFA</p>
+              <p className="font-semibold text-gray-900">
+                {application.first_payment_amount.toLocaleString()} CFA
+              </p>
             </div>
           </div>
 
@@ -112,11 +139,15 @@ const BNPLApplicationCard = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-3">
               <div>
                 <span className="text-gray-500 block">Téléphone</span>
-                <span className="font-medium">{application.applicant_phone || 'Non renseigné'}</span>
+                <span className="font-medium">
+                  {application.applicant_phone || 'Non renseigné'}
+                </span>
               </div>
               <div>
                 <span className="text-gray-500 block">N° CNI / Passeport</span>
-                <span className="font-medium">{application.applicant_id_number || 'Non renseigné'}</span>
+                <span className="font-medium">
+                  {application.applicant_id_number || 'Non renseigné'}
+                </span>
               </div>
             </div>
 
@@ -170,7 +201,8 @@ const BNPLApplicationCard = ({
               </>
             ) : (
               <div className="flex-1 text-sm text-gray-500 italic">
-                Décision : {application.merchant_decision} le {new Date(application.merchant_decision_date).toLocaleDateString()}
+                Décision : {application.merchant_decision} le{' '}
+                {new Date(application.merchant_decision_date).toLocaleDateString()}
               </div>
             )}
 
@@ -191,7 +223,8 @@ const BNPLApplicationCard = ({
 };
 
 const MerchantBNPLManager: React.FC = () => {
-  const { applications, isLoading, updateApplicationStatus, deleteApplication } = useMerchantBNPLApplications();
+  const { applications, isLoading, updateApplicationStatus, deleteApplication } =
+    useMerchantBNPLApplications();
   const { toast } = useToast();
 
   const [documentToView, setDocumentToView] = useState<{ url: string; title: string } | null>(null);
@@ -211,17 +244,15 @@ const MerchantBNPLManager: React.FC = () => {
 
     if (result.success) {
       toast({
-        title: decision === 'approved' ? "Dossier approuvé" : "Demande rejetée",
-        description: decision === 'approved'
-          ? "Le plan BNPL est activé."
-          : "Demande rejetée.",
-        className: decision === 'approved' ? "bg-green-50 border-green-200" : ""
+        title: decision === 'approved' ? 'Dossier approuvé' : 'Demande rejetée',
+        description: decision === 'approved' ? 'Le plan BNPL est activé.' : 'Demande rejetée.',
+        className: decision === 'approved' ? 'bg-green-50 border-green-200' : '',
       });
     } else {
       toast({
-        title: "Erreur",
-        description: result.error || "Erreur de traitement",
-        variant: "destructive"
+        title: 'Erreur',
+        description: result.error || 'Erreur de traitement',
+        variant: 'destructive',
       });
     }
     setApplicationToApprove(null);
@@ -236,17 +267,21 @@ const MerchantBNPLManager: React.FC = () => {
       if (error) throw error;
       if (data?.signedUrl) setDocumentToView({ url: data.signedUrl, title });
     } catch (error) {
-      console.error("Error signed URL:", error);
-      toast({ title: "Erreur", description: "Impossible d'ouvrir le document", variant: "destructive" });
+      console.error('Error signed URL:', error);
+      toast({
+        title: 'Erreur',
+        description: "Impossible d'ouvrir le document",
+        variant: 'destructive',
+      });
     }
   };
 
   const handleDelete = async (applicationId: string) => {
     const result = await deleteApplication(applicationId);
     if (result.success) {
-      toast({ title: "Supprimé", description: "La demande a été supprimée." });
+      toast({ title: 'Supprimé', description: 'La demande a été supprimée.' });
     } else {
-      toast({ title: "Erreur", description: "Impossible de supprimer.", variant: "destructive" });
+      toast({ title: 'Erreur', description: 'Impossible de supprimer.', variant: 'destructive' });
     }
     setApplicationToDelete(null);
   };
@@ -262,34 +297,44 @@ const MerchantBNPLManager: React.FC = () => {
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      toast({ title: "Erreur", description: "Échec du téléchargement", variant: "destructive" });
+      toast({ title: 'Erreur', description: 'Échec du téléchargement', variant: 'destructive' });
     }
   };
 
   const exportToExcel = () => {
     if (applications.length === 0) {
-      toast({ title: "Aucune donnée", description: "Il n'y a aucune demande à exporter." });
+      toast({ title: 'Aucune donnée', description: "Il n'y a aucune demande à exporter." });
       return;
     }
 
     // 1. Prepare data for Excel
-    const data = applications.map(app => ({
-      "ID Demande": app.id,
-      "Date de création": new Date(app.created_at).toLocaleDateString('fr-FR'),
-      "Produit": app.products?.name || 'Inconnu',
-      "Prix Produit (CFA)": app.products?.price || 0,
-      "Montant Demandé (CFA)": app.requested_amount,
-      "Durée (mois)": app.plan_duration,
-      "Mensualité (CFA)": app.monthly_payment,
-      "Prénom Client": app.profiles?.first_name || '',
-      "Nom Client": app.profiles?.last_name || '',
-      "Téléphone": app.applicant_phone || '',
-      "N° CNI": app.applicant_id_number || '',
-      "Statut actuel": app.application_status === 'approved' ? 'Approuvé' :
-        (app.application_status === 'rejected' ? 'Rejeté' : 'En attente'),
-      "Décision Marchand": app.merchant_decision === 'approved' ? 'Accordé' :
-        (app.merchant_decision === 'rejected' ? 'Refusé' : '-'),
-      "Date Décision": app.merchant_decision_date ? new Date(app.merchant_decision_date).toLocaleDateString('fr-FR') : '-'
+    const data = applications.map((app) => ({
+      'ID Demande': app.id,
+      'Date de création': new Date(app.created_at).toLocaleDateString('fr-FR'),
+      Produit: app.products?.name || 'Inconnu',
+      'Prix Produit (CFA)': app.products?.price || 0,
+      'Montant Demandé (CFA)': app.requested_amount,
+      'Durée (mois)': app.plan_duration,
+      'Mensualité (CFA)': app.monthly_payment,
+      'Prénom Client': app.profiles?.first_name || '',
+      'Nom Client': app.profiles?.last_name || '',
+      Téléphone: app.applicant_phone || '',
+      'N° CNI': app.applicant_id_number || '',
+      'Statut actuel':
+        app.application_status === 'approved'
+          ? 'Approuvé'
+          : app.application_status === 'rejected'
+            ? 'Rejeté'
+            : 'En attente',
+      'Décision Marchand':
+        app.merchant_decision === 'approved'
+          ? 'Accordé'
+          : app.merchant_decision === 'rejected'
+            ? 'Refusé'
+            : '-',
+      'Date Décision': app.merchant_decision_date
+        ? new Date(app.merchant_decision_date).toLocaleDateString('fr-FR')
+        : '-',
     }));
 
     // 2. Create Workbook and Worksheet
@@ -311,11 +356,11 @@ const MerchantBNPLManager: React.FC = () => {
       { wch: 20 }, // CNI
       { wch: 15 }, // Statut
       { wch: 15 }, // Décision
-      { wch: 15 }  // Date Décision
+      { wch: 15 }, // Date Décision
     ];
     worksheet['!cols'] = wscols;
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Demandes BNPL");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Demandes BNPL');
 
     // 4. Generate and download file
     XLSX.writeFile(workbook, `BNPL_Demandes_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -338,7 +383,11 @@ const MerchantBNPLManager: React.FC = () => {
           <h2 className="text-2xl font-bold">Demandes BNPL</h2>
           <Badge>{applications.length}</Badge>
         </div>
-        <Button onClick={exportToExcel} variant="outline" className="flex gap-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+        <Button
+          onClick={exportToExcel}
+          variant="outline"
+          className="flex gap-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+        >
           <Download className="h-4 w-4" />
           Exporter Excel (.xlsx)
         </Button>
@@ -373,24 +422,38 @@ const MerchantBNPLManager: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="flex justify-between items-center">
               <span>{documentToView?.title}</span>
-              <Button variant="ghost" size="sm" onClick={() => documentToView && downloadDocument(documentToView.url, `${documentToView.title}.png`)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  documentToView &&
+                  downloadDocument(documentToView.url, `${documentToView.title}.png`)
+                }
+              >
                 <Download className="h-4 w-4 mr-2" /> Télécharger
               </Button>
             </DialogTitle>
-            <DialogDescription>
-              Aperçu du document : {documentToView?.title}
-            </DialogDescription>
+            <DialogDescription>Aperçu du document : {documentToView?.title}</DialogDescription>
           </DialogHeader>
           <div className="flex justify-center bg-gray-100 rounded-lg p-4">
             {documentToView ? (
-              <img src={documentToView.url} alt={documentToView.title} className="max-w-full max-h-[70vh] object-contain rounded shadow-sm" />
-            ) : <Loader2 className="h-8 w-8 animate-spin" />}
+              <img
+                src={documentToView.url}
+                alt={documentToView.title}
+                className="max-w-full max-h-[70vh] object-contain rounded shadow-sm"
+              />
+            ) : (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            )}
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Approve Dialog */}
-      <AlertDialog open={!!applicationToApprove} onOpenChange={(open) => !open && setApplicationToApprove(null)}>
+      <AlertDialog
+        open={!!applicationToApprove}
+        onOpenChange={(open) => !open && setApplicationToApprove(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer l'approbation</AlertDialogTitle>
@@ -406,7 +469,12 @@ const MerchantBNPLManager: React.FC = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={() => applicationToApprove && processDecision(applicationToApprove, 'approved')} className="bg-green-600 hover:bg-green-700">
+            <AlertDialogAction
+              onClick={() =>
+                applicationToApprove && processDecision(applicationToApprove, 'approved')
+              }
+              className="bg-green-600 hover:bg-green-700"
+            >
               Approuver
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -414,17 +482,24 @@ const MerchantBNPLManager: React.FC = () => {
       </AlertDialog>
 
       {/* Delete Dialog */}
-      <AlertDialog open={!!applicationToDelete} onOpenChange={(open) => !open && setApplicationToDelete(null)}>
+      <AlertDialog
+        open={!!applicationToDelete}
+        onOpenChange={(open) => !open && setApplicationToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer la demande ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Toutes les données associées à cette demande seront effacées.
+              Cette action est irréversible. Toutes les données associées à cette demande seront
+              effacées.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={() => applicationToDelete && handleDelete(applicationToDelete)} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={() => applicationToDelete && handleDelete(applicationToDelete)}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Supprimer définitivement
             </AlertDialogAction>
           </AlertDialogFooter>

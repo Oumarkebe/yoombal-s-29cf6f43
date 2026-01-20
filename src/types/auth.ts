@@ -45,9 +45,7 @@ export interface Permission {
 
 // Role-based permissions matrix
 export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
-  admin: [
-    { resource: '*', action: 'manage' },
-  ],
+  admin: [{ resource: '*', action: 'manage' }],
   moderator: [
     { resource: 'users', action: 'read' },
     { resource: 'users', action: 'update' },

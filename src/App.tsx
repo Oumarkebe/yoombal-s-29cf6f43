@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import Home from './pages/Home';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -40,105 +41,109 @@ import UserCredits from './pages/premium/UserCredits';
 import BecomeMerchant from './pages/landing/BecomeMerchant';
 import BecomeDelivery from './pages/landing/BecomeDelivery';
 import BecomeClient from './pages/landing/BecomeClient';
-import AdminKYCRequests from "./pages/admin/AdminKYCRequests";
-import AdminFinancialAudit from "./pages/admin/AdminFinancialAudit";
-import WarehouseDashboard from "./pages/WarehouseDashboard";
-import { AuthProvider } from './contexts/AuthContext';
-import { CartProvider } from './contexts/CartContext';
-import { LanguageProvider } from './contexts/LanguageContext';
+import AdminKYCRequests from './pages/admin/AdminKYCRequests';
+import AdminFinancialAudit from './pages/admin/AdminFinancialAudit';
+import WarehouseDashboard from './pages/WarehouseDashboard';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { CartProvider } from '@/contexts/CartContext';
+import { NotificationsProvider } from '@/contexts/NotificationsContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import EconomicModel from '@/pages/EconomicModel';
 import NotFound from './pages/NotFound';
 import { AIAssistant } from './components/ai/AIAssistant';
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from '@/components/ui/sonner';
 import { RoleGuard } from './components/auth/RoleGuard';
 import AIErrorBoundary from './components/ai/AIErrorBoundary';
+import { ChatWidget } from './components/chat/ChatWidget';
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <LanguageProvider>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/marketplace" element={<Marketplace />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/demo" element={<DemoRequest />} />
-              <Route path="/merchant/ai-pricing" element={<DynamicPricingPage />} />
-              <Route path="/merchant/predictions" element={<PredictiveStocksPage />} />
-              <Route path="/merchant/finance" element={<AfricaFinancePage />} />
-              <Route path="/merchant/logistics" element={<LogisticsDashboard />} />
-              <Route path="/merchant/logistics" element={<LogisticsDashboard />} />
-              <Route path="/merchant/marketing" element={<MarketingStudio />} />
-              <Route path="/merchant/ads" element={<AdsManager />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order-confirmation" element={<OrderConfirmation />} />
-              <Route path="/bnpl" element={<BNPL />} />
-              <Route path="/merchant-store/:merchantId" element={<MerchantStore />} />
-              <Route path="/profile" element={<Profile />} />
+    <HelmetProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <CartProvider>
+            <NotificationsProvider>
+              <LanguageProvider>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/demo" element={<DemoRequest />} />
+                  <Route path="/merchant/ai-pricing" element={<DynamicPricingPage />} />
+                  <Route path="/merchant/predictions" element={<PredictiveStocksPage />} />
+                  <Route path="/merchant/finance" element={<AfricaFinancePage />} />
+                  <Route path="/merchant/logistics" element={<LogisticsDashboard />} />
+                  <Route path="/merchant/marketing" element={<MarketingStudio />} />
+                  <Route path="/merchant/ads" element={<AdsManager />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                  <Route path="/bnpl" element={<BNPL />} />
+                  <Route path="/merchant-store/:merchantId" element={<MerchantStore />} />
+                  <Route path="/profile" element={<Profile />} />
 
-              {/* Marketing Landing Pages */}
-              <Route path="/join/merchant" element={<BecomeMerchant />} />
-              <Route path="/join/delivery" element={<BecomeDelivery />} />
-              <Route path="/join/client" element={<BecomeClient />} />
-              <Route path="/join/client" element={<BecomeClient />} />
+                  {/* Marketing Landing Pages */}
+                  <Route path="/join/merchant" element={<BecomeMerchant />} />
+                  <Route path="/join/delivery" element={<BecomeDelivery />} />
+                  <Route path="/join/client" element={<BecomeClient />} />
 
-              {/* Premium Routes */}
-              <Route path="/premium/subscriptions" element={<Subscriptions />} />
-              <Route path="/premium/my-subscriptions" element={<MySubscriptions />} />
-              <Route path="/premium/credits" element={<UserCredits />} />
+                  {/* Premium Routes */}
+                  <Route path="/premium/subscriptions" element={<Subscriptions />} />
+                  <Route path="/premium/my-subscriptions" element={<MySubscriptions />} />
+                  <Route path="/premium/credits" element={<UserCredits />} />
 
-              {/* Admin Routes Protected */}
-              <Route element={<RoleGuard allowedRoles={['admin']} />}>
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/admin/statistics" element={<AdminStatistics />} />
-                <Route path="/admin/products" element={<AdminProducts />} />
-                <Route path="/admin/orders" element={<AdminOrders />} />
-                <Route path="/admin/roles" element={<AdminRoles />} />
-                <Route path="/admin/deliveries" element={<AdminDeliveries />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/ai" element={<AdminAICenter />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/kyc" element={<AdminKYCRequests />} />
-                <Route path="/admin/finance/audit" element={<AdminFinancialAudit />} />
-                <Route path="/economic-model" element={<EconomicModel />} />
-                <Route path="/platform" element={<EconomicModel />} />
-              </Route>
+                  {/* Admin Routes Protected */}
+                  <Route element={<RoleGuard allowedRoles={['admin']} />}>
+                    <Route path="/admin" element={<AdminPanel />} />
+                    <Route path="/admin/statistics" element={<AdminStatistics />} />
+                    <Route path="/admin/products" element={<AdminProducts />} />
+                    <Route path="/admin/orders" element={<AdminOrders />} />
+                    <Route path="/admin/roles" element={<AdminRoles />} />
+                    <Route path="/admin/deliveries" element={<AdminDeliveries />} />
+                    <Route path="/admin/settings" element={<AdminSettings />} />
+                    <Route path="/admin/ai" element={<AdminAICenter />} />
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    <Route path="/admin/kyc" element={<AdminKYCRequests />} />
+                    <Route path="/admin/finance/audit" element={<AdminFinancialAudit />} />
+                    <Route path="/economic-model" element={<EconomicModel />} />
+                    <Route path="/platform" element={<EconomicModel />} />
+                  </Route>
 
-              {/* Warehouse & Logistics */}
-              <Route element={<RoleGuard allowedRoles={['admin', 'merchant']} />}>
-                <Route path="/warehouse" element={<WarehouseDashboard />} />
-              </Route>
+                  {/* Warehouse & Logistics */}
+                  <Route element={<RoleGuard allowedRoles={['admin', 'merchant']} />}>
+                    <Route path="/warehouse" element={<WarehouseDashboard />} />
+                  </Route>
 
-              {/* Merchant Routes Protected */}
-              <Route element={<RoleGuard allowedRoles={['merchant']} />}>
-                <Route path="/merchant" element={<MerchantDashboard />} />
-              </Route>
+                  {/* Merchant Routes Protected */}
+                  <Route element={<RoleGuard allowedRoles={['merchant']} />}>
+                    <Route path="/merchant" element={<MerchantDashboard />} />
+                  </Route>
 
-              {/* Protected Delivery Routes */}
-              <Route element={<RoleGuard allowedRoles={['driver']} />}>
-                <Route path="/delivery" element={<DeliveryDashboard />} />
-              </Route>
+                  {/* Protected Delivery Routes */}
+                  <Route element={<RoleGuard allowedRoles={['driver']} />}>
+                    <Route path="/delivery" element={<DeliveryDashboard />} />
+                  </Route>
 
-
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <AIErrorBoundary fallbackName="Assistant IA">
-              <AIAssistant />
-            </AIErrorBoundary>
-            <Toaster position="top-right" richColors />
-          </LanguageProvider>
-        </CartProvider>
-      </AuthProvider>
-    </BrowserRouter>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <AIErrorBoundary fallbackName="Assistant IA">
+                  <AIAssistant />
+                </AIErrorBoundary>
+                <ChatWidget />
+                <Toaster position="top-right" richColors />
+              </LanguageProvider>
+            </NotificationsProvider>
+          </CartProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </HelmetProvider>
   );
 }
 

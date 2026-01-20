@@ -1,7 +1,12 @@
-
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface PricingStrategySelectProps {
   value: string;
@@ -28,7 +33,8 @@ export const PricingStrategySelect: React.FC<PricingStrategySelectProps> = ({
         <SelectItem value="conservateur">Conservateur</SelectItem>
       </SelectContent>
     </Select>
-    <p className="text-xs text-gray-500 mt-1">Définit comment les prix sont ajustés dynamiquement.</p>
+    <p className="text-xs text-gray-500 mt-1">
+      Définit comment les prix sont ajustés dynamiquement.
+    </p>
   </div>
 );
-

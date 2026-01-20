@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +28,13 @@ export interface Delivery {
     last_name: string | null;
     phone: string | null;
   };
+  last_location?: {
+    lat: number;
+    lng: number;
+    speed?: number;
+    heading?: number;
+    updated_at: string;
+  };
 }
 
 export const useDeliveries = () => {
@@ -41,10 +47,7 @@ export const useDeliveries = () => {
     try {
       setIsLoading(true);
 
-      let query = supabase
-        .from('deliveries')
-        .select(`*`)
-        .order('created_at', { ascending: false });
+      let query = supabase.from('deliveries').select(`*`).order('created_at', { ascending: false });
 
       const { data: deliveriesData, error: deliveriesError } = await query;
 
@@ -54,9 +57,7 @@ export const useDeliveries = () => {
       }
 
       // Get driver profiles for deliveries with drivers
-      const driverIds = deliveriesData
-        ?.filter(d => d.driver_id)
-        .map(d => d.driver_id) || [];
+      const driverIds = deliveriesData?.filter((d) => d.driver_id).map((d) => d.driver_id) || [];
 
       let driverProfiles = [];
       if (driverIds.length > 0) {
@@ -72,33 +73,67 @@ export const useDeliveries = () => {
         }
       }
 
+      // Get latest tracking info for active deliveries
+      const activeDeliveryIds = deliveriesData
+        ?.filter((d) => ['in_transit', 'picked_up'].includes(d.status))
+        .map((d) => d.id) || [];
+
+      let trackingMap = new Map();
+      if (activeDeliveryIds.length > 0) {
+        // We fetch the latest tracking point for each active delivery
+        // This is a simplified approach; proper approach might use a materialized view or custom RPC
+        const { data: trackingData, error: trackingError } = await supabase
+          .from('delivery_tracking')
+          .select('delivery_id, latitude, longitude, speed, heading, created_at')
+          .in('delivery_id', activeDeliveryIds)
+          .order('created_at', { ascending: false });
+
+        if (!trackingError && trackingData) {
+          // Keep only the latest per delivery (trackingData is ordered desc)
+          trackingData.forEach(t => {
+            if (!trackingMap.has(t.delivery_id)) {
+              trackingMap.set(t.delivery_id, {
+                lat: t.latitude,
+                lng: t.longitude,
+                speed: t.speed,
+                heading: t.heading,
+                updated_at: t.created_at
+              });
+            }
+          });
+        }
+      }
+
       // Create a map of driver profiles
       const driverProfilesMap = new Map();
-      driverProfiles.forEach(profile => {
+      driverProfiles.forEach((profile) => {
         driverProfilesMap.set(profile.id, profile);
       });
 
       // Transform deliveries data with proper type casting
-      const transformedDeliveries: Delivery[] = (deliveriesData || []).map(delivery => ({
+      const transformedDeliveries: Delivery[] = (deliveriesData || []).map((delivery) => ({
         ...delivery,
         status: delivery.status as Delivery['status'],
-        driver_profile: delivery.driver_id ? driverProfilesMap.get(delivery.driver_id) : undefined
+        driver_profile: delivery.driver_id ? driverProfilesMap.get(delivery.driver_id) : undefined,
+        last_location: trackingMap.get(delivery.id)
       }));
 
       setDeliveries(transformedDeliveries);
     } catch (error) {
       console.error('Error fetching deliveries:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les livraisons",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de charger les livraisons',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const createDelivery = async (deliveryData: Omit<Delivery, 'id' | 'created_at' | 'updated_at'>) => {
+  const createDelivery = async (
+    deliveryData: Omit<Delivery, 'id' | 'created_at' | 'updated_at'>
+  ) => {
     try {
       const { data, error } = await supabase
         .from('deliveries')
@@ -109,8 +144,8 @@ export const useDeliveries = () => {
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Livraison créée avec succès",
+        title: 'Succès',
+        description: 'Livraison créée avec succès',
       });
 
       await fetchDeliveries();
@@ -118,9 +153,9 @@ export const useDeliveries = () => {
     } catch (error) {
       console.error('Error creating delivery:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de créer la livraison",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de créer la livraison',
+        variant: 'destructive',
       });
       throw error;
     }
@@ -144,25 +179,22 @@ export const useDeliveries = () => {
       if (signatureUrl) updateData.signature_url = signatureUrl;
       if (proofPhotoUrl) updateData.proof_photo_url = proofPhotoUrl;
 
-      const { error } = await supabase
-        .from('deliveries')
-        .update(updateData)
-        .eq('id', deliveryId);
+      const { error } = await supabase.from('deliveries').update(updateData).eq('id', deliveryId);
 
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Statut de livraison mis à jour",
+        title: 'Succès',
+        description: 'Statut de livraison mis à jour',
       });
 
       await fetchDeliveries();
     } catch (error) {
       console.error('Error updating delivery status:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le statut',
+        variant: 'destructive',
       });
     }
   };
@@ -174,24 +206,24 @@ export const useDeliveries = () => {
         .update({
           driver_id: driverId,
           status: 'assigned',
-          estimated_delivery_time: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+          estimated_delivery_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         })
         .eq('id', deliveryId);
 
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Livreur assigné avec succès",
+        title: 'Succès',
+        description: 'Livreur assigné avec succès',
       });
 
       await fetchDeliveries();
     } catch (error) {
       console.error('Error assigning driver:', error);
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: "Impossible d'assigner le livreur",
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -203,13 +235,9 @@ export const useDeliveries = () => {
       // Setup realtime subscription
       const channel = supabase
         .channel('public:deliveries')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'deliveries' },
-          () => {
-            fetchDeliveries();
-          }
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'deliveries' }, () => {
+          fetchDeliveries();
+        })
         .subscribe();
 
       return () => {
@@ -224,6 +252,6 @@ export const useDeliveries = () => {
     fetchDeliveries,
     createDelivery,
     updateDeliveryStatus,
-    assignDriver
+    assignDriver,
   };
 };

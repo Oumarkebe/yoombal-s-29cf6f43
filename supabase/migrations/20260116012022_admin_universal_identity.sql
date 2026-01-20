@@ -20,16 +20,16 @@ END $$;
 -- 2. Backfill existing business_name to merchant_name
 UPDATE profiles SET merchant_name = business_name WHERE merchant_name IS NULL AND business_name IS NOT NULL;
 
--- 3. Synchronize roles for existing admins
--- Every user with an 'admin' role in user_roles should also have 'merchant' and 'driver' roles
+-- Synchronize roles for existing admins
+-- Every user with an 'admin' role in user_roles should also have 'merchant' and 'delivery' roles
 INSERT INTO user_roles (user_id, role)
-SELECT DISTINCT user_id, 'merchant'::app_role
+SELECT DISTINCT user_id, 'marchand'
 FROM user_roles
 WHERE role = 'admin'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO user_roles (user_id, role)
-SELECT DISTINCT user_id, 'driver'::app_role
+SELECT DISTINCT user_id, 'livreur'
 FROM user_roles
 WHERE role = 'admin'
 ON CONFLICT DO NOTHING;
@@ -40,7 +40,7 @@ RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.role = 'admin' THEN
         INSERT INTO public.user_roles (user_id, role)
-        VALUES (NEW.user_id, 'merchant'), (NEW.user_id, 'driver')
+        VALUES (NEW.user_id, 'marchand'), (NEW.user_id, 'livreur')
         ON CONFLICT DO NOTHING;
     END IF;
     RETURN NEW;

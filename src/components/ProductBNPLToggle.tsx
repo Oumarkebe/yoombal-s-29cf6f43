@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -18,7 +17,7 @@ const ProductBNPLToggle: React.FC<ProductBNPLToggleProps> = ({
   productId,
   productName,
   currentBNPLStatus,
-  onStatusChange
+  onStatusChange,
 }) => {
   const [isEnabled, setIsEnabled] = useState(currentBNPLStatus);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -26,7 +25,7 @@ const ProductBNPLToggle: React.FC<ProductBNPLToggleProps> = ({
 
   const handleToggle = async (enabled: boolean) => {
     setIsUpdating(true);
-    
+
     try {
       const { error } = await supabase
         .from('products')
@@ -37,17 +36,17 @@ const ProductBNPLToggle: React.FC<ProductBNPLToggleProps> = ({
 
       setIsEnabled(enabled);
       onStatusChange?.(enabled);
-      
+
       toast({
-        title: enabled ? "BNPL activé" : "BNPL désactivé",
+        title: enabled ? 'BNPL activé' : 'BNPL désactivé',
         description: `Le paiement échelonné a été ${enabled ? 'activé' : 'désactivé'} pour ${productName}`,
       });
     } catch (error) {
       console.error('Error updating BNPL status:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut BNPL",
-        variant: "destructive"
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le statut BNPL',
+        variant: 'destructive',
       });
     } finally {
       setIsUpdating(false);
@@ -72,7 +71,7 @@ const ProductBNPLToggle: React.FC<ProductBNPLToggleProps> = ({
               Les clients pourront demander un paiement en plusieurs fois pour ce produit
             </p>
           </div>
-          
+
           <Switch
             id={`bnpl-${productId}`}
             checked={isEnabled}

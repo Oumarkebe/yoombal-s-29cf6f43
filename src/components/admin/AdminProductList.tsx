@@ -1,11 +1,20 @@
-
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Package, Search, Building, ArrowUp, ArrowDown, MoreHorizontal, Edit, Eye } from 'lucide-react';
+import {
+  Loader2,
+  Package,
+  Search,
+  Building,
+  ArrowUp,
+  ArrowDown,
+  MoreHorizontal,
+  Edit,
+  Eye,
+} from 'lucide-react';
 import { Tables } from '@/integrations/supabase/types';
 import {
   Table,
@@ -14,13 +23,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +39,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
@@ -39,14 +48,14 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from '@/hooks/use-toast';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet';
 import { ProductFormUltimate } from './ProductFormUltimate';
 import { ProductFormData } from '@/types/product';
 import { Plus } from 'lucide-react';
@@ -67,16 +76,19 @@ const fetchAllProducts = async (page: number, pageSize: number) => {
 
   const { data, error, count } = await supabase
     .from('products')
-    .select(`
+    .select(
+      `
       *,
       categories (name),
       profiles!merchant_id (business_name)
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .order('created_at', { ascending: false })
     .range(from, to);
 
   if (error) {
-    console.error("Error fetching products:", error);
+    console.error('Error fetching products:', error);
     throw new Error(error.message);
   }
   return { products: data, count: count ?? 0 };
@@ -86,7 +98,7 @@ const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('fr-SN', {
     style: 'currency',
     currency: 'XOF',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(amount);
 };
 
@@ -125,49 +137,54 @@ export function AdminProductList() {
   const totalCount = data?.count ?? 0;
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
-  const [sortConfig, setSortConfig] = useState<{ key: keyof ProductWithDetails | 'business_name' | 'category_name'; direction: 'ascending' | 'descending' }>({ key: 'created_at', direction: 'descending' });
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof ProductWithDetails | 'business_name' | 'category_name';
+    direction: 'ascending' | 'descending';
+  }>({ key: 'created_at', direction: 'descending' });
   const [productToDelete, setProductToDelete] = useState<ProductWithDetails | null>(null);
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Non authentifié");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Non authentifié');
 
       // Nettoyage des champs UI-only
       const { new_tags, gallery_files, ...dbData } = data as any;
 
       const productToSave = {
         ...dbData,
-        merchant_id: user.id
+        merchant_id: user.id,
       };
 
       const { error } = await supabase.from('products').insert(productToSave);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      toast({ title: "Succès", description: "Produit créé avec succès." });
+      toast({ title: 'Succès', description: 'Produit créé avec succès.' });
       queryClient.invalidateQueries({ queryKey: ['allProducts'] });
       setIsCreating(false);
     },
     onError: (error: Error) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     },
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string, data: Partial<Product> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Product> }) => {
       // Nettoyage des champs UI-only
       const { new_tags, gallery_files, ...dbData } = data as any;
       const { error } = await supabase.from('products').update(dbData).eq('id', id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      toast({ title: "Succès", description: "Produit mis à jour." });
+      toast({ title: 'Succès', description: 'Produit mis à jour.' });
       queryClient.invalidateQueries({ queryKey: ['allProducts'] });
       setEditingProduct(null);
     },
     onError: (error: Error) => {
-      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      toast({ title: 'Erreur', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -187,7 +204,7 @@ export function AdminProductList() {
     },
     onSuccess: () => {
       toast({
-        title: "Succès",
+        title: 'Succès',
         description: `Le produit "${productToDelete?.name}" a été supprimé.`,
       });
       // This invalidates all queries starting with 'allProducts', so it correctly handles pagination.
@@ -200,9 +217,9 @@ export function AdminProductList() {
     },
     onError: (error) => {
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: `La suppression du produit a échoué: ${error.message}`,
-        variant: "destructive",
+        variant: 'destructive',
       });
       setProductToDelete(null);
     },
@@ -216,9 +233,10 @@ export function AdminProductList() {
   // On applique notre type plus précis aux données reçues.
   const typedProducts = products as unknown as ProductWithDetails[] | undefined;
 
-  const filteredProducts = typedProducts?.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.profiles?.business_name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = typedProducts?.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.profiles?.business_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const sortedProducts = useMemo(() => {
@@ -261,23 +279,41 @@ export function AdminProductList() {
     setSortConfig({ key, direction });
   };
 
-  const SortableHeader = ({ children, columnKey }: { children: React.ReactNode, columnKey: keyof ProductWithDetails | 'business_name' | 'category_name' }) => (
-    <TableHead onClick={() => requestSort(columnKey)} className="cursor-pointer hover:bg-gray-100 transition-colors">
+  const SortableHeader = ({
+    children,
+    columnKey,
+  }: {
+    children: React.ReactNode;
+    columnKey: keyof ProductWithDetails | 'business_name' | 'category_name';
+  }) => (
+    <TableHead
+      onClick={() => requestSort(columnKey)}
+      className="cursor-pointer hover:bg-gray-100 transition-colors"
+    >
       <div className="flex items-center gap-2">
         {children}
-        {sortConfig?.key === columnKey && (
-          sortConfig.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />
-        )}
+        {sortConfig?.key === columnKey &&
+          (sortConfig.direction === 'ascending' ? (
+            <ArrowUp className="h-4 w-4" />
+          ) : (
+            <ArrowDown className="h-4 w-4" />
+          ))}
       </div>
     </TableHead>
   );
 
   if (isLoading) {
-    return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-amber-600" /></div>;
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500 text-center py-12">Erreur lors du chargement des produits.</div>;
+    return (
+      <div className="text-red-500 text-center py-12">Erreur lors du chargement des produits.</div>
+    );
   }
 
   return (
@@ -312,10 +348,14 @@ export function AdminProductList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedProducts?.map(product => (
+              {sortedProducts?.map((product) => (
                 <TableRow key={product.id} className="hover:bg-gray-50/50">
                   <TableCell>
-                    <img src={product.image_url || '/placeholder.svg'} alt={product.name} className="w-12 h-12 object-cover rounded-md bg-gray-100" />
+                    <img
+                      src={product.image_url || '/placeholder.svg'}
+                      alt={product.name}
+                      className="w-12 h-12 object-cover rounded-md bg-gray-100"
+                    />
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
@@ -368,14 +408,13 @@ export function AdminProductList() {
           <div className="text-sm text-gray-600">
             {totalCount > 0
               ? `Affiche ${(currentPage - 1) * PAGE_SIZE + 1}-${Math.min(currentPage * PAGE_SIZE, totalCount)} sur ${totalCount} produits`
-              : 'Aucun produit trouvé.'
-            }
+              : 'Aucun produit trouvé.'}
           </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage <= 1 || isFetching}
             >
               Précédent
@@ -383,7 +422,7 @@ export function AdminProductList() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(prev => prev + 1)}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
               disabled={currentPage >= totalPages || isFetching}
             >
               Suivant
@@ -445,25 +484,32 @@ export function AdminProductList() {
       </Dialog>
 
       {/* Create/Edit Product Sheet */}
-      <Sheet open={isCreating || !!editingProduct} onOpenChange={(open) => {
-        if (!open) {
-          setIsCreating(false);
-          setEditingProduct(null);
-        }
-      }}>
+      <Sheet
+        open={isCreating || !!editingProduct}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsCreating(false);
+            setEditingProduct(null);
+          }
+        }}
+      >
         <SheetContent className="w-full sm:max-w-4xl overflow-y-auto p-0" side="right">
           <div className="h-full flex flex-col">
             <SheetHeader className="px-6 py-4 border-b">
-              <SheetTitle>{isCreating ? "Nouveau Produit" : "Modifier le produit"}</SheetTitle>
+              <SheetTitle>{isCreating ? 'Nouveau Produit' : 'Modifier le produit'}</SheetTitle>
               <SheetDescription>
-                {isCreating ? "Remplissez les informations pour créer un nouveau produit." : "Modifiez les informations du produit existant."}
+                {isCreating
+                  ? 'Remplissez les informations pour créer un nouveau produit.'
+                  : 'Modifiez les informations du produit existant.'}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-hidden">
               <ProductFormUltimate
                 initialData={editingProduct ? (editingProduct as unknown as Product) : undefined}
                 onSubmit={isCreating ? handleCreateProduct : handleUpdateProduct}
-                isLoading={isCreating ? createProductMutation.isPending : updateProductMutation.isPending}
+                isLoading={
+                  isCreating ? createProductMutation.isPending : updateProductMutation.isPending
+                }
                 onClose={() => {
                   setIsCreating(false);
                   setEditingProduct(null);
@@ -475,12 +521,16 @@ export function AdminProductList() {
       </Sheet>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!productToDelete} onOpenChange={(isOpen) => !isOpen && setProductToDelete(null)}>
+      <AlertDialog
+        open={!!productToDelete}
+        onOpenChange={(isOpen) => !isOpen && setProductToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Êtes-vous sûr de vouloir continuer ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le produit "{productToDelete?.name}" sera définitivement supprimé.
+              Cette action est irréversible. Le produit "{productToDelete?.name}" sera
+              définitivement supprimé.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -490,7 +540,9 @@ export function AdminProductList() {
               disabled={deleteProductMutation.isPending}
               className="bg-red-600 hover:bg-red-700"
             >
-              {deleteProductMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {deleteProductMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
               {deleteProductMutation.isPending ? 'Suppression...' : 'Supprimer'}
             </AlertDialogAction>
           </AlertDialogFooter>

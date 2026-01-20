@@ -1,6 +1,5 @@
-
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useProductRating(productId: string) {
   const [average, setAverage] = useState<number | null>(null);
@@ -10,12 +9,12 @@ export function useProductRating(productId: string) {
   useEffect(() => {
     if (!productId) return;
     setLoading(true);
-    
+
     // Use the 'reviews' table which exists in the schema
     supabase
-      .from("reviews")
-      .select("rating", { count: "exact", head: false })
-      .eq("product_id", productId)
+      .from('reviews')
+      .select('rating', { count: 'exact', head: false })
+      .eq('product_id', productId)
       .then(({ data, count, error }) => {
         if (error) {
           console.error('Error fetching product ratings:', error);

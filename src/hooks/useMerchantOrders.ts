@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -25,10 +24,12 @@ export interface MerchantOrder {
 const fetchMerchantOrders = async (merchantId: string): Promise<MerchantOrder[]> => {
   const { data, error } = await supabase
     .from('orders')
-    .select(`
+    .select(
+      `
       *,
       order_items (*)
-    `)
+    `
+    )
     .eq('merchant_id', merchantId)
     .order('created_at', { ascending: false });
 
@@ -43,9 +44,9 @@ const fetchMerchantOrders = async (merchantId: string): Promise<MerchantOrder[]>
 const updateOrderStatus = async (orderId: string, status: string) => {
   const { data, error } = await supabase
     .from('orders')
-    .update({ 
+    .update({
       status,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', orderId)
     .select()
@@ -62,9 +63,9 @@ const updateOrderStatus = async (orderId: string, status: string) => {
 const updateProductStock = async (productId: string, newStock: number) => {
   const { data, error } = await supabase
     .from('products')
-    .update({ 
+    .update({
       stock: newStock,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', productId)
     .select()
@@ -89,41 +90,41 @@ export const useMerchantOrders = (merchantId?: string) => {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ orderId, status }: { orderId: string; status: string }) => 
+    mutationFn: ({ orderId, status }: { orderId: string; status: string }) =>
       updateOrderStatus(orderId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['merchantOrders', merchantId] });
       toast({
-        title: "Succès",
-        description: "Statut de la commande mis à jour",
+        title: 'Succès',
+        description: 'Statut de la commande mis à jour',
       });
     },
     onError: (error: any) => {
       console.error('Error updating order status:', error);
       toast({
-        title: "Erreur",
-        description: "Erreur lors de la mise à jour du statut",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Erreur lors de la mise à jour du statut',
+        variant: 'destructive',
       });
     },
   });
 
   const updateStockMutation = useMutation({
-    mutationFn: ({ productId, newStock }: { productId: string; newStock: number }) => 
+    mutationFn: ({ productId, newStock }: { productId: string; newStock: number }) =>
       updateProductStock(productId, newStock),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       toast({
-        title: "Succès",
-        description: "Stock mis à jour",
+        title: 'Succès',
+        description: 'Stock mis à jour',
       });
     },
     onError: (error: any) => {
       console.error('Error updating stock:', error);
       toast({
-        title: "Erreur",
-        description: "Erreur lors de la mise à jour du stock",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Erreur lors de la mise à jour du stock',
+        variant: 'destructive',
       });
     },
   });

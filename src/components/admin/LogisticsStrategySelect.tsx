@@ -1,7 +1,12 @@
-
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface LogisticsStrategySelectProps {
   value: string;
@@ -28,7 +33,8 @@ export const LogisticsStrategySelect: React.FC<LogisticsStrategySelectProps> = (
         <SelectItem value="equilibre">Équilibré (temps/coût)</SelectItem>
       </SelectContent>
     </Select>
-    <p className="text-xs text-gray-500 mt-1">Définit la priorité pour l'optimisation des livraisons.</p>
+    <p className="text-xs text-gray-500 mt-1">
+      Définit la priorité pour l'optimisation des livraisons.
+    </p>
   </div>
 );
-

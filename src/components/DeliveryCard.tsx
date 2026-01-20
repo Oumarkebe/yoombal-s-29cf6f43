@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
   delivery,
   onStatusUpdate,
   onAssignDriver,
-  showActions = false
+  showActions = false,
 }) => {
   const canUpdateStatus = delivery.status !== 'delivered' && delivery.status !== 'cancelled';
 
@@ -26,9 +25,7 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
     <Card className="w-full">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
-            #{delivery.id.slice(0, 8)}
-          </CardTitle>
+          <CardTitle className="text-lg">#{delivery.id.slice(0, 8)}</CardTitle>
           <DeliveryStatusBadge status={delivery.status} />
         </div>
         <div className="text-sm text-gray-600">
@@ -37,7 +34,7 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
             month: 'long',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
           })}
         </div>
       </CardHeader>
@@ -69,7 +66,7 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
             <span className="text-sm">{delivery.customer_name}</span>
             <span className="text-sm text-gray-500">({delivery.customer_phone})</span>
           </div>
-          
+
           {delivery.estimated_delivery_time && (
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-gray-500" />
@@ -81,13 +78,9 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
         </div>
 
         <div className="flex items-center justify-between">
-          <Badge variant="secondary">
-            {delivery.delivery_fee} F CFA
-          </Badge>
+          <Badge variant="secondary">{delivery.delivery_fee} F CFA</Badge>
           {delivery.distance_km && (
-            <span className="text-sm text-gray-500">
-              {delivery.distance_km} km
-            </span>
+            <span className="text-sm text-gray-500">{delivery.distance_km} km</span>
           )}
         </div>
 
@@ -113,11 +106,7 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
         {showActions && canUpdateStatus && (
           <div className="flex gap-2 pt-2">
             {!delivery.driver_id && onAssignDriver && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onAssignDriver(delivery.id)}
-              >
+              <Button size="sm" variant="outline" onClick={() => onAssignDriver(delivery.id)}>
                 Assigner livreur
               </Button>
             )}
@@ -125,10 +114,14 @@ const DeliveryCard: React.FC<DeliveryCardProps> = ({
               <Button
                 size="sm"
                 onClick={() => {
-                  const nextStatus = delivery.status === 'pending' ? 'assigned' :
-                                   delivery.status === 'assigned' ? 'picked_up' :
-                                   delivery.status === 'picked_up' ? 'in_transit' :
-                                   'delivered';
+                  const nextStatus =
+                    delivery.status === 'pending'
+                      ? 'assigned'
+                      : delivery.status === 'assigned'
+                        ? 'picked_up'
+                        : delivery.status === 'picked_up'
+                          ? 'in_transit'
+                          : 'delivered';
                   onStatusUpdate(delivery.id, nextStatus);
                 }}
               >

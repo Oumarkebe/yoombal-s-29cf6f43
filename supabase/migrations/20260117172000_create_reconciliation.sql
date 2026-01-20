@@ -17,7 +17,7 @@ ALTER TABLE public.payment_reconciliation ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view all reconciliation" 
 ON public.payment_reconciliation FOR SELECT 
-USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'manager')));
 
 -- Index for orphan search
 CREATE INDEX IF NOT EXISTS idx_reconciliation_status ON public.payment_reconciliation(status);

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ShoppingBag, User, Truck } from 'lucide-react';
@@ -27,8 +26,8 @@ const Hero = () => {
 
           {/* Subtitle */}
           <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Plateforme e-commerce hors ligne avec paiement échelonné.
-            Accessible partout, même sans connexion internet.
+            Plateforme e-commerce hors ligne avec paiement échelonné. Accessible partout, même sans
+            connexion internet.
           </p>
 
           {/* Feature Badges */}
@@ -49,10 +48,19 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-lg px-8" asChild>
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-lg px-8"
+              asChild
+            >
               <Link to="/register">Commencer gratuitement</Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8 border-blue-300 hover:bg-blue-50" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="text-lg px-8 border-blue-300 hover:bg-blue-50"
+              asChild
+            >
               <Link to="/demo">Voir la démo</Link>
             </Button>
           </div>
@@ -64,7 +72,9 @@ const Hero = () => {
                 <User className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Client</h3>
-              <p className="text-gray-600 mb-4">Achetez maintenant, payez plus tard. Livraison partout au Sénégal.</p>
+              <p className="text-gray-600 mb-4">
+                Achetez maintenant, payez plus tard. Livraison partout au Sénégal.
+              </p>
               <Button variant="outline" className="w-full border-blue-200 hover:bg-blue-50" asChild>
                 <Link to="/register?role=client">Devenir client</Link>
               </Button>
@@ -75,7 +85,9 @@ const Hero = () => {
                 <ShoppingBag className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Marchand</h3>
-              <p className="text-gray-600 mb-4">Vendez vos produits en ligne et hors ligne. Gestion simple et efficace.</p>
+              <p className="text-gray-600 mb-4">
+                Vendez vos produits en ligne et hors ligne. Gestion simple et efficace.
+              </p>
               <Button variant="outline" className="w-full border-blue-200 hover:bg-blue-50" asChild>
                 <Link to="/register?role=merchant">Devenir marchand</Link>
               </Button>
@@ -86,7 +98,9 @@ const Hero = () => {
                 <Truck className="text-white" size={24} />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Livreur</h3>
-              <p className="text-gray-600 mb-4">Rejoignez notre réseau de livraison. Travaillez de manière flexible.</p>
+              <p className="text-gray-600 mb-4">
+                Rejoignez notre réseau de livraison. Travaillez de manière flexible.
+              </p>
               <Button variant="outline" className="w-full border-blue-200 hover:bg-blue-50" asChild>
                 <Link to="/register?role=delivery">Devenir livreur</Link>
               </Button>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
@@ -8,7 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Settings, DollarSign, Loader2 } from 'lucide-react';
 import { PremiumFeature } from '@/hooks/usePremiumFeatures';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface PremiumFeatureCardProps {
   feature: PremiumFeature;
@@ -17,7 +22,9 @@ interface PremiumFeatureCardProps {
 }
 
 export function PremiumFeatureCard({ feature, onUpdate, isUpdating }: PremiumFeatureCardProps) {
-  const [configData, setConfigData] = useState(JSON.stringify(feature.configuration || {}, null, 2));
+  const [configData, setConfigData] = useState(
+    JSON.stringify(feature.configuration || {}, null, 2)
+  );
   const [isConfigOpen, setIsConfigOpen] = useState(false);
 
   const handleToggle = (enabled: boolean) => {
@@ -38,12 +45,14 @@ export function PremiumFeatureCard({ feature, onUpdate, isUpdating }: PremiumFea
     return new Intl.NumberFormat('fr-SN', {
       style: 'currency',
       currency: 'XOF',
-      minimumFractionDigits: 0
+      minimumFractionDigits: 0,
     }).format(price);
   };
 
   return (
-    <Card className={`transition-all ${feature.is_enabled ? 'ring-2 ring-green-200 bg-green-50' : 'bg-white'}`}>
+    <Card
+      className={`transition-all ${feature.is_enabled ? 'ring-2 ring-green-200 bg-green-50' : 'bg-white'}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">

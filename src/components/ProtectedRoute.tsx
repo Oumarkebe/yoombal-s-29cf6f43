@@ -32,7 +32,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles: requir
     return (
       <div className="min-h-screen flex items-center justify-center bg-red-50">
         <div className="text-center p-8">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Compte {user.status === 'suspended' ? 'suspendu' : 'bloqué'}</h1>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Compte {user.status === 'suspended' ? 'suspendu' : 'bloqué'}
+          </h1>
           <p className="text-gray-600">Veuillez contacter le support pour plus d'informations.</p>
         </div>
       </div>
@@ -41,7 +43,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles: requir
 
   if (requiredRoles && requiredRoles.length > 0) {
     const userRoles = user?.roles || [];
-    const hasAccess = requiredRoles.some(role => userRoles.includes(role));
+    const hasAccess = requiredRoles.some((role) => userRoles.includes(role));
 
     if (!hasAccess) {
       return <Navigate to="/" replace />;

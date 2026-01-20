@@ -2,7 +2,8 @@ alter table "public"."profiles" drop constraint "profiles_kyc_status_check";
 
 alter table "public"."products" drop constraint "products_merchant_id_fkey";
 
-alter table "public"."profiles" drop constraint "profiles_role_check";
+alter table "public"."profiles" drop constraint if exists "profiles_role_check";
+alter table "public"."profiles" drop constraint if exists "profiles_rôle_check";
 
 drop view if exists "public"."admin_orders_view";
 
@@ -36,7 +37,7 @@ alter table "public"."products" add constraint "products_merchant_id_fkey" FOREI
 
 alter table "public"."products" validate constraint "products_merchant_id_fkey";
 
-alter table "public"."profiles" add constraint "profiles_role_check" CHECK ((role = ANY (ARRAY['client'::text, 'merchant'::text, 'delivery'::text, 'admin'::text]))) not valid;
+alter table "public"."profiles" add constraint "profiles_role_check" CHECK ((role = ANY (ARRAY['client'::text, 'marchand'::text, 'livreur'::text, 'admin'::text]))) not valid;
 
 alter table "public"."profiles" validate constraint "profiles_role_check";
 

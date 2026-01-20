@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 
@@ -37,7 +36,9 @@ const PaymentMethods = () => {
               <span className="text-white font-bold text-sm">BNPL</span>
             </div>
             <h3 className="text-lg font-semibold text-center text-gray-900">Paiement échelonné</h3>
-            <p className="text-sm text-gray-600 text-center mt-2">Achetez maintenant, payez plus tard</p>
+            <p className="text-sm text-gray-600 text-center mt-2">
+              Achetez maintenant, payez plus tard
+            </p>
           </Card>
 
           <Card className="p-6 bg-white border-blue-100 hover:shadow-lg transition-all duration-300">
@@ -55,7 +56,8 @@ const PaymentMethods = () => {
               Paiement échelonné intelligent
             </h3>
             <p className="text-gray-600 mb-6">
-              Notre système d'évaluation de crédit fonctionne même hors ligne grâce à l'intelligence artificielle embarquée.
+              Notre système d'évaluation de crédit fonctionne même hors ligne grâce à l'intelligence
+              artificielle embarquée.
             </p>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center">

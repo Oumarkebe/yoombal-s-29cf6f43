@@ -1,176 +1,187 @@
-
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 export type Message = {
-    id: string;
-    application_id: string;
-    sender_id: string;
-    content: string;
-    message_type: 'text' | 'image' | 'document' | 'system';
-    is_system_message: boolean;
-    attachment_url?: string;
-    is_read: boolean;
-    read_at?: string;
-    created_at: string;
+  id: string;
+  application_id: string;
+  sender_id: string;
+  content: string;
+  message_type: 'text' | 'image' | 'document' | 'system';
+  is_system_message: boolean;
+  attachment_url?: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
 };
 
 export function useApplicationMessages(applicationId: string) {
-    const { user } = useAuth();
-    const { toast } = useToast();
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-    // Initial Fetch
-    const fetchMessages = useCallback(async () => {
-        if (!applicationId || !user) return;
+  // Initial Fetch
+  const fetchMessages = useCallback(async () => {
+    if (!applicationId || !user) return;
 
-        setIsLoading(true);
-        const { data, error } = await supabase
-            .from('application_messages' as any)
-            .select('*')
-            .eq('application_id', applicationId)
-            .order('created_at', { ascending: true });
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('application_messages' as any)
+      .select('*')
+      .eq('application_id', applicationId)
+      .order('created_at', { ascending: true });
 
-        if (error) {
-            console.error("Error fetching messages:", error);
-        } else {
-            setMessages((data as unknown as Message[]) || []);
-            // Mark my unread messages as read
-            markAsRead(data as unknown as Message[]);
+    if (error) {
+      console.error('Error fetching messages:', error);
+    } else {
+      setMessages((data as unknown as Message[]) || []);
+      // Mark my unread messages as read
+      markAsRead(data as unknown as Message[]);
+    }
+    setIsLoading(false);
+  }, [applicationId, user]);
+
+  // Realtime Subscription
+  useEffect(() => {
+    if (!applicationId || !user) return;
+
+    fetchMessages();
+
+    const channelName = `messages:${applicationId}:${user.id}`; // Unique name per user session
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'application_messages',
+          filter: `application_id=eq.${applicationId}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as Message;
+
+          // Avoid duplication if pessimistic update already added it (rare but possible)
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === newMessage.id)) return prev;
+            return [...prev, newMessage];
+          });
+
+          // If message is from others, mark as read immediately if chat is open
+          if (newMessage.sender_id !== user.id) {
+            markSingleAsRead(newMessage.id);
+          }
         }
-        setIsLoading(false);
-    }, [applicationId, user]);
-
-    // Realtime Subscription
-    useEffect(() => {
-        if (!applicationId || !user) return;
-
-        fetchMessages();
-
-        const channelName = `messages:${applicationId}:${user.id}`; // Unique name per user session
-        const channel = supabase
-            .channel(channelName)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'application_messages',
-                filter: `application_id=eq.${applicationId}`
-            }, (payload) => {
-                const newMessage = payload.new as Message;
-
-                // Avoid duplication if pessimistic update already added it (rare but possible)
-                setMessages(prev => {
-                    if (prev.some(m => m.id === newMessage.id)) return prev;
-                    return [...prev, newMessage];
-                });
-
-                // If message is from others, mark as read immediately if chat is open
-                if (newMessage.sender_id !== user.id) {
-                    markSingleAsRead(newMessage.id);
-                }
-            })
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'application_messages',
-                filter: `application_id=eq.${applicationId}`
-            }, (payload) => {
-                const updatedMessage = payload.new as Message;
-                setMessages(prev => prev.map(m => m.id === updatedMessage.id ? updatedMessage : m));
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [applicationId, user]); // Removed fetchMessages from deps to avoid loop if it changes
-
-    const sendMessage = async (content: string, type: 'text' | 'image' = 'text', attachmentUrl?: string) => {
-        if (!user) return;
-
-        // 1. Send the message
-        const { data: messageData, error: sendError } = await supabase
-            .from('application_messages' as any)
-            .insert({
-                application_id: applicationId,
-                sender_id: user.id,
-                content,
-                message_type: type,
-                attachment_url: attachmentUrl,
-                is_read: false
-            })
-            .select()
-            .single();
-
-        if (sendError) {
-            console.error("Error sending message:", sendError);
-            toast({
-                title: "Erreur",
-                description: "Message non envoyé",
-                variant: "destructive"
-            });
-            return false;
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'application_messages',
+          filter: `application_id=eq.${applicationId}`,
+        },
+        (payload) => {
+          const updatedMessage = payload.new as Message;
+          setMessages((prev) => prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m)));
         }
+      )
+      .subscribe();
 
-        // 2. Trigger notification for recipient
-        try {
-            // Fetch application to find recipient
-            const { data: appData } = await (supabase as any)
-                .from('bnpl_plans')
-                .select('client_id, merchant_id, products(name)')
-                .eq('id', applicationId)
-                .single();
-
-            if (appData) {
-                const recipientId = user.id === appData.client_id ? appData.merchant_id : appData.client_id;
-                const senderName = user.id === appData.client_id ? "Client" : "Marchand";
-
-                await (supabase.from('notifications' as any) as any).insert({
-                    user_id: recipientId,
-                    type: 'chat',
-                    title: `Nouveau message de ${senderName} 💬`,
-                    message: content.length > 50 ? content.substring(0, 47) + "..." : content,
-                    data: { application_id: applicationId, message_id: (messageData as any).id }
-                });
-            }
-        } catch (notifErr) {
-            console.warn("Notification trigger failed (non-critical):", notifErr);
-        }
-
-        return true;
+    return () => {
+      supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicationId, user]); // Removed fetchMessages from deps to avoid loop if it changes
 
-    const markSingleAsRead = async (messageId: string) => {
-        await supabase
-            .from('application_messages' as any)
-            .update({ is_read: true, read_at: new Date().toISOString() })
-            .eq('id', messageId);
-    };
+  const sendMessage = async (
+    content: string,
+    type: 'text' | 'image' = 'text',
+    attachmentUrl?: string
+  ) => {
+    if (!user) return;
 
-    const markAsRead = async (msgs: Message[]) => {
-        if (!user) return;
-        const unreadIds = msgs
-            .filter(m => !m.is_read && m.sender_id !== user.id)
-            .map(m => m.id);
+    // 1. Send the message
+    const { data: messageData, error: sendError } = await supabase
+      .from('application_messages' as any)
+      .insert({
+        application_id: applicationId,
+        sender_id: user.id,
+        content,
+        message_type: type,
+        attachment_url: attachmentUrl,
+        is_read: false,
+      })
+      .select()
+      .single();
 
-        if (unreadIds.length > 0) {
-            await supabase
-                .from('application_messages' as any)
-                .update({ is_read: true, read_at: new Date().toISOString() })
-                .in('id', unreadIds);
+    if (sendError) {
+      console.error('Error sending message:', sendError);
+      toast({
+        title: 'Erreur',
+        description: 'Message non envoyé',
+        variant: 'destructive',
+      });
+      return false;
+    }
 
-            setMessages(prev => prev.map(m => unreadIds.includes(m.id) ? { ...m, is_read: true } : m));
-        }
-    };
+    // 2. Trigger notification for recipient
+    try {
+      // Fetch application to find recipient
+      const { data: appData } = await (supabase as any)
+        .from('bnpl_plans')
+        .select('client_id, merchant_id, products(name)')
+        .eq('id', applicationId)
+        .single();
 
-    return {
-        messages,
-        isLoading,
-        sendMessage,
-        refetch: fetchMessages
-    };
+      if (appData) {
+        const recipientId = user.id === appData.client_id ? appData.merchant_id : appData.client_id;
+        const senderName = user.id === appData.client_id ? 'Client' : 'Marchand';
+
+        await (supabase.from('notifications' as any) as any).insert({
+          user_id: recipientId,
+          type: 'chat',
+          title: `Nouveau message de ${senderName} 💬`,
+          message: content.length > 50 ? content.substring(0, 47) + '...' : content,
+          data: { application_id: applicationId, message_id: (messageData as any).id },
+        });
+      }
+    } catch (notifErr) {
+      console.warn('Notification trigger failed (non-critical):', notifErr);
+    }
+
+    return true;
+  };
+
+  const markSingleAsRead = async (messageId: string) => {
+    await supabase
+      .from('application_messages' as any)
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq('id', messageId);
+  };
+
+  const markAsRead = async (msgs: Message[]) => {
+    if (!user) return;
+    const unreadIds = msgs.filter((m) => !m.is_read && m.sender_id !== user.id).map((m) => m.id);
+
+    if (unreadIds.length > 0) {
+      await supabase
+        .from('application_messages' as any)
+        .update({ is_read: true, read_at: new Date().toISOString() })
+        .in('id', unreadIds);
+
+      setMessages((prev) =>
+        prev.map((m) => (unreadIds.includes(m.id) ? { ...m, is_read: true } : m))
+      );
+    }
+  };
+
+  return {
+    messages,
+    isLoading,
+    sendMessage,
+    refetch: fetchMessages,
+  };
 }

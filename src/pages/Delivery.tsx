@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useDeliveries } from '@/hooks/useDeliveries';
 import { useDrivers } from '@/hooks/useDrivers';
@@ -13,60 +12,63 @@ const DeliveryPage = () => {
   const { drivers } = useDrivers();
 
   // Calculate real stats from data
-  const activeDeliveries = deliveries.filter(d =>
+  const activeDeliveries = deliveries.filter((d) =>
     ['assigned', 'picked_up', 'in_transit'].includes(d.status)
   );
 
-  const deliveredToday = deliveries.filter(d => {
+  const deliveredToday = deliveries.filter((d) => {
     if (d.status !== 'delivered' || !d.actual_delivery_time) return false;
     const today = new Date().toDateString();
     const deliveryDate = new Date(d.actual_delivery_time).toDateString();
     return today === deliveryDate;
   });
 
-  const delayedDeliveries = deliveries.filter(d => {
+  const delayedDeliveries = deliveries.filter((d) => {
     if (!d.estimated_delivery_time || d.status === 'delivered') return false;
     return new Date(d.estimated_delivery_time) < new Date();
   });
 
-  const avgDeliveryTime = deliveredToday.length > 0
-    ? deliveredToday.reduce((acc, d) => {
-      if (!d.estimated_delivery_time || !d.actual_delivery_time) return acc;
-      const estimated = new Date(d.estimated_delivery_time);
-      const actual = new Date(d.actual_delivery_time);
-      return acc + (actual.getTime() - estimated.getTime());
-    }, 0) / deliveredToday.length / (1000 * 60) // Convert to minutes
-    : 0;
+  const avgDeliveryTime =
+    deliveredToday.length > 0
+      ? deliveredToday.reduce((acc, d) => {
+          if (!d.estimated_delivery_time || !d.actual_delivery_time) return acc;
+          const estimated = new Date(d.estimated_delivery_time);
+          const actual = new Date(d.actual_delivery_time);
+          return acc + (actual.getTime() - estimated.getTime());
+        }, 0) /
+        deliveredToday.length /
+        (1000 * 60) // Convert to minutes
+      : 0;
 
   const deliveryStats = [
     {
-      title: "En cours",
+      title: 'En cours',
       value: activeDeliveries.length,
       icon: Truck,
-      color: "text-blue-600",
-      bg: "bg-blue-50"
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
     },
     {
       title: "Livrées aujourd'hui",
       value: deliveredToday.length,
       icon: CheckCircle,
-      color: "text-green-600",
-      bg: "bg-green-50"
+      color: 'text-green-600',
+      bg: 'bg-green-50',
     },
     {
-      title: "En retard",
+      title: 'En retard',
       value: delayedDeliveries.length,
       icon: AlertCircle,
-      color: "text-red-600",
-      bg: "bg-red-50"
+      color: 'text-red-600',
+      bg: 'bg-red-50',
     },
     {
-      title: "Temps moyen",
-      value: avgDeliveryTime > 0 ? `${Math.round(avgDeliveryTime)}min` : "N/A",
+      title: 'Temps moyen',
+      value: avgDeliveryTime > 0 ? `${Math.round(avgDeliveryTime)}min` : 'N/A',
       icon: Clock,
-      color: "text-amber-600",
-      bg: "bg-amber-50"
-    }
+      color: 'text-amber-600',
+      bg: 'bg-amber-50',
+    },
   ];
 
   const handleViewOnMap = (id?: string) => {
@@ -116,9 +118,7 @@ const DeliveryPage = () => {
             <Truck className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-blue-900">
-              {drivers.length} livreurs disponibles
-            </h3>
+            <h3 className="font-semibold text-blue-900">{drivers.length} livreurs disponibles</h3>
             <p className="text-sm text-blue-700">
               Prêts à effectuer des livraisons dans toute la région de Dakar
             </p>
@@ -151,15 +151,21 @@ const DeliveryPage = () => {
 
         <div className="min-h-[400px]">
           {activeTab === 'tracking' && (
-            <div className="text-center py-10 text-gray-500">Composant de suivi des livraisons (À implémenter)</div>
+            <div className="text-center py-10 text-gray-500">
+              Composant de suivi des livraisons (À implémenter)
+            </div>
           )}
 
           {activeTab === 'map' && (
-            <div className="text-center py-10 text-gray-500">Carte interactive des livraisons (À implémenter)</div>
+            <div className="text-center py-10 text-gray-500">
+              Carte interactive des livraisons (À implémenter)
+            </div>
           )}
 
           {activeTab === 'management' && (
-            <div className="text-center py-10 text-gray-500">Tableau de gestion des livraisons (À implémenter)</div>
+            <div className="text-center py-10 text-gray-500">
+              Tableau de gestion des livraisons (À implémenter)
+            </div>
           )}
         </div>
       </div>
@@ -168,6 +174,6 @@ const DeliveryPage = () => {
 };
 
 // Start of Selection
-import { Plus } from "lucide-react"; // Import missing Plus icon
+import { Plus } from 'lucide-react'; // Import missing Plus icon
 
 export default DeliveryPage;

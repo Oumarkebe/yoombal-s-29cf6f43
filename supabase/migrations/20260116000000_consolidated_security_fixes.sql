@@ -8,7 +8,7 @@ BEGIN;
 -- 1. Recreate admin_orders_view with SECURITY INVOKER
 -- This fixes the "security_definer_view" linter warning.
 DROP VIEW IF EXISTS public.admin_orders_view;
-CREATE VIEW public.admin_orders_view
+CREATE OR REPLACE VIEW public.admin_orders_view
 AS
  SELECT o.id,
     o.created_at,
@@ -44,7 +44,7 @@ AS
 ALTER TABLE public.bundle_features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_premium_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.premium_features ENABLE ROW LEVEL SECURITY;
 
 
@@ -68,7 +68,7 @@ CREATE OR REPLACE FUNCTION public.user_has_feature_access(p_user_id UUID, p_feat
 RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
-        SELECT 1 FROM public.user_subscriptions us
+        SELECT 1 FROM public.user_premium_subscriptions us
         JOIN public.premium_plans pp ON us.plan_id = pp.id
         WHERE us.user_id = p_user_id AND us.status = 'active' AND pp.features ? p_feature_key
     );

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +21,7 @@ export const useDrivers = () => {
   const fetchDrivers = async () => {
     try {
       setIsLoading(true);
-      
+
       const { data, error } = await (supabase.from('profiles') as any)
         .select('*')
         .eq('role', 'delivery')
@@ -37,9 +36,9 @@ export const useDrivers = () => {
     } catch (error) {
       console.error('Error fetching drivers:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les livreurs",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de charger les livreurs',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -64,6 +63,6 @@ export const useDrivers = () => {
     drivers,
     isLoading,
     fetchDrivers,
-    getDriverName
+    getDriverName,
   };
 };

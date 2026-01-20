@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,16 +21,21 @@ const insuranceOptions: InsuranceOption[] = [
     description: 'Couverture contre les pertes et dommages lors de la livraison',
     coverage: ['Perte du colis', 'Dommages physiques', 'Vol pendant transport'],
     price: 200, // CFA
-    maxCoverage: 50000 // CFA
+    maxCoverage: 50000, // CFA
   },
   {
     id: 'premium',
     name: 'Protection Premium',
     description: 'Couverture étendue avec remplacement express',
-    coverage: ['Toutes protections basiques', 'Remplacement express', 'Remboursement intégral', 'Support prioritaire'],
+    coverage: [
+      'Toutes protections basiques',
+      'Remplacement express',
+      'Remboursement intégral',
+      'Support prioritaire',
+    ],
     price: 500, // CFA
-    maxCoverage: 200000 // CFA
-  }
+    maxCoverage: 200000, // CFA
+  },
 ];
 
 interface InsuranceComponentProps {
@@ -39,9 +43,9 @@ interface InsuranceComponentProps {
   onInsuranceSelect?: (option: InsuranceOption | null) => void;
 }
 
-export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({ 
-  orderValue, 
-  onInsuranceSelect 
+export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
+  orderValue,
+  onInsuranceSelect,
 }) => {
   const [selectedInsurance, setSelectedInsurance] = useState<string | null>(null);
   const { toast } = useToast();
@@ -49,10 +53,10 @@ export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
   const handleInsuranceSelect = (option: InsuranceOption | null) => {
     setSelectedInsurance(option?.id || null);
     onInsuranceSelect?.(option);
-    
+
     if (option) {
       toast({
-        title: "Assurance ajoutée",
+        title: 'Assurance ajoutée',
         description: `${option.name} ajoutée à votre commande`,
       });
     }
@@ -83,9 +87,7 @@ export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
             <Package className="w-5 h-5 text-blue-600 mt-1" />
             <div>
               <h4 className="font-medium text-blue-800">Valeur de votre commande</h4>
-              <p className="text-2xl font-bold text-blue-900">
-                {orderValue.toLocaleString()} CFA
-              </p>
+              <p className="text-2xl font-bold text-blue-900">{orderValue.toLocaleString()} CFA</p>
               {recommended && (
                 <p className="text-sm text-blue-600 mt-1">
                   Nous recommandons la {recommended.name}
@@ -96,13 +98,17 @@ export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
         </div>
 
         <div className="space-y-3">
-          <div className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
-               onClick={() => handleInsuranceSelect(null)}>
+          <div
+            className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+            onClick={() => handleInsuranceSelect(null)}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded-full border-2 ${
-                  selectedInsurance === null ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                }`} />
+                <div
+                  className={`w-4 h-4 rounded-full border-2 ${
+                    selectedInsurance === null ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                  }`}
+                />
                 <div>
                   <h4 className="font-medium">Pas d'assurance</h4>
                   <p className="text-sm text-gray-600">Commande sans protection</p>
@@ -113,25 +119,31 @@ export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
           </div>
 
           {insuranceOptions.map((option) => (
-            <div 
+            <div
               key={option.id}
               className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                selectedInsurance === option.id 
-                  ? 'border-blue-500 bg-blue-50' 
+                selectedInsurance === option.id
+                  ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:bg-gray-50'
               } ${recommended?.id === option.id ? 'ring-2 ring-blue-200' : ''}`}
               onClick={() => handleInsuranceSelect(option)}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full border-2 ${
-                    selectedInsurance === option.id ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                  }`} />
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 ${
+                      selectedInsurance === option.id
+                        ? 'bg-blue-600 border-blue-600'
+                        : 'border-gray-300'
+                    }`}
+                  />
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">{option.name}</h4>
                       {recommended?.id === option.id && (
-                        <Badge variant="secondary" className="text-xs">Recommandé</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          Recommandé
+                        </Badge>
                       )}
                     </div>
                     <p className="text-sm text-gray-600">{option.description}</p>
@@ -144,7 +156,7 @@ export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
                   </p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {option.coverage.map((item, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -164,7 +176,8 @@ export const InsuranceComponent: React.FC<InsuranceComponentProps> = ({
               <div className="text-sm">
                 <p className="font-medium text-amber-800">Commande de valeur élevée</p>
                 <p className="text-amber-700">
-                  Pour les commandes supérieures à 200,000 CFA, nous recommandons fortement une assurance.
+                  Pour les commandes supérieures à 200,000 CFA, nous recommandons fortement une
+                  assurance.
                 </p>
               </div>
             </div>

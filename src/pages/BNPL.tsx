@@ -34,7 +34,7 @@ const BNPLPage = () => {
         audioRef.current.play();
         if ('speechSynthesis' in window) {
           const utter = new window.SpeechSynthesisUtterance("Lecture de l'explication en wolof");
-          utter.lang = "fr-FR";
+          utter.lang = 'fr-FR';
           window.speechSynthesis.speak(utter);
         }
       }
@@ -77,10 +77,15 @@ const BNPLPage = () => {
                 <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
                   {cartItems.map((item: any) => (
                     <div key={item.id} className="flex gap-3 text-sm">
-                      <div className="w-12 h-12 bg-gray-100 rounded-md bg-cover bg-center flex-shrink-0" style={{ backgroundImage: `url(${item.products?.image_url})` }} />
+                      <div
+                        className="w-12 h-12 bg-gray-100 rounded-md bg-cover bg-center flex-shrink-0"
+                        style={{ backgroundImage: `url(${item.products?.image_url})` }}
+                      />
                       <div>
                         <p className="font-medium">{item.products?.name}</p>
-                        <p className="text-gray-500">{item.quantity} x {item.products?.price?.toLocaleString()} CFA</p>
+                        <p className="text-gray-500">
+                          {item.quantity} x {item.products?.price?.toLocaleString()} CFA
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -93,7 +98,8 @@ const BNPLPage = () => {
 
               <Card className="p-4 bg-blue-50 border-blue-200 mb-4">
                 <p className="text-sm text-blue-800">
-                  En soumettant cette demande, vous demandez un financement pour l'ensemble de votre panier.
+                  En soumettant cette demande, vous demandez un financement pour l'ensemble de votre
+                  panier.
                 </p>
               </Card>
             </div>
@@ -104,7 +110,7 @@ const BNPLPage = () => {
                   id: cartItems[0].products.id, // Utilise le premier produit comme référence pour la FK
                   name: `Commande Panier (${cartItems.length} articles)`,
                   price: cartTotal,
-                  merchant_id: cartItems[0].products.merchant_id // Utilise le marchand du premier produit
+                  merchant_id: cartItems[0].products.merchant_id, // Utilise le marchand du premier produit
                 }}
                 onSuccess={() => {
                   setTimeout(() => navigate('/profile'), 2000);
@@ -114,8 +120,12 @@ const BNPLPage = () => {
           </div>
         ) : (
           <Card className="max-w-lg w-full p-8 bg-white/90 border-0 shadow-xl rounded-2xl text-center">
-            <h1 id="bnpl-title" className="text-3xl font-bold mb-4 text-gray-900" tabIndex={-1}>Paiement échelonné (BNPL)</h1>
-            <p className="text-gray-600 mb-6">Découvrez comment fonctionne le paiement échelonné.</p>
+            <h1 id="bnpl-title" className="text-3xl font-bold mb-4 text-gray-900" tabIndex={-1}>
+              Paiement échelonné (BNPL)
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Découvrez comment fonctionne le paiement échelonné.
+            </p>
 
             <div className="mb-6">
               <audio

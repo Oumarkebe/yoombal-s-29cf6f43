@@ -1,12 +1,11 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useUserRoles } from "@/hooks/useUserRoles";
-import { AppRole, ROLE_LABELS } from "@/types/auth";
-import { Plus } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { useUserRoles } from '@/hooks/useUserRoles';
+import { AppRole, ROLE_LABELS } from '@/types/auth';
+import { Plus } from 'lucide-react';
 
 // Use database role names to match the app_role enum
-const ROLE_OPTIONS: AppRole[] = ["user", "merchant", "driver", "admin"];
+const ROLE_OPTIONS: AppRole[] = ['user', 'merchant', 'driver', 'admin'];
 
 interface ProfileRolesManagerProps {
   userId: string;
@@ -14,19 +13,17 @@ interface ProfileRolesManagerProps {
 
 export function ProfileRolesManager({ userId }: ProfileRolesManagerProps) {
   const { roles, isLoading, addRole, removeRole, isPending, error } = useUserRoles({ userId });
-  const [newRole, setNewRole] = useState<AppRole | "">("");
+  const [newRole, setNewRole] = useState<AppRole | ''>('');
 
   const canAddRoles = true; // ici tu pourras adapter les permissions selon les besoins
 
   // Liste des rôles disponibles à ajouter (non déjà attribués)
-  const availableRoles = ROLE_OPTIONS.filter(
-    (opt) => !roles.some((r) => r.role === opt)
-  );
+  const availableRoles = ROLE_OPTIONS.filter((opt) => !roles.some((r) => r.role === opt));
 
   const handleAdd = async () => {
     if (!newRole || isPending) return;
     await addRole(newRole);
-    setNewRole("");
+    setNewRole('');
   };
 
   const handleRemove = async (role: AppRole) => {
@@ -39,7 +36,9 @@ export function ProfileRolesManager({ userId }: ProfileRolesManagerProps) {
       <h3 className="font-medium text-sm text-gray-700">Rôles liés à votre compte :</h3>
       <div className="flex flex-wrap gap-2">
         {isLoading && <span className="text-xs text-gray-500">Chargement…</span>}
-        {roles.length === 0 && !isLoading && <span className="text-xs text-gray-500">Aucun rôle</span>}
+        {roles.length === 0 && !isLoading && (
+          <span className="text-xs text-gray-500">Aucun rôle</span>
+        )}
         {roles.map((r) => (
           <span
             key={r.role}
@@ -66,7 +65,7 @@ export function ProfileRolesManager({ userId }: ProfileRolesManagerProps) {
           <select
             className="block w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
             value={newRole}
-            onChange={(e) => setNewRole(e.target.value as AppRole | "")}
+            onChange={(e) => setNewRole(e.target.value as AppRole | '')}
             disabled={isPending || availableRoles.length === 0}
           >
             <option value="">Sélectionner un rôle</option>
@@ -86,9 +85,7 @@ export function ProfileRolesManager({ userId }: ProfileRolesManagerProps) {
           </Button>
         </div>
       )}
-      {error && (
-        <p className="text-xs text-red-500 mt-1">{(error as Error).message}</p>
-      )}
+      {error && <p className="text-xs text-red-500 mt-1">{(error as Error).message}</p>}
     </div>
   );
 }

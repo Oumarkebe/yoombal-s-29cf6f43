@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,15 +22,13 @@ async function fetchProfileAiSettings(): Promise<ProfileAiFeatureSetting[]> {
   // Try to fetch from ai_module_settings as a fallback
   // In production, create ai_feature_profile_settings table
   try {
-    const { data, error } = await supabase
-      .from('ai_module_settings')
-      .select('*');
-    
+    const { data, error } = await supabase.from('ai_module_settings').select('*');
+
     if (error) {
       console.warn('ai_feature_profile_settings table not found, using mock data');
       return mockSettings;
     }
-    
+
     // Map ai_module_settings to profile settings format
     return (data || []).map((item, index) => ({
       id: item.id,
@@ -65,12 +62,12 @@ async function upsertProfileAiSetting({
       { onConflict: 'key' }
     )
     .select();
-  
+
   if (error) {
     console.warn('Error updating AI setting:', error);
     // Update mock data
     const existingIndex = mockSettings.findIndex(
-      s => s.profile_type === profile_type && s.feature_key === feature_key
+      (s) => s.profile_type === profile_type && s.feature_key === feature_key
     );
     if (existingIndex >= 0) {
       mockSettings[existingIndex].is_enabled = is_enabled;
@@ -84,14 +81,18 @@ async function upsertProfileAiSetting({
     }
     return mockSettings;
   }
-  
+
   return data;
 }
 
 export function useProfileAiSettings() {
   const queryClient = useQueryClient();
 
-  const { data: settings = [], isLoading, error } = useQuery({
+  const {
+    data: settings = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['profileAiSettings'],
     queryFn: fetchProfileAiSettings,
   });

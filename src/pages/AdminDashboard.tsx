@@ -1,15 +1,22 @@
-
-import React from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { StatCard } from "@/components/admin/StatCard";
-import { Users, Package, ShoppingCart, DollarSign, BarChart, Loader2, Shield } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Card } from "@/components/ui/card";
-import { useAdminDashboardStats } from "@/hooks/useAdminDashboardStats";
-import { useAdminAnalytics } from "@/hooks/useAdminAnalytics";
-import { UserManagementTable } from "@/components/admin/UserManagementTable";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { StatCard } from '@/components/admin/StatCard';
+import { Users, Package, ShoppingCart, DollarSign, BarChart, Loader2, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Card } from '@/components/ui/card';
+import { useAdminDashboardStats } from '@/hooks/useAdminDashboardStats';
+import { useAdminAnalytics } from '@/hooks/useAdminAnalytics';
+import { UserManagementTable } from '@/components/admin/UserManagementTable';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 export default function AdminDashboard() {
   const { data, isLoading: isStatsLoading, error: statsError } = useAdminDashboardStats();
@@ -35,10 +42,30 @@ export default function AdminDashboard() {
   }
 
   const stats = [
-    { title: "Utilisateurs", value: data?.usersCount || 0, icon: <Users className="h-5 w-5 text-blue-500" />, description: "Total inscrits" },
-    { title: "Produits", value: data?.productsCount || 0, icon: <Package className="h-5 w-5 text-green-500" />, description: "Produits affichés" },
-    { title: "Commandes", value: data?.ordersCount || 0, icon: <ShoppingCart className="h-5 w-5 text-orange-500" />, description: "Commandes totales" },
-    { title: "KYC en attente", value: data?.pendingKycCount || 0, icon: <Shield className="h-5 w-5 text-red-500" />, description: "Demandes à valider" },
+    {
+      title: 'Utilisateurs',
+      value: data?.usersCount || 0,
+      icon: <Users className="h-5 w-5 text-blue-500" />,
+      description: 'Total inscrits',
+    },
+    {
+      title: 'Produits',
+      value: data?.productsCount || 0,
+      icon: <Package className="h-5 w-5 text-green-500" />,
+      description: 'Produits affichés',
+    },
+    {
+      title: 'Commandes',
+      value: data?.ordersCount || 0,
+      icon: <ShoppingCart className="h-5 w-5 text-orange-500" />,
+      description: 'Commandes totales',
+    },
+    {
+      title: 'KYC en attente',
+      value: data?.pendingKycCount || 0,
+      icon: <Shield className="h-5 w-5 text-red-500" />,
+      description: 'Demandes à valider',
+    },
   ];
 
   return (
@@ -54,7 +81,9 @@ export default function AdminDashboard() {
             <Link
               to="/admin"
               className="text-amber-600 bg-white hover:bg-amber-50 border rounded px-4 py-2 font-semibold shadow-sm flex items-center gap-1 transition"
-            >← Retour à l’espace admin</Link>
+            >
+              ← Retour à l’espace admin
+            </Link>
           </div>
 
           {/* KPIs */}
@@ -87,7 +116,13 @@ export default function AdminDashboard() {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
-                    <Area type="monotone" dataKey="orders" stroke="#3b82f6" fillOpacity={1} fill="url(#colorOrders)" />
+                    <Area
+                      type="monotone"
+                      dataKey="orders"
+                      stroke="#3b82f6"
+                      fillOpacity={1}
+                      fill="url(#colorOrders)"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -108,7 +143,13 @@ export default function AdminDashboard() {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip formatter={(value: number) => `${value.toLocaleString()} CFA`} />
-                    <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorRevenue)" />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#8b5cf6"
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>

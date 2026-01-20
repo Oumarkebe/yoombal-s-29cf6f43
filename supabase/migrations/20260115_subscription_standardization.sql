@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.premium_plans (
     description TEXT,
     price_monthly NUMERIC DEFAULT 0,
     price_yearly NUMERIC DEFAULT 0,
-    features JSONB DEFAULT '[]'::jsonb,
+    features TEXT[] DEFAULT '{}',
     target_roles TEXT[],
     is_active BOOLEAN DEFAULT true,
     display_order INTEGER DEFAULT 0,
@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS public.premium_features (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 3. USER SUBSCRIPTIONS
 CREATE TABLE IF NOT EXISTS public.user_subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -63,17 +64,17 @@ UPDATE public.premium_features SET feature_key = 'predictions' WHERE feature_key
 -- Insert/Update Default Plans
 INSERT INTO public.premium_plans (slug, name, price_monthly, features, display_order)
 VALUES 
-('starter', 'Yoombal Starter', 0, '["marketplace_access"]'::jsonb, 1)
+('starter', 'Yoombal Starter', 0, ARRAY['marketplace_access'], 1)
 ON CONFLICT (slug) DO UPDATE SET features = EXCLUDED.features;
 
 INSERT INTO public.premium_plans (slug, name, price_monthly, features, display_order)
 VALUES 
-('pro', 'Yoombal Pro', 15000, '["ai_assistant", "ai_pricing", "delivery_dashboard"]'::jsonb, 2)
+('pro', 'Yoombal Pro', 15000, ARRAY['ai_assistant', 'ai_pricing', 'livreur_dashboard'], 2)
 ON CONFLICT (slug) DO UPDATE SET features = EXCLUDED.features;
 
 INSERT INTO public.premium_plans (slug, name, price_monthly, features, display_order)
 VALUES 
-('enterprise', 'Yoombal Enterprise', 50000, '["ai_assistant", "ai_pricing", "predictions", "admin_dashboard", "delivery_dashboard", "route_optimization", "sales_analytics", "custom_store"]'::jsonb, 3)
+('enterprise', 'Yoombal Enterprise', 50000, ARRAY['ai_assistant', 'ai_pricing', 'predictions', 'admin_dashboard', 'livreur_dashboard', 'route_optimization', 'sales_analytics', 'custom_store'], 3)
 ON CONFLICT (slug) DO UPDATE SET features = EXCLUDED.features;
 
 -- 3. RLS POLICIES

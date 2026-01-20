@@ -1,9 +1,9 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { User, Award, Package, ShoppingCart, LogOut } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { User, Award, Package, ShoppingCart, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export function AdminActions() {
   const { logout } = useAuth();
@@ -46,7 +46,12 @@ export function AdminActions() {
               </div>
             </Link>
           </Button>
-           <Button asChild variant="outline" size="lg" className="justify-start text-left h-20 opacity-50 cursor-not-allowed">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="justify-start text-left h-20 opacity-50 cursor-not-allowed"
+          >
             <div className="flex items-center">
               <ShoppingCart className="mr-4 text-purple-500" size={24} />
               <div>

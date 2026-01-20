@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -13,7 +12,7 @@ const Contact = () => {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,9 +22,9 @@ const Contact = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -37,7 +36,8 @@ const Contact = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Contactez-nous</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Nous sommes là pour vous aider. N'hésitez pas à nous contacter pour toute question ou suggestion.
+              Nous sommes là pour vous aider. N'hésitez pas à nous contacter pour toute question ou
+              suggestion.
             </p>
           </div>
 
@@ -77,7 +77,10 @@ const Contact = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="subject"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Sujet
                     </label>
                     <Input
@@ -90,7 +93,10 @@ const Contact = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label
+                      htmlFor="message"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
                       Message
                     </label>
                     <Textarea
@@ -122,7 +128,8 @@ const Contact = () => {
                     <div>
                       <h3 className="font-semibold text-gray-900">Adresse</h3>
                       <p className="text-gray-600">
-                        123 Avenue Léopold Sédar Senghor<br />
+                        123 Avenue Léopold Sédar Senghor
+                        <br />
                         Dakar, Sénégal
                       </p>
                     </div>
@@ -146,7 +153,8 @@ const Contact = () => {
                     <div>
                       <h3 className="font-semibold text-gray-900">Horaires</h3>
                       <p className="text-gray-600">
-                        Lun - Ven: 8h00 - 18h00<br />
+                        Lun - Ven: 8h00 - 18h00
+                        <br />
                         Sam: 9h00 - 16h00
                       </p>
                     </div>
@@ -162,15 +170,22 @@ const Contact = () => {
                   <div className="space-y-4">
                     <div>
                       <h4 className="font-semibold text-gray-900">Comment devenir marchand ?</h4>
-                      <p className="text-gray-600 text-sm">Inscrivez-vous en tant que marchand et suivez le processus de validation.</p>
+                      <p className="text-gray-600 text-sm">
+                        Inscrivez-vous en tant que marchand et suivez le processus de validation.
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">Comment fonctionne le BNPL ?</h4>
-                      <p className="text-gray-600 text-sm">Le paiement échelonné vous permet de payer en plusieurs fois sans frais supplémentaires.</p>
+                      <p className="text-gray-600 text-sm">
+                        Le paiement échelonné vous permet de payer en plusieurs fois sans frais
+                        supplémentaires.
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-900">Zones de livraison ?</h4>
-                      <p className="text-gray-600 text-sm">Nous livrons dans tout Dakar et les principales villes du Sénégal.</p>
+                      <p className="text-gray-600 text-sm">
+                        Nous livrons dans tout Dakar et les principales villes du Sénégal.
+                      </p>
                     </div>
                   </div>
                 </CardContent>

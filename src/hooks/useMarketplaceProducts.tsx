@@ -9,6 +9,10 @@ export interface MarketplaceProduct {
   price: number;
   stock: number;
   image_url: string | null;
+  images?: string[] | null; // Multi-images array (new schema)
+  gallery?: string[] | null; // Gallery array (legacy)
+  image_urls?: string[] | null; // Multi-images support (legacy)
+  video_url?: string | null; // Video embed support
   status: 'active' | 'draft' | 'out_of_stock';
   created_at: string | null;
   merchant_id: string;
@@ -58,12 +62,15 @@ export const useMarketplaceProducts = () => {
 
       let query = supabase
         .from('products')
-        .select(`
+        .select(
+          `
           *,
           categories (
             name
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' }
+        )
         .eq('status', 'active')
         .gt('stock', 0)
         .order(sortBy.field, { ascending: sortBy.ascending })
@@ -88,7 +95,7 @@ export const useMarketplaceProducts = () => {
         throw productsError;
       }
 
-      const merchantIds = productsData?.map(p => p.merchant_id) || [];
+      const merchantIds = productsData?.map((p) => p.merchant_id) || [];
       let transformedProducts: MarketplaceProduct[] = [];
 
       if (merchantIds.length > 0) {
@@ -102,11 +109,11 @@ export const useMarketplaceProducts = () => {
         }
 
         const profilesMap = new Map();
-        profilesData?.forEach(profile => {
+        profilesData?.forEach((profile) => {
           profilesMap.set(profile.id, profile);
         });
 
-        transformedProducts = (productsData || []).map(product => ({
+        transformedProducts = (productsData || []).map((product) => ({
           id: product.id,
           name: product.name,
           description: product.description,
@@ -119,22 +126,23 @@ export const useMarketplaceProducts = () => {
           category_id: product.category_id,
           bnpl_enabled: product.bnpl_enabled,
           categories: product.categories,
-          profiles: profilesMap.get(product.merchant_id) || null
+          profiles: profilesMap.get(product.merchant_id) || null,
         }));
       }
 
-      setProducts(prev => loadMore ? [...prev, ...transformedProducts] : transformedProducts);
-      setHasMore(count ? count > (loadMore ? products.length : 0) + transformedProducts.length : false);
+      setProducts((prev) => (loadMore ? [...prev, ...transformedProducts] : transformedProducts));
+      setHasMore(
+        count ? count > (loadMore ? products.length : 0) + transformedProducts.length : false
+      );
       if (loadMore && transformedProducts.length > 0) {
-        setPage(prev => prev + 1);
+        setPage((prev) => prev + 1);
       }
-
     } catch (error) {
       console.error('Error fetching marketplace products:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les produits du marketplace",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de charger les produits du marketplace',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -175,6 +183,6 @@ export const useMarketplaceProducts = () => {
     setSortBy,
     refreshProducts: () => fetchProducts(false),
     loadMoreProducts,
-    getMerchantName
+    getMerchantName,
   };
 };

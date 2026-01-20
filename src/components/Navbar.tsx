@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { NotificationBell } from './notifications/NotificationBell';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,11 +33,12 @@ const Navbar = () => {
   const { getTotalItems } = useCart();
   const [isCartBouncing, setIsCartBouncing] = useState(false);
 
-  const userRole = (user?.role as any);
+  const userRole = user?.role as any;
   const isAdmin = userRole === 'admin';
   const isMerchant = userRole === 'merchant' || userRole === 'marchand' || isAdmin;
   const isClient = userRole === 'client' || isAdmin;
-  const isDriver = userRole === 'driver' || userRole === 'delivery' || userRole === 'livreur' || isAdmin;
+  const isDriver =
+    userRole === 'driver' || userRole === 'delivery' || userRole === 'livreur' || isAdmin;
 
   const totalItems = getTotalItems();
 
@@ -62,9 +64,9 @@ const Navbar = () => {
   };
 
   const adminMenuItems = [
-    { to: "/admin", label: "Administration", icon: <Settings className="w-4 h-4" /> },
-    { to: "/admin/statistics", label: "Statistiques", icon: <BarChart3 className="w-4 h-4" /> },
-    { to: "/economic-model", label: "Modèle Économique", icon: <TrendingUp className="w-4 h-4" /> }
+    { to: '/admin', label: 'Administration', icon: <Settings className="w-4 h-4" /> },
+    { to: '/admin/statistics', label: 'Statistiques', icon: <BarChart3 className="w-4 h-4" /> },
+    { to: '/economic-model', label: 'Modèle Économique', icon: <TrendingUp className="w-4 h-4" /> },
   ];
 
   return (
@@ -78,13 +80,22 @@ const Navbar = () => {
               </Link>
             </div>
             <div className="hidden md:ml-6 md:flex items-center space-x-4">
-              <Link to="/" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <Link
+                to="/"
+                className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 Accueil
               </Link>
-              <Link to="/marketplace" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <Link
+                to="/marketplace"
+                className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 Marketplace
               </Link>
-              <Link to="/pricing" className="text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 px-3 py-2 rounded-md text-sm font-bold transition-all border border-amber-200">
+              <Link
+                to="/pricing"
+                className="text-amber-700 bg-amber-50 hover:bg-amber-100 hover:text-amber-800 px-3 py-2 rounded-md text-sm font-bold transition-all border border-amber-200"
+              >
                 Premium
               </Link>
               <div className="relative inline-block text-left">
@@ -116,21 +127,33 @@ const Navbar = () => {
                 </DropdownMenu>
               </div>
 
-              <Link to="/contact" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+              <Link
+                to="/contact"
+                className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 Contact
               </Link>
               {isAdmin && (
-                <Link to="/admin" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <Link
+                  to="/admin"
+                  className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
                   Admin
                 </Link>
               )}
               {isMerchant && (
-                <Link to="/merchant" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <Link
+                  to="/merchant"
+                  className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
                   Merchant
                 </Link>
               )}
               {isDriver && (
-                <Link to="/delivery" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <Link
+                  to="/delivery"
+                  className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
                   Livreur
                 </Link>
               )}
@@ -154,13 +177,22 @@ const Navbar = () => {
             {user ? (
               <>
                 {location.pathname !== '/cart' && (
-                  <Link to="/cart" id="navbar-cart-icon" className={`flex items-center text-gray-700 hover:text-amber-600 transition-transform duration-300 ${isCartBouncing ? 'scale-125' : 'scale-100'}`}>
+                  <Link
+                    to="/cart"
+                    id="navbar-cart-icon"
+                    className={`flex items-center text-gray-700 hover:text-amber-600 transition-transform duration-300 ${isCartBouncing ? 'scale-125' : 'scale-100'}`}
+                  >
                     <ShoppingCart className={`w-5 h-5 ${isCartBouncing ? 'text-amber-600' : ''}`} />
                     {totalItems > 0 && (
-                      <span className="ml-1 text-sm font-semibold text-amber-600">{totalItems}</span>
+                      <span className="ml-1 text-sm font-semibold text-amber-600">
+                        {totalItems}
+                      </span>
                     )}
                   </Link>
                 )}
+                <div className="mr-2">
+                  <NotificationBell />
+                </div>
                 <div className="relative inline-block text-left">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -171,7 +203,10 @@ const Navbar = () => {
                     <DropdownMenuContent align="end" className="w-56 bg-white">
                       <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
+                      <DropdownMenuItem
+                        onClick={() => navigate('/profile')}
+                        className="cursor-pointer"
+                      >
                         <User className="mr-2 h-4 w-4" />
                         Profil
                       </DropdownMenuItem>
@@ -179,30 +214,45 @@ const Navbar = () => {
                         <>
                           <DropdownMenuSeparator />
                           <DropdownMenuLabel>Administration</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => navigate('/admin')} className="cursor-pointer">
+                          <DropdownMenuItem
+                            onClick={() => navigate('/admin')}
+                            className="cursor-pointer"
+                          >
                             <Settings className="mr-2 h-4 w-4" />
                             Tableau de Bord Admin
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer font-semibold text-amber-600">
+                          <DropdownMenuItem
+                            onClick={() => navigate('/profile')}
+                            className="cursor-pointer font-semibold text-amber-600"
+                          >
                             <User className="mr-2 h-4 w-4" />
                             Mon Espace Client (Perso)
                           </DropdownMenuItem>
                         </>
                       )}
                       {isMerchant && (
-                        <DropdownMenuItem onClick={() => navigate('/merchant')} className="cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => navigate('/merchant')}
+                          className="cursor-pointer"
+                        >
                           <BarChart3 className="mr-2 h-4 w-4" />
                           Dashboard Marchand
                         </DropdownMenuItem>
                       )}
                       {isDriver && (
-                        <DropdownMenuItem onClick={() => navigate('/delivery')} className="cursor-pointer">
+                        <DropdownMenuItem
+                          onClick={() => navigate('/delivery')}
+                          className="cursor-pointer"
+                        >
                           <Truck className="mr-2 h-4 w-4" />
                           Dashboard Livreur
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-100 dark:focus:bg-red-900/30">
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="cursor-pointer text-red-600 focus:text-red-100 dark:focus:bg-red-900/30"
+                      >
                         <LogOut className="mr-2 h-4 w-4" />
                         Déconnexion
                       </DropdownMenuItem>
@@ -212,10 +262,16 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <Link
+                  to="/login"
+                  className="text-gray-700 hover:text-amber-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
                   Connexion
                 </Link>
-                <Link to="/register" className="bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-700 transition-colors">
+                <Link
+                  to="/register"
+                  className="bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-700 transition-colors"
+                >
                   Inscription
                 </Link>
               </>
@@ -357,5 +413,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-

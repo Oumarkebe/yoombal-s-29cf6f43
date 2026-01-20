@@ -11,7 +11,7 @@ BEGIN;
 -- Explicitly setting security_invoker=true if supported (PG 15+)
 DROP VIEW IF EXISTS public.admin_orders_view;
 
-CREATE VIEW public.admin_orders_view 
+CREATE OR REPLACE VIEW public.admin_orders_view 
 WITH (security_invoker = true)
 AS
 SELECT 

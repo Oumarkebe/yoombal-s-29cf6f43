@@ -1,10 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { MapPin, Calculator, Truck } from 'lucide-react';
 import { useDeliveryZones } from '@/hooks/useDeliveryZones';
 
@@ -70,9 +75,7 @@ const DeliveryCalculator: React.FC<DeliveryCalculatorProps> = ({ onCalculate, cl
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     <span>{zone.name}</span>
-                    <span className="text-sm text-gray-500">
-                      ({zone.areas.join(', ')})
-                    </span>
+                    <span className="text-sm text-gray-500">({zone.areas.join(', ')})</span>
                   </div>
                 </SelectItem>
               ))}
@@ -96,11 +99,20 @@ const DeliveryCalculator: React.FC<DeliveryCalculatorProps> = ({ onCalculate, cl
         {selectedZone && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-medium mb-2">Détails de la zone</h4>
-            {zones.find(z => z.id === selectedZone) && (
+            {zones.find((z) => z.id === selectedZone) && (
               <div className="space-y-1 text-sm">
-                <p>Frais de base: {zones.find(z => z.id === selectedZone)?.base_fee.toLocaleString()} CFA</p>
-                <p>Prix par km: {zones.find(z => z.id === selectedZone)?.price_per_km.toLocaleString()} CFA</p>
-                <p>Temps max: {zones.find(z => z.id === selectedZone)?.max_delivery_time_minutes} minutes</p>
+                <p>
+                  Frais de base:{' '}
+                  {zones.find((z) => z.id === selectedZone)?.base_fee.toLocaleString()} CFA
+                </p>
+                <p>
+                  Prix par km:{' '}
+                  {zones.find((z) => z.id === selectedZone)?.price_per_km.toLocaleString()} CFA
+                </p>
+                <p>
+                  Temps max: {zones.find((z) => z.id === selectedZone)?.max_delivery_time_minutes}{' '}
+                  minutes
+                </p>
               </div>
             )}
           </div>
@@ -112,19 +124,15 @@ const DeliveryCalculator: React.FC<DeliveryCalculatorProps> = ({ onCalculate, cl
               <Truck className="h-5 w-5 text-green-600" />
               <h4 className="font-semibold text-green-800">Frais de livraison estimés</h4>
             </div>
-            <p className="text-2xl font-bold text-green-800">
-              {estimatedFee.toLocaleString()} CFA
-            </p>
+            <p className="text-2xl font-bold text-green-800">{estimatedFee.toLocaleString()} CFA</p>
             {distance && (
-              <p className="text-sm text-green-600 mt-1">
-                Pour une distance de {distance} km
-              </p>
+              <p className="text-sm text-green-600 mt-1">Pour une distance de {distance} km</p>
             )}
           </div>
         )}
 
-        <Button 
-          onClick={handleCalculate} 
+        <Button
+          onClick={handleCalculate}
           className="w-full bg-green-600 hover:bg-green-700"
           disabled={!selectedZone || !distance}
         >

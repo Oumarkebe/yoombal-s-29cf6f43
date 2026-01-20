@@ -1,5 +1,4 @@
-
-import React from "react";
+import React from 'react';
 
 interface Order {
   id: string;
@@ -18,15 +17,9 @@ const OrdersList: React.FC<{ orders: Order[] }> = ({ orders }) => {
           <span>ID : {order.id}</span>
           <span>Status : {order.status}</span>
           <span>
-            {order.total_amount !== undefined
-              ? `Montant: ${order.total_amount} F CFA`
-              : ""}
+            {order.total_amount !== undefined ? `Montant: ${order.total_amount} F CFA` : ''}
           </span>
-          <span>
-            {order.created_at
-              ? new Date(order.created_at).toLocaleDateString()
-              : ""}
-          </span>
+          <span>{order.created_at ? new Date(order.created_at).toLocaleDateString() : ''}</span>
         </div>
       ))}
     </div>
@@ -34,4 +27,3 @@ const OrdersList: React.FC<{ orders: Order[] }> = ({ orders }) => {
 };
 
 export default OrdersList;
-

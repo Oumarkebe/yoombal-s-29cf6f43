@@ -47,9 +47,9 @@ CREATE TABLE IF NOT EXISTS public.user_premium_subscriptions (
     UNIQUE(user_id, feature_id)
 );
 
-CREATE INDEX idx_user_subscriptions_user ON public.user_premium_subscriptions(user_id);
-CREATE INDEX idx_user_subscriptions_status ON public.user_premium_subscriptions(status);
-CREATE INDEX idx_user_subscriptions_expires ON public.user_premium_subscriptions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user ON public.user_premium_subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_status ON public.user_premium_subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_expires ON public.user_premium_subscriptions(expires_at);
 
 -- ============================================================================
 -- 2. PREMIUM BUNDLES
@@ -99,8 +99,8 @@ CREATE TABLE IF NOT EXISTS public.credit_transactions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_credit_transactions_user ON public.credit_transactions(user_id);
-CREATE INDEX idx_credit_transactions_type ON public.credit_transactions(type);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_user ON public.credit_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_credit_transactions_type ON public.credit_transactions(type);
 
 -- ============================================================================
 -- 4. USAGE QUOTAS
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS public.feature_usage_quotas (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_usage_quotas_subscription ON public.feature_usage_quotas(subscription_id);
+CREATE INDEX IF NOT EXISTS idx_usage_quotas_subscription ON public.feature_usage_quotas(subscription_id);
 
 -- ============================================================================
 -- 5. REFERRAL PROGRAM
@@ -151,20 +151,25 @@ ALTER TABLE public.feature_usage_quotas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
 
 -- Users can view their own subscriptions
+DROP POLICY IF EXISTS user_view_own_subscriptions ON public.user_premium_subscriptions;
 CREATE POLICY user_view_own_subscriptions ON public.user_premium_subscriptions
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS user_manage_own_subscriptions ON public.user_premium_subscriptions;
 CREATE POLICY user_manage_own_subscriptions ON public.user_premium_subscriptions
     FOR ALL USING (auth.uid() = user_id);
 
 -- Users can view their own credits
+DROP POLICY IF EXISTS user_view_own_credits ON public.user_credits;
 CREATE POLICY user_view_own_credits ON public.user_credits
     FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS user_view_own_transactions ON public.credit_transactions;
 CREATE POLICY user_view_own_transactions ON public.credit_transactions
     FOR SELECT USING (auth.uid() = user_id);
 
 -- Users can view their own quotas
+DROP POLICY IF EXISTS user_view_own_quotas ON public.feature_usage_quotas;
 CREATE POLICY user_view_own_quotas ON public.feature_usage_quotas
     FOR SELECT USING (
         subscription_id IN (
@@ -174,24 +179,30 @@ CREATE POLICY user_view_own_quotas ON public.feature_usage_quotas
     );
 
 -- Users can view their referrals
+DROP POLICY IF EXISTS user_view_referrals ON public.referrals;
 CREATE POLICY user_view_referrals ON public.referrals
     FOR SELECT USING (auth.uid() = referrer_id OR auth.uid() = referred_id);
 
 -- Admins can view all
+DROP POLICY IF EXISTS admin_view_all_subscriptions ON public.user_premium_subscriptions;
 CREATE POLICY admin_view_all_subscriptions ON public.user_premium_subscriptions
     FOR ALL USING (public.is_admin());
 
+DROP POLICY IF EXISTS admin_view_all_credits ON public.user_credits;
 CREATE POLICY admin_view_all_credits ON public.user_credits
     FOR ALL USING (public.is_admin());
 
+DROP POLICY IF EXISTS admin_view_all_transactions ON public.credit_transactions;
 CREATE POLICY admin_view_all_transactions ON public.credit_transactions
     FOR ALL USING (public.is_admin());
 
 -- Bundles are public
 ALTER TABLE public.premium_bundles ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS bundles_public_read ON public.premium_bundles;
 CREATE POLICY bundles_public_read ON public.premium_bundles
     FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS admin_manage_bundles ON public.premium_bundles;
 CREATE POLICY admin_manage_bundles ON public.premium_bundles
     FOR ALL USING (public.is_admin());
 
@@ -296,14 +307,17 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================================================
 
 -- Auto-update timestamps
+DROP TRIGGER IF EXISTS update_user_subscriptions_updated_at ON public.user_premium_subscriptions;
 CREATE TRIGGER update_user_subscriptions_updated_at
     BEFORE UPDATE ON public.user_premium_subscriptions
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_bundles_updated_at ON public.premium_bundles;
 CREATE TRIGGER update_bundles_updated_at
     BEFORE UPDATE ON public.premium_bundles
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_user_credits_updated_at ON public.user_credits;
 CREATE TRIGGER update_user_credits_updated_at
     BEFORE UPDATE ON public.user_credits
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -319,6 +333,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS enforce_subscription_expiration ON public.user_premium_subscriptions;
 CREATE TRIGGER enforce_subscription_expiration
     BEFORE UPDATE ON public.user_premium_subscriptions
     FOR EACH ROW EXECUTE FUNCTION public.check_subscription_expiration();

@@ -1,7 +1,12 @@
-
-import React from "react";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from 'react';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ScoringCriteriaSelectProps {
   value: string;
@@ -32,4 +37,3 @@ export const ScoringCriteriaSelect: React.FC<ScoringCriteriaSelectProps> = ({
     <p className="text-xs text-gray-500 mt-1">Définit les facteurs pour évaluer les vendeurs.</p>
   </div>
 );
-

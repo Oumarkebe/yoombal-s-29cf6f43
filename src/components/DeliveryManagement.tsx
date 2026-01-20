@@ -1,22 +1,21 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  Truck, 
-  Plus, 
-  Edit, 
-  MapPin, 
+import {
+  Users,
+  Truck,
+  Plus,
+  Edit,
+  MapPin,
   Phone,
   Star,
   Clock,
   Package,
   CheckCircle,
   AlertTriangle,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { useDrivers } from '@/hooks/useDrivers';
 import { useDeliveryZones, DeliveryZone } from '@/hooks/useDeliveryZones';
@@ -44,7 +43,7 @@ const DeliveryManagement = () => {
     queryClient.invalidateQueries({ queryKey: ['drivers'] });
     setIsAddDriverModalOpen(false);
   };
-  
+
   const handleZoneSaved = () => {
     queryClient.invalidateQueries({ queryKey: ['delivery_zones'] });
     handleCloseZoneModal();
@@ -57,9 +56,9 @@ const DeliveryManagement = () => {
 
   // Calculate driver stats
   const getDriverStats = (driverId: string) => {
-    const driverDeliveries = deliveries.filter(d => d.driver_id === driverId);
-    const completedDeliveries = driverDeliveries.filter(d => d.status === 'delivered');
-    const activeDeliveries = driverDeliveries.filter(d => 
+    const driverDeliveries = deliveries.filter((d) => d.driver_id === driverId);
+    const completedDeliveries = driverDeliveries.filter((d) => d.status === 'delivered');
+    const activeDeliveries = driverDeliveries.filter((d) =>
       ['assigned', 'picked_up', 'in_transit'].includes(d.status)
     );
 
@@ -67,7 +66,7 @@ const DeliveryManagement = () => {
       total: completedDeliveries.length,
       active: activeDeliveries.length,
       rating: 4.5 + Math.random() * 0.5, // Simulated rating
-      status: activeDeliveries.length > 0 ? 'busy' : 'available'
+      status: activeDeliveries.length > 0 ? 'busy' : 'available',
     };
   };
 
@@ -97,7 +96,7 @@ const DeliveryManagement = () => {
     }
   };
 
-  const filteredDrivers = drivers.filter(driver => {
+  const filteredDrivers = drivers.filter((driver) => {
     if (activeDriverTab === 'all') return true;
     const stats = getDriverStats(driver.id);
     return stats.status === activeDriverTab;
@@ -134,7 +133,10 @@ const DeliveryManagement = () => {
                     {drivers.length} livreurs enregistrés
                   </p>
                 </div>
-                <Button className="bg-green-600 hover:bg-green-700" onClick={() => setIsAddDriverModalOpen(true)}>
+                <Button
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => setIsAddDriverModalOpen(true)}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Ajouter un livreur
                 </Button>
@@ -154,14 +156,15 @@ const DeliveryManagement = () => {
                   variant={activeDriverTab === 'available' ? 'default' : 'outline'}
                   onClick={() => setActiveDriverTab('available')}
                 >
-                  Disponibles ({drivers.filter(d => getDriverStats(d.id).status === 'available').length})
+                  Disponibles (
+                  {drivers.filter((d) => getDriverStats(d.id).status === 'available').length})
                 </Button>
                 <Button
                   size="sm"
                   variant={activeDriverTab === 'busy' ? 'default' : 'outline'}
                   onClick={() => setActiveDriverTab('busy')}
                 >
-                  Occupés ({drivers.filter(d => getDriverStats(d.id).status === 'busy').length})
+                  Occupés ({drivers.filter((d) => getDriverStats(d.id).status === 'busy').length})
                 </Button>
               </div>
             </Card>
@@ -200,7 +203,9 @@ const DeliveryManagement = () => {
                       )}
                       <div className="flex items-center gap-2 text-sm">
                         <Star className="h-4 w-4 text-yellow-500" />
-                        <span>{stats.rating.toFixed(1)}/5 ({stats.total} livraisons)</span>
+                        <span>
+                          {stats.rating.toFixed(1)}/5 ({stats.total} livraisons)
+                        </span>
                       </div>
                       {stats.active > 0 && (
                         <div className="flex items-center gap-2 text-sm">
@@ -243,7 +248,10 @@ const DeliveryManagement = () => {
                     Gestion des zones et temps de livraison
                   </p>
                 </div>
-                <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleOpenZoneModal()}>
+                <Button
+                  className="bg-green-600 hover:bg-green-700"
+                  onClick={() => handleOpenZoneModal()}
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Nouvelle zone
                 </Button>
@@ -253,7 +261,7 @@ const DeliveryManagement = () => {
             {/* Zones List */}
             <div className="grid md:grid-cols-2 gap-6">
               {zones.map((zone) => {
-                const zoneDrivers = drivers.filter(d => d.zone === zone.name);
+                const zoneDrivers = drivers.filter((d) => d.zone === zone.name);
                 return (
                   <Card key={zone.id} className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -261,7 +269,13 @@ const DeliveryManagement = () => {
                         <h4 className="font-semibold">{zone.name}</h4>
                         <p className="text-sm text-gray-600">{zone.id.slice(0, 8)}</p>
                       </div>
-                      <Badge className={zone.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                      <Badge
+                        className={
+                          zone.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }
+                      >
                         {zone.is_active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
@@ -288,13 +302,20 @@ const DeliveryManagement = () => {
                         </div>
                         <div>
                           <span className="text-gray-600">Prix/km: </span>
-                          <span className="font-medium">{zone.price_per_km.toLocaleString()} CFA</span>
+                          <span className="font-medium">
+                            {zone.price_per_km.toLocaleString()} CFA
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleOpenZoneModal(zone)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => handleOpenZoneModal(zone)}
+                      >
                         <Edit className="h-4 w-4 mr-1" />
                         Modifier
                       </Button>
@@ -310,13 +331,13 @@ const DeliveryManagement = () => {
           </TabsContent>
         </Tabs>
       </div>
-      <AddDriverModal 
-        isOpen={isAddDriverModalOpen} 
-        onClose={() => setIsAddDriverModalOpen(false)} 
+      <AddDriverModal
+        isOpen={isAddDriverModalOpen}
+        onClose={() => setIsAddDriverModalOpen(false)}
         onSuccess={handleDriverAdded}
       />
-      <ZoneModal 
-        isOpen={isZoneModalOpen} 
+      <ZoneModal
+        isOpen={isZoneModalOpen}
         onClose={handleCloseZoneModal}
         onSuccess={handleZoneSaved}
         zone={selectedZone}

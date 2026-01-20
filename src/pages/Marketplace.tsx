@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from '@/components/ui/select';
 import { Link } from 'react-router-dom';
 import { usePlatformSettings } from '@/hooks/usePlatformSettings';
 import { usePublicStats } from '@/hooks/usePublicStats';
@@ -26,19 +25,19 @@ import { toast } from 'sonner';
 import { useSponsoredProducts } from '@/hooks/useSponsoredProducts';
 import { Sparkles as SparklesIcon, Filter } from 'lucide-react';
 import { CategoryBadge } from '@/components/CategoryBadge';
-import { useAds } from '@/hooks/useAds'; // For tracking events? No, useAds is merchant side. 
+import { useAds } from '@/hooks/useAds'; // For tracking events? No, useAds is merchant side.
 // We need a tracker. useSponsoredProducts could export one or we use direct supabase.
 // Let's assume useSponsoredProducts has a `trackView`? Not yet.
-// I'll add the tracker logic inline or update the hook later. 
+// I'll add the tracker logic inline or update the hook later.
 // For now, let's just display.
 
 const SponsoredSection = () => {
   const { sponsoredProducts, loading } = useSponsoredProducts();
-  const { trackAdEvent } = useAds(); // Wait, useAds needs user auth? 
+  const { trackAdEvent } = useAds(); // Wait, useAds needs user auth?
   // Actually useAds is for merchants. I should stick the tracking in useSponsoredProducts or a generic hook.
   // Re-using useAds might conflict if it tries to fetch campaigns on mount.
   // Let's just create a quick local tracker or update useAds to be split.
-  // For expediency, I will ignore tracking CLICK in this specific iteration 
+  // For expediency, I will ignore tracking CLICK in this specific iteration
   // OR just use supabase directly here since I have the client.
 
   // Actually I can just import supabase.
@@ -53,7 +52,7 @@ const SponsoredSection = () => {
             </h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {sponsoredProducts.map(product => (
+            {sponsoredProducts.map((product) => (
               <div key={product.id} className="relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                 <div className="relative">
@@ -61,8 +60,8 @@ const SponsoredSection = () => {
                     id={product.id}
                     name={product.name}
                     price={product.price}
-                    image={product.image_url || "/placeholder.svg"}
-                    merchant={(product.profiles?.business_name || "Sponsorisé")}
+                    image={product.image_url || '/placeholder.svg'}
+                    merchant={product.profiles?.business_name || 'Sponsorisé'}
                     bnplAvailable={false}
                     isSponsored={true}
                   />
@@ -75,7 +74,7 @@ const SponsoredSection = () => {
       )}
     </div>
   );
-}
+};
 
 const Marketplace: React.FC = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -92,19 +91,19 @@ const Marketplace: React.FC = () => {
     setSortBy,
     isFetchingMore,
     hasMore,
-    loadMoreProducts
+    loadMoreProducts,
   } = useMarketplaceProducts();
 
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
   const { settings, isLoading: isLoadingSettings } = usePlatformSettings();
   const { data: stats, isLoading: isLoadingStats } = usePublicStats();
-  const { translatedText: searchPlaceholder } = useTranslation("Rechercher un produit...");
-  const { translatedText: sortPlaceholder } = useTranslation("Trier par");
+  const { translatedText: searchPlaceholder } = useTranslation('Rechercher un produit...');
+  const { translatedText: sortPlaceholder } = useTranslation('Trier par');
 
   const sortOptions: { label: string; value: SortByOption }[] = [
-    { label: "Plus récents", value: { field: "created_at", ascending: false } },
-    { label: "Prix: Croissant", value: { field: "price", ascending: true } },
-    { label: "Prix: Décroissant", value: { field: "price", ascending: false } },
+    { label: 'Plus récents', value: { field: 'created_at', ascending: false } },
+    { label: 'Prix: Croissant', value: { field: 'price', ascending: true } },
+    { label: 'Prix: Décroissant', value: { field: 'price', ascending: false } },
   ];
 
   const handleSortChange = (value: string) => {
@@ -112,7 +111,7 @@ const Marketplace: React.FC = () => {
       const parsedValue = JSON.parse(value);
       setSortBy(parsedValue);
     } catch (e) {
-      console.error("Failed to parse sort option", e);
+      console.error('Failed to parse sort option', e);
     }
   };
 
@@ -161,18 +160,20 @@ const Marketplace: React.FC = () => {
       return;
     }
 
-    const clickedCategory = categories?.find(c => c.id === categoryId);
+    const clickedCategory = categories?.find((c) => c.id === categoryId);
     if (!clickedCategory) return;
 
     // If it's a parent (parent_id is null), select it and all its children for the filter
     if (!(clickedCategory as any).parent_id) {
-      const childrenIds = categories?.filter(c => (c as any).parent_id === clickedCategory.id).map(c => c.id) || [];
+      const childrenIds =
+        categories?.filter((c) => (c as any).parent_id === clickedCategory.id).map((c) => c.id) ||
+        [];
       setSelectedCategory([clickedCategory.id, ...childrenIds]);
     } else {
       // It's a child, just select it
       setSelectedCategory(categoryId);
     }
-  }
+  };
 
   // Derive which parent is "active" for the sub-categories row
   const activeParentId = (() => {
@@ -182,11 +183,11 @@ const Marketplace: React.FC = () => {
     if (Array.isArray(selectedCategory)) return selectedCategory[0];
 
     // If it's a single ID, find its parent
-    const cat = categories?.find(c => c.id === selectedCategory);
+    const cat = categories?.find((c) => c.id === selectedCategory);
     return (cat as any)?.parent_id || cat?.id || null;
   })();
 
-  const subCategories = categories?.filter(c => (c as any).parent_id === activeParentId) || [];
+  const subCategories = categories?.filter((c) => (c as any).parent_id === activeParentId) || [];
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950 transition-colors duration-300">
@@ -204,7 +205,10 @@ const Marketplace: React.FC = () => {
                 <T>Bienvenue sur la Marketplace</T>
               </h1>
               <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto animate-fade-in-up animation-delay-200">
-                <T>Découvrez des milliers de produits de nos vendeurs partenaires et profitez du paiement en plusieurs fois.</T>
+                <T>
+                  Découvrez des milliers de produits de nos vendeurs partenaires et profitez du
+                  paiement en plusieurs fois.
+                </T>
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up animation-delay-400">
@@ -217,7 +221,12 @@ const Marketplace: React.FC = () => {
                     className="h-12 w-full pl-12 pr-10 rounded-md bg-white/5 border-white/20 text-white placeholder-gray-400 focus:bg-white/10 focus:ring-2 focus:ring-blue-400"
                   />
                   {searchTerm && (
-                    <Button variant="ghost" size="icon" className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-white" onClick={handleClearSearch}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8 text-gray-400 hover:text-white"
+                      onClick={handleClearSearch}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   )}
@@ -225,15 +234,22 @@ const Marketplace: React.FC = () => {
                     <AISearchControls
                       onSearchUpdate={setSearchTerm}
                       onSemanticSearch={() => {
-                        toast.success("Intelligence Artificielle : Analyse sémantique activée !");
+                        toast.success('Intelligence Artificielle : Analyse sémantique activée !');
                         // Simulated semantic boost
                         setProductsSearchTerm(searchTerm);
                       }}
                     />
                   </div>
                 </div>
-                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-transparent border-gray-500 hover:bg-white/10 hover:border-white">
-                  <Link to="/about"><T>Découvrir la plateforme</T></Link>
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto bg-transparent border-gray-500 hover:bg-white/10 hover:border-white"
+                >
+                  <Link to="/about">
+                    <T>Découvrir la plateforme</T>
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -275,8 +291,11 @@ const Marketplace: React.FC = () => {
 
               {isLoadingCategories ? (
                 <div className="flex gap-4">
-                  {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="h-11 w-36 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-full" />
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="h-11 w-36 bg-gray-100 dark:bg-gray-800 animate-pulse rounded-full"
+                    />
                   ))}
                 </div>
               ) : (
@@ -288,11 +307,11 @@ const Marketplace: React.FC = () => {
                     'High-Tech & Digital',
                     'Services & Artisans',
                     'Auto & Mobilité',
-                    'Yoombal Finance'
+                    'Yoombal Finance',
                   ];
 
                   // Only Parents
-                  const parentCategories = categories?.filter(c => !(c as any).parent_id) || [];
+                  const parentCategories = categories?.filter((c) => !(c as any).parent_id) || [];
 
                   // Sort categories: Primary first, then name alphabetical
                   const sortedParents = [...parentCategories].sort((a, b) => {
@@ -308,7 +327,9 @@ const Marketplace: React.FC = () => {
                     const isPrimary = PRIMARY_UNIVERSES.includes(category.name);
                     const isActive = Array.isArray(selectedCategory)
                       ? selectedCategory[0] === category.id
-                      : (selectedCategory === category.id || (categories?.find(c => c.id === selectedCategory) as any)?.parent_id === category.id);
+                      : selectedCategory === category.id ||
+                        (categories?.find((c) => c.id === selectedCategory) as any)?.parent_id ===
+                          category.id;
 
                     return (
                       <div key={category.id} className="snap-start flex-none">
@@ -316,7 +337,11 @@ const Marketplace: React.FC = () => {
                           name={category.name}
                           isActive={isActive}
                           onClick={() => handleCategoryClick(category.id)}
-                          className={!isPrimary && !isActive ? "opacity-60 scale-95 saturate-[0.8]" : "opacity-100 scale-100"}
+                          className={
+                            !isPrimary && !isActive
+                              ? 'opacity-60 scale-95 saturate-[0.8]'
+                              : 'opacity-100 scale-100'
+                          }
                         />
                       </div>
                     );
@@ -345,11 +370,24 @@ const Marketplace: React.FC = () => {
           <div>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {searchTerm ? <><T>Résultats pour</T> "{searchTerm}"</> : (selectedCategory ? (Array.isArray(selectedCategory) ? categories?.find(c => c.id === selectedCategory[0])?.name : categories?.find(c => c.id === selectedCategory)?.name) : <T>Tous les produits</T>)}
+                {searchTerm ? (
+                  <>
+                    <T>Résultats pour</T> "{searchTerm}"
+                  </>
+                ) : selectedCategory ? (
+                  Array.isArray(selectedCategory) ? (
+                    categories?.find((c) => c.id === selectedCategory[0])?.name
+                  ) : (
+                    categories?.find((c) => c.id === selectedCategory)?.name
+                  )
+                ) : (
+                  <T>Tous les produits</T>
+                )}
               </h2>
               <div className="flex items-center gap-4">
                 <span className="text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {products.length} {products.length <= 1 ? <T>produit trouvé</T> : <T>produits trouvés</T>}
+                  {products.length}{' '}
+                  {products.length <= 1 ? <T>produit trouvé</T> : <T>produits trouvés</T>}
                 </span>
                 <Select onValueChange={handleSortChange} defaultValue={JSON.stringify(sortBy)}>
                   <SelectTrigger className="w-auto md:w-[180px] dark:bg-gray-800 dark:border-gray-700">
@@ -406,7 +444,7 @@ const Marketplace: React.FC = () => {
                     id={product.id}
                     name={product.name}
                     price={product.price}
-                    image={product.image_url || "/placeholder.svg"}
+                    image={product.image_url || '/placeholder.svg'}
                     merchant={getMerchantName(product)}
                     bnplAvailable={product.price >= 50000}
                     categoryName={product.categories?.name}
@@ -439,7 +477,11 @@ const Marketplace: React.FC = () => {
 
         {/* FLOATING ILLUSTRATION SECTION */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 text-center animate-fade-in-up animation-delay-600">
-          <img src="/img/bnpl-illustration.png" alt="Illustration Yoombal" className="inline-block max-w-full h-auto md:max-w-3xl" />
+          <img
+            src="/img/bnpl-illustration.png"
+            alt="Illustration Yoombal"
+            className="inline-block max-w-full h-auto md:max-w-3xl"
+          />
         </div>
       </main>
       <Footer />

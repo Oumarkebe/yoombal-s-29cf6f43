@@ -1,8 +1,7 @@
-
-import React from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import DriverDashboard from "@/components/DriverDashboard";
+import React from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import DriverDashboard from '@/components/DriverDashboard';
 
 const DriverPage = () => {
   return (

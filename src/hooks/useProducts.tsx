@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -48,40 +47,39 @@ export const useProducts = () => {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select(`
+        .select(
+          `
           *,
           categories (
             name
           )
-        `)
+        `
+        )
         .eq('merchant_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Type assertion pour assurer la compatibilité avec notre interface Product
-      const typedProducts = (data || []).map(product => ({
+      const typedProducts = (data || []).map((product) => ({
         ...product,
-        status: product.status as 'active' | 'draft' | 'out_of_stock'
+        status: product.status as 'active' | 'draft' | 'out_of_stock',
       }));
 
       setProducts(typedProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les produits",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de charger les produits',
+        variant: 'destructive',
       });
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
+      const { data, error } = await supabase.from('categories').select('*').order('name');
 
       if (error) throw error;
       setCategories(data || []);
@@ -90,16 +88,20 @@ export const useProducts = () => {
     }
   };
 
-  const createProduct = async (productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'merchant_id'>) => {
+  const createProduct = async (
+    productData: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'merchant_id'>
+  ) => {
     if (!user) return { error: 'User not authenticated' };
 
     try {
       const { data, error } = await supabase
         .from('products')
-        .insert([{
-          ...productData,
-          merchant_id: user.id
-        }])
+        .insert([
+          {
+            ...productData,
+            merchant_id: user.id,
+          },
+        ])
         .select()
         .single();
 
@@ -107,17 +109,17 @@ export const useProducts = () => {
 
       await fetchProducts();
       toast({
-        title: "Succès",
-        description: "Produit créé avec succès",
+        title: 'Succès',
+        description: 'Produit créé avec succès',
       });
 
       return { data };
     } catch (error: any) {
       console.error('Error creating product:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de créer le produit",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de créer le produit',
+        variant: 'destructive',
       });
       return { error: error.message };
     }
@@ -125,26 +127,23 @@ export const useProducts = () => {
 
   const updateProduct = async (id: string, productData: Partial<Product>) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .update(productData)
-        .eq('id', id);
+      const { error } = await supabase.from('products').update(productData).eq('id', id);
 
       if (error) throw error;
 
       await fetchProducts();
       toast({
-        title: "Succès",
-        description: "Produit mis à jour avec succès",
+        title: 'Succès',
+        description: 'Produit mis à jour avec succès',
       });
 
       return { success: true };
     } catch (error: any) {
       console.error('Error updating product:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le produit",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le produit',
+        variant: 'destructive',
       });
       return { error: error.message };
     }
@@ -152,26 +151,23 @@ export const useProducts = () => {
 
   const deleteProduct = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from('products').delete().eq('id', id);
 
       if (error) throw error;
 
       await fetchProducts();
       toast({
-        title: "Succès",
-        description: "Produit supprimé avec succès",
+        title: 'Succès',
+        description: 'Produit supprimé avec succès',
       });
 
       return { success: true };
     } catch (error: any) {
       console.error('Error deleting product:', error);
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer le produit",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de supprimer le produit',
+        variant: 'destructive',
       });
       return { error: error.message };
     }
@@ -196,6 +192,6 @@ export const useProducts = () => {
     createProduct,
     updateProduct,
     deleteProduct,
-    refreshProducts: fetchProducts
+    refreshProducts: fetchProducts,
   };
 };

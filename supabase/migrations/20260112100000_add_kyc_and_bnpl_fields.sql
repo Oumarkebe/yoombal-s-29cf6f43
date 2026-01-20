@@ -16,30 +16,29 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('kyc-documents', 'kyc-documents', false)
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Storage Policies (RLS) for kyc-documents
-
 -- Allow authenticated users to upload their own documents (insert)
--- Note: We assume the filename or path contains the user ID to secure it, 
--- or we rely on the application logic to generate unique paths. 
--- For stricter security, we'd use a folder policy like (storage.foldername(name))[1] = auth.uid()::text
+DROP POLICY IF EXISTS "Users can upload their own KYC documents" on storage.objects;
 create policy "Users can upload their own KYC documents"
 on storage.objects for insert
 to authenticated
 with check ( bucket_id = 'kyc-documents' AND auth.uid() = owner );
 
 -- Allow users to view their own documents
+DROP POLICY IF EXISTS "Users can view their own KYC documents" on storage.objects;
 create policy "Users can view their own KYC documents"
 on storage.objects for select
 to authenticated
 using ( bucket_id = 'kyc-documents' AND auth.uid() = owner );
 
 -- Allow admins to view all KYC documents
+DROP POLICY IF EXISTS "Admins can view all KYC documents" on storage.objects;
 create policy "Admins can view all KYC documents"
 on storage.objects for select
 to authenticated
 using ( bucket_id = 'kyc-documents' AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin' );
 
 -- Allow admins to update/delete (manage) KYC documents if needed
+DROP POLICY IF EXISTS "Admins can manage all KYC documents" on storage.objects;
 create policy "Admins can manage all KYC documents"
 on storage.objects for all
 to authenticated
