@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-import { Database } from '@/integrations/supabase/types';
+import { Warehouse as WarehouseType, WarehouseInventory } from '@/types/database-extended';
 
-export type Warehouse = Database['public']['Tables']['warehouses']['Row'];
-export type InventoryItem = Database['public']['Tables']['warehouse_inventory']['Row'] & {
+export type Warehouse = WarehouseType;
+export type InventoryItem = WarehouseInventory & {
     product?: {
         name: string;
         image_url?: string;
