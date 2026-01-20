@@ -93,16 +93,16 @@ const Profile = () => {
   useEffect(() => {
     if (profile) {
       form.reset({
-        first_name: profile.first_name || "",
-        last_name: profile.last_name || "",
+        first_name: profile.firstName || "",
+        last_name: profile.lastName || "",
         phone: profile.phone || "",
-        business_name: profile.business_name || "",
-        business_type: profile.business_type || "",
-        vehicle_type: profile.vehicle_type || "",
+        business_name: profile.businessName || "",
+        business_type: profile.businessType || "",
+        vehicle_type: profile.vehicleType || "",
         zone: profile.zone || "",
-        merchant_name: profile.merchant_name || "",
-        delivery_name: profile.delivery_name || "",
-        client_name: profile.client_name || "",
+        merchant_name: profile.merchantName || "",
+        delivery_name: profile.deliveryName || "",
+        client_name: profile.clientName || "",
       });
     }
   }, [profile, form]);
@@ -215,16 +215,16 @@ const Profile = () => {
     if (!user?.id) return;
 
     updateProfile({
-      first_name: values.first_name,
-      last_name: values.last_name,
+      firstName: values.first_name,
+      lastName: values.last_name,
       phone: values.phone,
-      business_name: values.business_name,
-      business_type: values.business_type,
-      vehicle_type: values.vehicle_type,
+      businessName: values.business_name,
+      businessType: values.business_type,
+      vehicleType: values.vehicle_type,
       zone: values.zone,
-      merchant_name: values.merchant_name,
-      delivery_name: values.delivery_name,
-      client_name: values.client_name,
+      merchantName: values.merchant_name,
+      deliveryName: values.delivery_name,
+      clientName: values.client_name,
     });
   };
 
@@ -264,17 +264,17 @@ const Profile = () => {
         <Card className="bg-white p-6 shadow-sm mb-6 border-none">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="h-24 w-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-bold">
-              {profile?.first_name?.[0]}{profile?.last_name?.[0]}
+              {profile?.firstName?.[0]}{profile?.lastName?.[0]}
             </div>
 
             <div className="flex-1 text-center md:text-left space-y-2">
               <h1 className="text-2xl font-bold text-gray-900">
-                {profile?.first_name} {profile?.last_name}
+                {profile?.firstName} {profile?.lastName}
               </h1>
               <p className="text-gray-500">{user?.email}</p>
 
               <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-2">
-                {profile?.business_name && (
+                {profile?.businessName && (
                   <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
                     PRO
                   </span>
@@ -289,10 +289,10 @@ const Profile = () => {
                     {profile.phone}
                   </div>
                 )}
-                {profile?.business_name && (
+                {profile?.businessName && (
                   <div className="flex items-center text-sm text-gray-500 ml-2">
                     <Briefcase className="h-3 w-3 mr-1" />
-                    {profile.business_name}
+                    {profile.businessName}
                   </div>
                 )}
                 {profile?.zone && (
@@ -448,8 +448,8 @@ const Profile = () => {
             {/* KYC Section */}
             <div className="mb-6">
               <KYCUpload
-                currentStatus={profile?.kyc_status}
-                rejectionReason={profile?.kyc_rejection_reason}
+                currentStatus={profile?.kycStatus}
+                rejectionReason={profile?.rejectionReason}
                 onSuccess={() => window.location.reload()}
               />
             </div>

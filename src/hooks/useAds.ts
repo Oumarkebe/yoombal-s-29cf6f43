@@ -4,9 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
-import { Database } from '@/integrations/supabase/types';
+import { AdsCampaign } from '@/types/database-extended';
 
-export type AdCampaign = Database['public']['Tables']['ads_campaigns']['Row'] & {
+export type AdCampaign = AdsCampaign & {
     product?: {
         name: string;
         image_url?: string;

@@ -4,9 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
-import { Database } from '@/integrations/supabase/types';
+import { Notification as NotificationType } from '@/types/database-extended';
 
-export type Notification = Database['public']['Tables']['notifications']['Row'];
+export type Notification = NotificationType;
 
 export const useNotifications = () => {
   const { user } = useAuth();
