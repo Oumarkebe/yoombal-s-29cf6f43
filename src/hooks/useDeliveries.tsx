@@ -82,21 +82,21 @@ export const useDeliveries = () => {
       if (activeDeliveryIds.length > 0) {
         // We fetch the latest tracking point for each active delivery
         // This is a simplified approach; proper approach might use a materialized view or custom RPC
-        const { data: trackingData, error: trackingError } = await supabase
+        const { data: trackingData, error: trackingError } = await (supabase as any)
           .from('delivery_tracking')
-          .select('delivery_id, latitude, longitude, speed, heading, created_at')
+          .select('delivery_id, latitude, longitude, status_update, notes, created_at')
           .in('delivery_id', activeDeliveryIds)
           .order('created_at', { ascending: false });
 
         if (!trackingError && trackingData) {
           // Keep only the latest per delivery (trackingData is ordered desc)
-          trackingData.forEach(t => {
+          trackingData.forEach((t: any) => {
             if (!trackingMap.has(t.delivery_id)) {
               trackingMap.set(t.delivery_id, {
                 lat: t.latitude,
                 lng: t.longitude,
-                speed: t.speed,
-                heading: t.heading,
+                speed: 0, // Not available in schema
+                heading: 0, // Not available in schema
                 updated_at: t.created_at
               });
             }

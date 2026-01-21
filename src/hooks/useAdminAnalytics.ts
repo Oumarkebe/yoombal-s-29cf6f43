@@ -8,7 +8,7 @@ export type DailyMetric = {
 };
 
 async function fetchAdminAnalytics(): Promise<DailyMetric[]> {
-  const { data, error } = await supabase.rpc('get_admin_analytics');
+  const { data, error } = await (supabase as any).rpc('get_admin_analytics');
 
   if (error) {
     console.error('Error fetching admin analytics:', error);

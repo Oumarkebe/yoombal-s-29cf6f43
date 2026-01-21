@@ -25,7 +25,7 @@ export function StockIndicator({ stock, productId, minStock = 5 }: StockIndicato
             // Get current user if available
             const { data: { user } } = await supabase.auth.getUser();
 
-            const { error } = await supabase
+            const { error } = await (supabase as any)
                 .from('stock_alerts')
                 .insert({
                     product_id: productId,

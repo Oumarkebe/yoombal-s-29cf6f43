@@ -16,7 +16,6 @@ export type AdCampaign = AdsCampaign & {
     clicks: number;
   };
 };
-};
 
 export const useAds = () => {
   const { user } = useAuth();
