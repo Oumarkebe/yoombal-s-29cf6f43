@@ -483,7 +483,7 @@ export function AIAssistant() {
 
         // --- LOG DECISION (PRO+) ---
         try {
-          await supabase.from('ai_chat_logs').insert([
+          await (supabase as any).from('ai_chat_logs').insert([
             {
               user_id: user?.id,
               message_content: userMessage,
@@ -494,7 +494,7 @@ export function AIAssistant() {
                 decision: decision,
                 confidence: intentInfo.confidence,
                 context: pageContext,
-              } as any,
+              },
             },
           ]);
         } catch (e) {

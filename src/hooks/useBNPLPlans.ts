@@ -90,7 +90,7 @@ export function useBNPLPlans() {
 
   const processPayment = async (planId: string, amount: number) => {
     try {
-      const { data, error } = await supabase.rpc('process_bnpl_payment', {
+      const { data, error } = await (supabase as any).rpc('process_bnpl_payment', {
         p_plan_id: planId,
         p_amount: amount,
         p_payment_method: 'wallet',
