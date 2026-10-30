@@ -137,7 +137,7 @@ export const useDeliveries = () => {
     try {
       const { data, error } = await supabase
         .from('deliveries')
-        .insert([deliveryData])
+        .insert([deliveryData] as any)
         .select()
         .single();
 

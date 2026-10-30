@@ -53,7 +53,7 @@ export const useGuestCheckout = () => {
           delivery_address: `${guestData.address}, ${guestData.city} ${guestData.postal_code}`,
           delivery_phone: guestData.phone,
           delivery_notes: `Invité: ${guestData.first_name} ${guestData.last_name} - Email: ${guestData.email}${guestData.notes ? ` - Notes: ${guestData.notes}` : ''}`,
-        })
+        } as any)
         .select()
         .single();
 
