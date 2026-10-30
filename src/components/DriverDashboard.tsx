@@ -117,7 +117,7 @@ const DriverDashboard = () => {
             heading: heading || 0,
             status_update: 'driver',
             created_at: new Date().toISOString(),
-          },
+          } as any,
         ]);
 
         if (error) {

@@ -5,7 +5,7 @@ export function useAutoSimulation(
   speed: number, // 1, 2, or 5
   setters: (() => void)[]
 ) {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!enabled) {

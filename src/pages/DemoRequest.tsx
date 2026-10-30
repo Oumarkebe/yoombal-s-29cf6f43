@@ -477,7 +477,7 @@ const MerchantAISimulator = ({ autoMode }: { autoMode: boolean }) => {
   const [productName, setProductName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedResult, setGeneratedResult] = useState<any>(null);
-  const typingInterval = useRef<NodeJS.Timeout | null>(null);
+  const typingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // GHOST TYPING LOGIC
   useEffect(() => {

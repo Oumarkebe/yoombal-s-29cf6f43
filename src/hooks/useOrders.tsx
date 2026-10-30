@@ -116,7 +116,7 @@ export const useOrders = (options?: { role?: string; merchantId?: string; driver
           delivery_address: deliveryDetails.address,
           delivery_phone: deliveryDetails.phone,
           delivery_notes: deliveryDetails.notes || undefined,
-        })
+        } as any)
         .select()
         .single();
 

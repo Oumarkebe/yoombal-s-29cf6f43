@@ -8,6 +8,7 @@ import {
   KycStatus,
   getHighestRole,
   ROLE_PRIORITY,
+  ROLE_PERMISSIONS,
 } from '@/types/auth';
 
 // Re-export types for backward compatibility
@@ -446,9 +447,6 @@ export function useHasPermission(
 
   // Admin has all permissions
   if (user.roles.includes('admin')) return true;
-
-  // Import and check ROLE_PERMISSIONS dynamically to avoid circular deps
-  const { ROLE_PERMISSIONS } = require('@/types/auth');
 
   return user.roles.some((role) => {
     const permissions = ROLE_PERMISSIONS[role] || [];

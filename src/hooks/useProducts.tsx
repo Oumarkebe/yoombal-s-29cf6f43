@@ -127,7 +127,7 @@ export const useProducts = () => {
 
   const updateProduct = async (id: string, productData: Partial<Product>) => {
     try {
-      const { error } = await supabase.from('products').update(productData).eq('id', id);
+      const { error } = await supabase.from('products').update(productData as any).eq('id', id);
 
       if (error) throw error;
 

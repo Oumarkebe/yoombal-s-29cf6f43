@@ -195,7 +195,7 @@ const Profile = () => {
         .update({
           status: 'active',
           installments: updatedInstallments,
-        })
+        } as any)
         .eq('id', planId);
 
       if (error) throw error;

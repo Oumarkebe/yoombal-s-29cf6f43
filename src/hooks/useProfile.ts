@@ -80,7 +80,7 @@ const updateUserProfile = async (userId: string, profileData: UpdateProfileData)
       delivery_name: profileData.deliveryName,
       client_name: profileData.clientName,
       updated_at: new Date().toISOString(),
-    })
+    } as any)
     .eq('id', userId)
     .select()
     .single();

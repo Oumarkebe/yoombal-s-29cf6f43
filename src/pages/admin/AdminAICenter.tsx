@@ -534,7 +534,7 @@ export default function AdminAICenter() {
           is_enabled: false,
           status: 'disabled',
           configuration: {},
-        });
+        } as any);
       }
       await fetchFeatures();
     } catch (error) {
